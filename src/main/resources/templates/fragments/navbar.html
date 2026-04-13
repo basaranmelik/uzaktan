@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<body>
+
+  <header th:fragment="navbar">
+
+    <!-- Topbar -->
+    <div class="topbar">
+      <div class="topbar-container">
+        <div class="topbar-info">
+          <i class="bi bi-geo-alt-fill"></i> Ankara / Türkiye
+          <span style="margin:0 8px;opacity:0.4;">|</span>
+          <i class="bi bi-envelope-fill"></i> destek@guzem.gazi.edu.tr
+          <span style="margin:0 8px;opacity:0.4;">|</span>
+          <i class="bi bi-telephone-fill"></i> 0 (312) 202 20 20
+        </div>
+        <div class="topbar-social">
+          <a href="https://www.facebook.com/GaziUniversitesi.1926/" target="_blank"><i class="bi bi-facebook"></i></a>
+          <a href="https://x.com/Gazi_Universite" target="_blank"><i class="bi bi-twitter-x"></i></a>
+          <a href="https://www.instagram.com/gazi_universitesi/" target="_blank"><i class="bi bi-instagram"></i></a>
+          <a href="https://www.linkedin.com/school/gazi-university" target="_blank"><i class="bi bi-linkedin"></i></a>
+          <a href="https://www.youtube.com/@GaziÜniversitesi-l4w" target="_blank"><i class="bi bi-youtube"></i></a>
+        </div>
+      </div>
+    </div>
+
+    <nav class="navbar" id="navbar">
+      <div class="nav-container">
+        <a th:href="@{/}" class="nav-logo">
+          <img th:src="@{/images/gazi-logo.png}" alt="Gazi Logo" class="gazi-logo">
+          <div class="nav-logo-divider"></div>
+          <div class="nav-logo-text">
+            <span class="nav-logo-title">GUZEM</span>
+            <span class="nav-logo-subtitle">Uzaktan Eğitim Uygulama<br>ve Araştırma Merkezi</span>
+          </div>
+        </a>
+
+        <div class="nav-links">
+          <a th:href="@{/}" th:classappend="${activeMenu == 'home'} ? 'active'">Ana Sayfa</a>
+          <a th:href="@{/egitimler}" th:classappend="${activeMenu == 'courses'} ? 'active'">Eğitimler</a>
+          <a th:href="@{/egitmenler}" th:classappend="${activeMenu == 'instructors'} ? 'active'">Eğitmenler</a>
+          <a th:href="@{/hakkimizda}" th:classappend="${activeMenu == 'about'} ? 'active'">Hakkımızda</a>
+          <a th:href="@{/iletisim}" th:classappend="${activeMenu == 'contact'} ? 'active'">İletişim</a>
+        </div>
+
+        <div class="nav-actions">
+
+          <!-- Arama -->
+          <form class="nav-search" th:action="@{/egitimler}" method="get" role="search">
+            <i class="bi bi-search nav-search-icon"></i>
+            <input type="text" name="keyword" id="navSearchInput" class="nav-search-input"
+                   placeholder="Eğitim ara..." autocomplete="off">
+          </form>
+
+          <!-- Sepet -->
+          <div class="nav-panel-wrap" id="cartWrap">
+            <button type="button" class="nav-icon-btn" title="Sepetim"
+                    onclick="toggleNavPanel('cartWrap', event)">
+              <i class="bi bi-cart3"></i>
+              <span class="nav-badge" id="cartBadge"
+                    th:text="${cartCount}"
+                    th:style="${cartCount == 0} ? 'display:none' : ''">0</span>
+            </button>
+            <div class="nav-panel" id="cartPanel"
+                 th:data-csrf-token="${_csrf.token}"
+                 th:data-csrf-header="${_csrf.headerName}">
+              <div class="nav-panel-head">
+                <span><i class="bi bi-cart3" style="margin-right:0.4rem;color:var(--primary-500);"></i>Sepetim</span>
+                <span class="nav-panel-count"
+                      th:text="${cartCount} + ' kurs'">0 kurs</span>
+              </div>
+              <!-- Dolu sepet -->
+              <div th:if="${cartCount > 0}">
+                <div class="nav-panel-body">
+                  <div th:each="item : ${cartItems}" class="nav-cart-item"
+                       th:data-course-id="${item.courseId}">
+                    <div class="nav-cart-thumb"><i class="bi bi-play-circle"></i></div>
+                    <div class="nav-cart-info">
+                      <div class="nav-cart-title" th:text="${item.courseTitle}">Kurs</div>
+                      <div class="nav-cart-price"
+                           th:text="${item.price != null and item.price.signum() > 0} ? '₺' + ${#numbers.formatDecimal(item.price, 1, 'POINT', 0, 'COMMA')} : 'Ücretsiz'">
+                        ₺0
+                      </div>
+                    </div>
+                    <button class="nav-cart-remove" title="Kaldır"
+                            th:onclick="'removeCartItem(' + ${item.courseId} + ', this)'">
+                      <i class="bi bi-x-lg"></i>
+                    </button>
+                  </div>
+                </div>
+                <div class="nav-panel-footer">
+                  <span>Toplam:
+                    <strong style="color:var(--primary-600);"
+                            th:text="'₺' + ${#numbers.formatDecimal(cartTotal, 1, 'POINT', 0, 'COMMA')}">₺0</strong>
+                  </span>
+                  <a th:href="@{/kayitlarim}" class="btn btn-primary"
+                     style="padding:0.4rem 1rem;font-size:0.82rem;border-radius:8px;">
+                    Ödemeye Geç
+                  </a>
+                </div>
+              </div>
+              <!-- Boş sepet -->
+              <div th:if="${cartCount == 0}"
+                   style="padding:2rem;text-align:center;color:var(--text-muted);">
+                <i class="bi bi-cart3" style="font-size:2rem;display:block;margin-bottom:0.5rem;color:var(--gray-300);"></i>
+                <div style="font-size:0.85rem;">Sepetiniz boş</div>
+                <a th:href="@{/egitimler}"
+                   style="font-size:0.82rem;color:var(--primary-600);font-weight:600;margin-top:0.5rem;display:inline-block;">
+                  Eğitimlere Göz At
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bildirimler (giriş yapmış) -->
+          <div class="nav-panel-wrap" id="notifWrap" sec:authorize="isAuthenticated()">
+            <button type="button" class="nav-icon-btn" title="Bildirimler"
+                    onclick="toggleNavPanel('notifWrap', event)">
+              <i class="bi bi-bell"></i>
+              <span class="nav-badge" id="notifBadge">3</span>
+            </button>
+            <div class="nav-panel" id="notifPanel">
+              <div class="nav-panel-head">
+                <span><i class="bi bi-bell" style="margin-right:0.4rem;color:var(--primary-500);"></i>Bildirimler</span>
+                <span class="nav-panel-count">3 yeni</span>
+              </div>
+              <div class="nav-panel-body">
+                <div class="nav-notif-item unread">
+                  <div class="nav-notif-icon blue"><i class="bi bi-patch-check-fill"></i></div>
+                  <div class="nav-notif-body">
+                    <div class="nav-notif-text"><strong>Kurs Onaylandı</strong><br>Python ile Veri Bilimi kaydınız aktive edildi.</div>
+                    <div class="nav-notif-time"><i class="bi bi-clock"></i> 5 dakika önce</div>
+                  </div>
+                  <div class="nav-notif-dot"></div>
+                </div>
+                <div class="nav-notif-item unread">
+                  <div class="nav-notif-icon amber"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                  <div class="nav-notif-body">
+                    <div class="nav-notif-text"><strong>Ödev Hatırlatma</strong><br>React Temelleri ödevinizin son günü yarın.</div>
+                    <div class="nav-notif-time"><i class="bi bi-clock"></i> 1 saat önce</div>
+                  </div>
+                  <div class="nav-notif-dot"></div>
+                </div>
+                <div class="nav-notif-item unread">
+                  <div class="nav-notif-icon green"><i class="bi bi-award-fill"></i></div>
+                  <div class="nav-notif-body">
+                    <div class="nav-notif-text"><strong>Sertifikanız Hazır</strong><br>Web Geliştirme sertifikanız oluşturuldu.</div>
+                    <div class="nav-notif-time"><i class="bi bi-clock"></i> 2 gün önce</div>
+                  </div>
+                  <div class="nav-notif-dot"></div>
+                </div>
+              </div>
+              <a th:href="@{/panom}" class="nav-panel-see-all">Tüm Bildirimleri Gör</a>
+            </div>
+          </div>
+
+          <div class="nav-action-sep"></div>
+
+          <!-- Giriş yapmamış kullanıcı -->
+          <span sec:authorize="isAnonymous()" style="display:flex; gap: 0.5rem; align-items:center;">
+            <a th:href="@{/giris}" class="nav-action-btn">
+              <i class="bi bi-box-arrow-in-right"></i> Giriş Yap
+            </a>
+            <a th:href="@{/kayit-ol}" class="btn nav-cta">Kayıt Ol</a>
+          </span>
+
+          <!-- Giriş yapmış kullanıcı -->
+          <div class="user-menu-container" tabindex="0" sec:authorize="isAuthenticated()">
+            <div class="user-dropdown-btn">
+              <div class="user-avatar-initials"
+                   th:text="${currentUserFullName != null ? #strings.substring(currentUserFullName,0,1).toUpperCase() : #strings.substring(#authentication.name,0,1).toUpperCase()}">
+                U</div>
+              <div class="user-info-block">
+                <span class="user-display-name"
+                      th:text="${currentUserFullName != null ? currentUserFullName : #authentication.name}">Kullanıcı</span>
+                <span class="user-role-badge">
+                  <i class="bi bi-person-check-fill"></i>
+                  <span sec:authorize="hasRole('ADMIN')">Yönetici</span>
+                  <span sec:authorize="hasRole('TEACHER')">Eğitmen</span>
+                  <span sec:authorize="hasRole('USER')">Öğrenci</span>
+                </span>
+              </div>
+              <i class="bi bi-chevron-down user-chevron"></i>
+            </div>
+
+            <div class="user-dropdown-menu">
+              <div class="udm-header">
+                <div class="udm-avatar-lg"
+                     th:text="${currentUserFullName != null ? #strings.substring(currentUserFullName,0,1).toUpperCase() : #strings.substring(#authentication.name,0,1).toUpperCase()}">U
+                </div>
+                <div>
+                  <div class="udm-name"
+                       th:text="${currentUserFullName != null ? currentUserFullName : #authentication.name}">Kullanıcı</div>
+                  <div class="udm-role">
+                    <span sec:authorize="hasRole('ADMIN')">Sistem Yöneticisi</span>
+                    <span sec:authorize="hasRole('TEACHER')">Eğitmen</span>
+                    <span sec:authorize="hasRole('USER')">Öğrenci</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="udm-divider"></div>
+
+              <a th:href="@{/panom}" class="udm-item" sec:authorize="hasRole('USER')">
+                <i class="bi bi-ui-radios-grid udm-icon"></i> Panom
+              </a>
+
+              <a th:href="@{/admin}" class="udm-item" sec:authorize="hasRole('ADMIN')">
+                <i class="bi bi-shield-lock-fill udm-icon"></i> Admin Paneli
+              </a>
+
+              <a th:href="@{/egitmen/panel}" class="udm-item" sec:authorize="hasRole('TEACHER')">
+                <i class="bi bi-briefcase-fill udm-icon"></i> Eğitmen Paneli
+              </a>
+
+              <a th:href="@{/profilim}" class="udm-item">
+                <i class="bi bi-person-circle udm-icon"></i> Profilim
+              </a>
+
+              <div class="udm-divider"></div>
+
+              <form th:action="@{/cikis}" method="post" style="margin:0;">
+                <button type="submit" class="udm-item udm-logout">
+                  <i class="bi bi-box-arrow-right udm-icon"></i> Çıkış Yap
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hamburger menü for mobile -->
+        <button class="nav-hamburger" id="nav-toggle">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+
+      </div>
+    </nav>
+
+    <script>
+    // ── Panel toggle (sepet / bildirimler) ──
+    function toggleNavPanel(wrapId, event) {
+      if (event) event.stopPropagation();
+      var wrap = document.getElementById(wrapId);
+      var isOpen = wrap.classList.toggle('open');
+      ['cartWrap', 'notifWrap'].forEach(function(id) {
+        if (id !== wrapId) {
+          var el = document.getElementById(id);
+          if (el) el.classList.remove('open');
+        }
+      });
+    }
+
+    document.addEventListener('click', function(e) {
+      ['cartWrap', 'notifWrap'].forEach(function(id) {
+        var wrap = document.getElementById(id);
+        if (wrap && !wrap.contains(e.target)) {
+          wrap.classList.remove('open');
+        }
+      });
+    });
+
+    // ── Sepetten AJAX kaldır ──
+    function removeCartItem(courseId, btn) {
+      var panel  = document.getElementById('cartPanel');
+      var csrf   = panel.dataset.csrfToken;
+      var header = panel.dataset.csrfHeader;
+      fetch('/sepet/kaldir-ajax?courseId=' + courseId, {
+        method: 'POST',
+        headers: { [header]: csrf }
+      }).then(function(res) { return res.json(); })
+        .then(function(data) {
+          // Satırı kaldır
+          var row = btn.closest('.nav-cart-item');
+          if (row) row.remove();
+          // Badge güncelle
+          var badge = document.getElementById('cartBadge');
+          if (badge) {
+            badge.textContent = data.count;
+            badge.style.display = data.count > 0 ? '' : 'none';
+          }
+          // Panel count güncelle
+          var countEl = panel.querySelector('.nav-panel-count');
+          if (countEl) countEl.textContent = data.count + ' kurs';
+          // Sepet boşaldıysa boş mesajı göster
+          if (data.count === 0) {
+            var body = panel.querySelector('.nav-panel-body');
+            var footer = panel.querySelector('.nav-panel-footer');
+            if (body) body.closest('div').innerHTML =
+              '<div style="padding:2rem;text-align:center;color:var(--text-muted);">' +
+              '<i class="bi bi-cart3" style="font-size:2rem;display:block;margin-bottom:0.5rem;color:var(--gray-300);"></i>' +
+              '<div style="font-size:0.85rem;">Sepetiniz boş</div></div>';
+          }
+        });
+    }
+
+    // ── Navbar Arama ──
+    document.addEventListener('DOMContentLoaded', function() {
+      var input = document.getElementById('navSearchInput');
+      if (!input) return;
+
+      // Eğitimler sayfasında canlı filtre uygula
+      input.addEventListener('input', function() {
+        var courseSearch = document.getElementById('course-search');
+        if (courseSearch) {
+          courseSearch.value = this.value;
+          courseSearch.dispatchEvent(new Event('input'));
+        }
+      });
+
+      // Eğitimler sayfasındaysa mevcut keyword'ü doldur
+      var params = new URLSearchParams(window.location.search);
+      var kw = params.get('keyword');
+      if (kw && window.location.pathname === '/egitimler') {
+        input.value = kw;
+      }
+    });
+    </script>
+
+  </header>
+
+</body>
+
+</html>

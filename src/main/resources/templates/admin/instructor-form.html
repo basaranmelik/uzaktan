@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eğitmen Ekle/Düzenle — GUZEM Admin</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .form-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2rem;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: inherit;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary-500);
+      box-shadow: 0 0 0 3px rgba(76,110,245,0.15);
+    }
+    .text-danger { color: #f03e3e; font-size: 0.85rem; margin-top: 0.3rem; display: block; }
+    .current-photo {
+      width: 100px;
+      height: 100px;
+      border-radius: 12px;
+      object-fit: cover;
+      margin-bottom: 1rem;
+      border: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/admin}">Admin</a>
+      <span class="separator">›</span>
+      <a th:href="@{/admin/egitmenler}">Eğitmenler</a>
+      <span class="separator">›</span>
+      <span class="current" th:text="${instructorId != null ? 'Düzenle' : 'Yeni'}"></span>
+    </div>
+    <h1 style="margin-top:0.5rem;">
+      <i class="bi bi-person-gear"></i>
+      <span th:text="${instructorId != null ? 'Eğitmen Düzenle' : 'Yeni Eğitmen Ekle'}"></span>
+    </h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="form-card">
+      <form th:action="${instructorId != null ? '/admin/egitmenler/' + instructorId : '/admin/egitmenler'}"
+            th:object="${instructorRequest}" method="post" enctype="multipart/form-data">
+
+        <div class="form-group">
+          <label for="name">Eğitmen Adı Soyadı *</label>
+          <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="Örn: Dr. Ali Yılmaz">
+          <span class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="expertise">Uzmanlık Alanı *</label>
+          <input type="text" id="expertise" th:field="*{expertise}" class="form-control" placeholder="Örn: Yazılım Mühendisliği">
+          <span class="text-danger" th:if="${#fields.hasErrors('expertise')}" th:errors="*{expertise}"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="bio">Biyografi (Özgeçmiş)</label>
+          <textarea id="bio" th:field="*{bio}" class="form-control" rows="5" placeholder="Eğitim, tecrübe, çalışma alanları..."></textarea>
+          <span class="text-danger" th:if="${#fields.hasErrors('bio')}" th:errors="*{bio}"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="photo">Profil Fotoğrafı</label>
+          <div th:if="${photoUrl != null}">
+            <img th:src="@{${photoUrl}}" class="current-photo" alt="Mevcut Fotoğraf">
+            <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.5rem;">Mevcut fotoğrafı değiştirmek isterseniz yeni dosya seçin.</div>
+          </div>
+          <input type="file" id="photo" name="photo" class="form-control" accept="image/*">
+        </div>
+
+        <div style="display:flex;gap:1rem;margin-top:2rem;">
+          <button type="submit" class="btn btn-primary" style="flex:1;">
+            <i class="bi bi-save"></i> Kaydet
+          </button>
+          <a th:href="@{/admin/egitmenler}" class="btn btn-secondary">İptal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

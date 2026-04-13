@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="Gazi_Universitesi_logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GUZEM Gizlilik Politikası. Kişisel verilerinizi nasıl koruduğumuzu öğrenin.">
+    <title>Gizlilik Politikası — GUZEM</title>
+    <!-- AOS CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <button class="left-hamburger" id="leftHamburger" aria-label="Yan Menü">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="../index.html" class="nav-logo">
+                <img src="../assets/img/Gazi_Universitesi_logo.png" alt="Gazi Üniversitesi" class="gazi-logo">
+                <span class="nav-logo-divider"></span>
+                GUZEM
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="../index.html">Ana Sayfa</a>
+                <div class="nav-dropdown">
+                  <a href="egitimler.html" class="nav-dropdown-trigger">
+                    Eğitimler <span class="dropdown-arrow">&#8964;</span>
+                  </a>
+                  <div class="nav-dropdown-menu">
+                    <div class="dropdown-header">Kategoriler</div>
+                    <a href="egitimler.html" class="dropdown-item"><span class="di-icon">📚</span><span>Tüm Eğitimler</span></a>
+                    <a href="egitimler.html?cat=Veri+Bilimi" class="dropdown-item"><span class="di-icon">📊</span><span>Veri Bilimi</span></a>
+                    <a href="egitimler.html?cat=Web+Gelistirme" class="dropdown-item"><span class="di-icon">🌐</span><span>Web Geliştirme</span></a>
+                    <a href="egitimler.html?cat=Yapay+Zeka" class="dropdown-item"><span class="di-icon">🤖</span><span>Yapay Zeka</span></a>
+                    <a href="egitimler.html?cat=Tasarim" class="dropdown-item"><span class="di-icon">🎨</span><span>Tasarım</span></a>
+                    <a href="egitimler.html?cat=Pazarlama" class="dropdown-item"><span class="di-icon">📣</span><span>Pazarlama</span></a>
+                    <a href="egitimler.html?cat=Mobil" class="dropdown-item"><span class="di-icon">📱</span><span>Mobil</span></a>
+                    <a href="egitimler.html?cat=Guvenlik" class="dropdown-item"><span class="di-icon">🔒</span><span>Güvenlik</span></a>
+                    <a href="egitimler.html?cat=DevOps" class="dropdown-item"><span class="di-icon">⚙️</span><span>DevOps</span></a>
+                  </div>
+                </div>
+                <a href="egitmenler.html">Eğitmenler</a>
+                <a href="hakkimizda.html">Hakkımızda</a>
+                <a href="iletisim.html">İletişim</a>
+                <a href="giris.html" class="nav-cta">Giriş Yap & Kayıt Ol</a>
+                <div class="nav-right-contact" style="display: flex; flex-direction: column; align-items: center; gap: 4px; margin-left: 20px;">
+                  <div class="nav-social" style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px;">
+                    <a href="https://www.facebook.com/GaziUniversitesi.1926" target="_blank" style="display:flex; justify-content:center; align-items:center; width:18px; height:18px; border-radius:50%; overflow:hidden; background:#fff;"><img src="../assets/img/Facebook Logo.jpg" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+                    <a href="https://www.linkedin.com/school/gazi-university/posts/?feedView=all" target="_blank" style="display:flex; justify-content:center; align-items:center; width:18px; height:18px; border-radius:50%; overflow:hidden; background:#fff;"><img src="../assets/img/LinkedIn Logo.png" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+                    <a href="https://www.instagram.com/gaziuniuzem/" target="_blank" style="display:flex; justify-content:center; align-items:center; width:18px; height:18px; border-radius:50%; overflow:hidden; background:#fff;"><img src="../assets/img/İnstagram Logo.jpg" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+                    <a href="https://www.youtube.com/@GaziÜniversitesi-l4w" target="_blank" style="display:flex; justify-content:center; align-items:center; width:18px; height:18px; border-radius:50%; overflow:hidden; background:#fff;"><img src="../assets/img/Youtube Logo.png" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+                  </div>
+                  <span style="font-size: 11px; color: #fff; font-weight: 500; letter-spacing: 0.5px; opacity: 0.9; user-select: none;">0(312) 202 82 00</span>
+                </div>
+            </div>
+            <button class="nav-hamburger" id="hamburger" aria-label="Menü"><span></span><span></span><span></span></button>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="../index.html">Ana Sayfa</a><span class="separator">›</span><span class="current">Gizlilik Politikası</span>
+            </div>
+            <h1>Gizlilik Politikası</h1>
+            <p>Son güncelleme: Mart 2026 — Gazi Üniversitesi Uzaktan Eğitim Merkezi (GUZEM)</p>
+        </div>
+    </section>
+
+    <!-- Privacy Policy Content -->
+    <section class="section">
+        <div class="container" style="max-width: 860px; margin: 0 auto;">
+
+            <!-- Intro Card -->
+            <div data-aos="fade-up" style="background: var(--primary-50); border-left: 4px solid var(--primary-600); border-radius: var(--radius-md); padding: 20px 24px; margin-bottom: 40px;">
+                <p style="color: var(--primary-800); font-size: 15px; line-height: 1.7; margin: 0;">
+                    Bu Gizlilik Politikası; <strong>Gazi Üniversitesi Uzaktan Eğitim Merkezi (GUZEM)</strong> olarak platformumuzu kullanan ziyaretçi ve kullanıcılarımızın verilerini nasıl topladığımızı, kullandığımızı, sakladığımızı ve koruduğumuzu açıklamaktadır. Platformumuzu kullanmaya devam etmeniz, bu politikayı okuduğunuzu ve kabul ettiğinizi göstermektedir.
+                </p>
+            </div>
+
+            <!-- Section 1 -->
+            <div data-aos="fade-up" style="margin-bottom: 36px;">
+                <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">1</span>
+                    Topladığımız Bilgiler
+                </h2>
+                <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                    <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">GUZEM platformunu kullanmanız durumunda aşağıdaki bilgileri toplayabiliriz:</p>
+                    <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0;">
+                        <li><strong>Hesap Bilgileri:</strong> Ad, soyad, e-posta adresi, kullanıcı adı ve şifre (şifreli olarak saklanır)</li>
+                        <li><strong>Profil Bilgileri:</strong> Fotoğraf, biyografi, ilgi alanları (isteğe bağlı)</li>
+                        <li><strong>İşlem Bilgileri:</strong> Satın alınan kurslar, ödeme geçmişi, fatura adresi</li>
+                        <li><strong>Kullanım Verileri:</strong> Gezilen sayfalar, tıklamalar, video ilerleme durumu, oturum süresi</li>
+                        <li><strong>Teknik Veriler:</strong> IP adresi, tarayıcı türü ve versiyonu, işletim sistemi, cihaz türü</li>
+                        <li><strong>İletişim Verileri:</strong> Destek talepleri, form mesajları, geri bildirimler</li>
+                        <li><strong>Çerez Verileri:</strong> Oturum çerezleri, tercih çerezleri ve analiz çerezleri</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div data-aos="fade-up" style="margin-bottom: 36px;">
+                <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">2</span>
+                    Bilgileri Nasıl Kullanıyoruz?
+                </h2>
+                <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                    <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">Topladığımız bilgileri aşağıdaki amaçlarla kullanmaktayız:</p>
+                    <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0;">
+                        <li>Platformun temel eğitim hizmetlerini sağlamak</li>
+                        <li>Kullanıcı hesabı oluşturmak ve yönetmek</li>
+                        <li>Ödeme ve satın alma işlemlerini gerçekleştirmek</li>
+                        <li>Sertifika ve başarı belgesi düzenlemek</li>
+                        <li>Kullanıcı deneyimini kişiselleştirmek ve iyileştirmek</li>
+                        <li>Teknik destek ve müşteri hizmetleri sunmak</li>
+                        <li>Platform güvenliğini sağlamak ve kötüye kullanımı önlemek</li>
+                        <li>Yasal ve düzenleyici gereksinimlere uymak</li>
+                        <li>Eğitim içeriklerini kullanım verilerine göre geliştirmek</li>
+                        <li>Açık rızanız dahilinde bülten ve kampanya bildirimleri göndermek</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section 3 -->
+            <div data-aos="fade-up" style="margin-bottom: 36px;">
+                <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">3</span>
+                    Çerez (Cookie) Kullanımı
+                </h2>
+                <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                    <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">Platformumuzda üç tür çerez kullanılmaktadır:</p>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="padding: 12px 16px; background: var(--primary-50); border-radius: var(--radius-sm); border-left: 3px solid var(--primary-500);">
+                            <strong style="color: var(--primary-700);">🔒 Zorunlu Çerezler</strong>
+                            <p style="color: var(--text-muted); font-size: 14px; margin: 4px 0 0 0;">Oturum yönetimi ve güvenlik için zorunludur. Devre dışı bırakılamaz.</p>
+                        </div>
+                        <div style="padding: 12px 16px; background: #fff4e6; border-radius: var(--radius-sm); border-left: 3px solid #e8590c;">
+                            <strong style="color: #c94a08;">⚙️ Tercih Çerezleri</strong>
+                            <p style="color: var(--text-muted); font-size: 14px; margin: 4px 0 0 0;">Dil, görünüm ve kişisel tercihlerin hatırlanması için kullanılır.</p>
+                        </div>
+                        <div style="padding: 12px 16px; background: #e6fcf5; border-radius: var(--radius-sm); border-left: 3px solid #20c997;">
+                            <strong style="color: #0f9672;">📊 Analiz Çerezleri</strong>
+                            <p style="color: var(--text-muted); font-size: 14px; margin: 4px 0 0 0;">Platform kullanımını anlamamıza yardımcı olur. Açık rızanıza bağlıdır.</p>
+                        </div>
+                    </div>
+                    <p style="color: var(--text-muted); font-size: 14px; margin: 16px 0 0 0;">Tarayıcı ayarlarınızdan çerezleri yönetebilir veya reddedebilirsiniz. Zorunlu olmayan çerezler için onayınızı geri alabilirsiniz.</p>
+                </div>
+            </div>
+
+            <!-- Section 4 -->
+            <div data-aos="fade-up" style="margin-bottom: 36px;">
+                <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">4</span>
+                    Bilgilerinizi Kimlerle Paylaşıyoruz?
+                </h2>
+                <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                    <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">Kişisel verilerinizi yalnızca aşağıdaki taraflarla ve belirtilen koşullar dahilinde paylaşmaktayız:</p>
+                    <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0;">
+                        <li><strong>Ödeme Hizmet Sağlayıcıları:</strong> İşleminizi güvenli şekilde tamamlamak için (kart numarası bizde saklanmaz)</li>
+                        <li><strong>Bulut Altyapı Sağlayıcıları:</strong> Platform verilerinin depolanması için</li>
+                        <li><strong>E-posta Sağlayıcıları:</strong> Bildirim, sertifika ve fatura iletişimi için</li>
+                        <li><strong>Yetkili Kamu Kurumları:</strong> Yasal yükümlülükler kapsamında talep olması halinde</li>
+                        <li><strong>Eğitim İçerik Ortakları:</strong> Yalnızca sertifika doğrulama süreçlerinde, sınırlı kapsamda</li>
+                    </ul>
+                    <div style="margin-top: 16px; padding: 14px; background: #fff4e6; border-radius: var(--radius-sm);">
+                        <p style="color: #c94a08; font-size: 14px; margin: 0;">⚠️ Kişisel verileriniz hiçbir koşulda ticari amaçlarla üçüncü taraflara <strong>satılmaz veya kiralanmaz</strong>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 5 -->
+            <div data-aos="fade-up" style="margin-bottom: 36px;">
+                <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">5</span>
+                    Veri Güvenliği
+                </h2>
+                <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                    <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">Verilerinizin güvenliğini ciddiye alıyoruz. Bu kapsamda uyguladığımız önlemler:</p>
+                    <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0;">
+                        <li>Tüm veri iletiminde <strong>SSL/TLS şifreleme</strong> kullanılmaktadır</li>
+                        <li>Şifreler, geri döndürülemez <strong>bcrypt algoritması</strong> ile hash'lenerek saklanır</li>
+                        <li>Ödeme bilgileri platformumuzda tutulmaz; PCI-DSS uyumlu altyapıya yönlendirilir</li>
+                        <li>Sistemlere erişim, <strong>rol tabanlı yetkilendirme</strong> ile sınırlandırılmıştır</li>
+                        <li>Düzenli güvenlik taramaları ve sızma testleri yapılmaktadır</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section 6 -->
+            <div data-aos="fade-up" style="margin-bottom: 36px;">
+                <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">6</span>
+                    Verilerin Saklanma Süresi
+                </h2>
+                <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                    <p style="color: var(--text-muted); line-height: 1.7; margin: 0;">
+                        Kişisel verileriniz; hesabınızın aktif olduğu süre boyunca veya hizmet sunmak için gerekli olduğu müddetçe saklanmaktadır. Yasal zorunluluk gerektiren finansal kayıtlar <strong>10 yıl</strong>, günlük (log) kayıtları <strong>1 yıl</strong>, iletişim talepleri ise <strong>5 yıl</strong> süreyle tutulmaktadır. Hesabınızı silmeniz durumunda verileriniz, yasal saklama süreleri saklı olmak kaydıyla <strong>30 gün</strong> içinde sistemlerimizden kaldırılır.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 7 -->
+            <div data-aos="fade-up" style="margin-bottom: 36px;">
+                <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">7</span>
+                    Üçüncü Taraf Bağlantıları
+                </h2>
+                <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                    <p style="color: var(--text-muted); line-height: 1.7; margin: 0;">
+                        GUZEM platformu, üçüncü taraflara ait web sitelerine veya hizmetlere bağlantı içerebilir (sosyal medya, harici kaynaklar vb.). Bu bağlantılara tıklamanız halinde söz konusu sitelerin kendi gizlilik politikaları geçerli olacaktır. GUZEM, üçüncü taraf sitelerin gizlilik uygulamalarından sorumlu tutulamaz.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 8 -->
+            <div data-aos="fade-up" style="margin-bottom: 36px;">
+                <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">8</span>
+                    Haklarınız ve Tercihleriniz
+                </h2>
+                <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                    <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">Verileriniz üzerinde aşağıdaki hakları kullanabilirsiniz:</p>
+                    <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0 0 16px 0;">
+                        <li>Hakkınızda tutulan verileri <strong>görüntüleme ve kopyasını talep etme</strong></li>
+                        <li>Hatalı verilerin <strong>düzeltilmesini isteme</strong></li>
+                        <li>Belirli koşullarda verilerinizin <strong>silinmesini talep etme</strong></li>
+                        <li>Pazarlama iletişimlerinden <strong>çıkma (opt-out)</strong></li>
+                        <li>Daha önce verdiğiniz rızayı <strong>geri alma</strong></li>
+                        <li>Veri işleme konusunda <strong>itirazda bulunma</strong></li>
+                    </ul>
+                    <div style="padding: 14px; background: var(--primary-50); border-radius: var(--radius-sm);">
+                        <p style="color: var(--primary-700); font-size: 14px; margin: 0;">
+                            📧 Bu haklarınızı kullanmak için <a href="iletisim.html" style="color: var(--primary-600); font-weight: 600;">iletişim sayfamızı</a> kullanabilir ya da <strong>guzem@gazi.edu.tr</strong> adresine yazabilirsiniz. Talepler 30 gün içinde yanıtlanmaktadır.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 9 -->
+            <div data-aos="fade-up" style="margin-bottom: 48px;">
+                <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">9</span>
+                    Politika Değişiklikleri
+                </h2>
+                <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                    <p style="color: var(--text-muted); line-height: 1.7; margin: 0;">
+                        Bu Gizlilik Politikası zaman zaman güncellenebilir. Önemli değişiklikler yapılması halinde kullanıcılar kayıtlı e-posta adresleri üzerinden veya platform içi bildirimle önceden bilgilendirilecektir. Güncel politikanın son versiyonu her zaman bu sayfada yayımlanmaktadır. Son güncelleme tarihini sayfanın üst kısmından takip edebilirsiniz.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Contact CTA -->
+            <div data-aos="fade-up" style="text-align: center; padding: 32px; background: var(--primary-50); border-radius: var(--radius-lg); margin-bottom: 16px;">
+                <h4 style="color: var(--primary-800); margin-bottom: 8px;">Sorularınız mı var?</h4>
+                <p style="color: var(--text-muted); margin-bottom: 16px;">Gizlilik politikamızla ilgili her türlü soru için bize ulaşın.</p>
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <a href="iletisim.html" class="btn btn-primary">İletişime Geç</a>
+                    <a href="kvkk.html" class="btn btn-secondary" style="background: transparent; border: 2px solid var(--primary-600); color: var(--primary-600); padding: 10px 24px; border-radius: var(--radius-md); font-weight: 600; text-decoration: none;">KVKK Metni</a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="../assets/img/Gazi_Universitesi_logo.png" alt="Gazi Üniversitesi" class="gazi-logo">
+                        <span class="footer-logo-divider"></span>
+                        GUZEM
+                    </div>
+                    <p>Türkiye'nin lider online eğitim platformu.</p>
+                    <div class="footer-social"><a href="https://www.facebook.com/GaziUniversitesi.1926" target="_blank" title="Facebook" style="padding: 0; overflow: hidden; background: transparent;"><img src="../assets/img/Facebook Logo.jpg" alt="Facebook" style="width: 100%; height: 100%; object-fit: cover;"></a><a href="https://www.linkedin.com/school/gazi-university/posts/?feedView=all" target="_blank" title="LinkedIn" style="padding: 0; overflow: hidden; background: transparent;"><img src="../assets/img/LinkedIn Logo.png" alt="LinkedIn" style="width: 100%; height: 100%; object-fit: cover;"></a><a href="https://www.instagram.com/gaziuniuzem/" target="_blank" title="Instagram" style="padding: 0; overflow: hidden; background: transparent;"><img src="../assets/img/İnstagram Logo.jpg" alt="Instagram" style="width: 100%; height: 100%; object-fit: cover;"></a><a href="https://www.youtube.com/@GaziÜniversitesi-l4w" target="_blank" title="YouTube" style="padding: 0; overflow: hidden; background: transparent;"><img src="../assets/img/Youtube Logo.png" alt="YouTube" style="width: 100%; height: 100%; object-fit: cover;"></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="egitimler.html">Eğitimler</a></li>
+                        <li><a href="egitmenler.html">Eğitmenler</a></li>
+                        <li><a href="blog.html">Blog / Topluluk</a></li>
+                        <li><a href="kariyer.html">Kariyer</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Destek</h4>
+                    <ul>
+                        <li><a href="iletisim.html">İletişim</a></li>
+                        <li><a href="sss.html">SSS</a></li>
+                        <li><a href="#">Yardım Merkezi</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Kurumsal</h4>
+                    <ul>
+                        <li><a href="hakkimizda.html">Hakkımızda</a></li>
+                        <li><a href="gizlilik.html">Gizlilik Politikası</a></li>
+                        <li><a href="kvkk.html">KVKK</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">&copy; 2026 GUZEM. Tüm hakları saklıdır.</div>
+        </div>
+    </footer>
+
+    <script src="../assets/js/data.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+      AOS.init({ duration: 800, once: true, offset: 50, easing: 'ease-out-cubic' });
+    </script>
+    <!-- Left Canvas Sidebar -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <aside class="side-drawer" id="sideDrawer">
+        <div class="drawer-header">
+            <h3>Daha Fazlasını Keşfet</h3>
+            <button class="drawer-close" id="drawerClose">&times;</button>
+        </div>
+        <div class="drawer-content">
+            <a href="kariyer.html" class="drawer-link"><span class="dl-icon">🎯</span> Kariyer Yolları</a>
+            <a href="sss.html" class="drawer-link"><span class="dl-icon">❓</span> Sıkça Sorulan Sorular</a>
+            <a href="iletisim.html" class="drawer-link">
+                <span class="dl-icon">✉️</span> İletişim
+            </a>
+            <a href="blog.html" class="drawer-link"><span class="dl-icon">👥</span> Topluluk ve Blog</a>
+            <a href="kvkk.html" class="drawer-link">
+                <span class="dl-icon">🔒</span> KVKK
+            </a>
+            <a href="gizlilik.html" class="drawer-link">
+                <span class="dl-icon">📋</span> Gizlilik Politikası
+            </a>
+            <div class="drawer-divider"></div>
+            <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 8px;">GUZEM</p>
+            <div class="nav-social" style="display: flex; gap: 8px;">
+                <a href="https://www.facebook.com/GaziUniversitesi.1926" target="_blank" style="width: 32px; height: 32px; background: #fff; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;"><img src="../assets/img/Facebook Logo.jpg" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+                <a href="https://www.linkedin.com/school/gazi-university/posts/?feedView=all" target="_blank" style="width: 32px; height: 32px; background: #fff; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;"><img src="../assets/img/LinkedIn Logo.png" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+                <a href="https://www.instagram.com/gaziuniuzem/" target="_blank" style="width: 32px; height: 32px; background: #fff; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;"><img src="../assets/img/İnstagram Logo.jpg" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+                <a href="https://www.youtube.com/@GaziÜniversitesi-l4w" target="_blank" style="width: 32px; height: 32px; background: #fff; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;"><img src="../assets/img/Youtube Logo.png" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Floating Contact Button -->
+    <a href="iletisim.html" class="floating-contact" id="floatingContact" title="İletişime Geçin">💬</a>
+</body>
+</html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="Gazi_Universitesi_logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GUZEM Kullanım Koşulları. Platformumuzu kullanırken dikkat etmeniz gereken şartlar.">
+    <title>Kullanım Koşulları — GUZEM</title>
+    <!-- AOS CSS -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/style.css">
+
+    <style>
+
+        /* ============================================
+           STUDENT ECOSYSTEM - GLOBAL UI & ACCESSIBILITY
+           ============================================ */
+        body {
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(ellipse at top right, rgba(76, 110, 245, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom left, rgba(32, 201, 151, 0.1) 0%, transparent 50%);
+            min-height: 100vh;
+            color: #fff;
+            padding-top: 100px;
+        }
+        
+        /* Fixed Navbar Overrides */
+        .navbar {
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+            z-index: 1000;
+        }
+        .nav-links > a { color: rgba(255,255,255,0.8) !important; }
+        .nav-links > a:hover { color: #fff !important; }
+        .nav-logo, .nav-logo-divider, .nav-logo-text { color: #fff !important; }
+
+        /* --- User Dropdown Styles --- */
+        .user-menu-container { position: relative; margin-left: 10px; }
+        .user-dropdown-btn {
+            display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 6px 16px 6px 6px;
+            border-radius: 50px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        .user-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #4c6ef5; }
+        .user-name { font-size: 13.5px; font-weight: 600; color: #fff; line-height: 1.2; text-align: left;}
+        .user-role { font-size: 11px; color: rgba(255,255,255,0.6); display: block; }
+        .user-dropdown-menu {
+            position: absolute; top: calc(100% + 12px); right: 0; width: 250px;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; padding: 12px; opacity: 0; visibility: hidden; transform: translateY(10px);
+            transition: all 0.3s ease; z-index: 1000; text-align: left;
+        }
+        .user-menu-container:hover .user-dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+        .user-menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; color: rgba(255,255,255,0.8); text-decoration: none; border-radius: 10px; transition: all 0.2s; font-size: 14px; border-bottom: none !important; }
+        .user-menu-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .logout-item { color: #fca5a5 !important; }
+        .menu-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 8px 0; }
+
+        /* Global Readability Overrides (Light text for dark backgrounds) */
+        p, li, .course-desc, .instructor-bio, .section-header p, .breadcrumb, .footer p {
+            color: rgba(255, 255, 255, 0.75) !important;
+        }
+        h1, h2, h3, h4, h5, .slider-title, .section-title, .instructor-name, .footer-col h4 {
+            color: #ffffff !important;
+        }
+        
+        /* 
+           SÜPER KRİTİK: BEYAZ KARTLAR VE BEYAZ ALANLAR İÇİN SİYAH YAZI ZORLAMASI
+           (FORCE BLACK TEXT FOR WHITE COMPONENTS)
+        */
+        .card *, .course-card *, .mini-course-card *, .sidebar-wrapper *, .filter-bar *, .filter-group *, .instructor-card *, .modal *, .white-bg * {
+            color: #212529 !important;
+        }
+        /* Dashboard specific cards fix */
+        .stat-card *, .welcome-banner *, .upcoming-session * {
+            color: #fff !important; /* Keep dashboard specific elements light */
+        }
+        .welcome-banner p { color: rgba(255,255,255,0.8) !important; }
+        
+        /* Buttons should always have white text */
+        .btn, .btn-primary, .mini-btn, .cookie-accept, .cookie-decline {
+            color: #fff !important;
+        }
+        /* Rating stars and specific badges */
+        .stars, .card-badge, .section-badge, .mini-price {
+            color: #4c6ef5 !important;
+        }
+
+        .career-path-card {
+            background: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Component Specifics & Navigation */
+        .footer { background: rgba(0,0,0,0.2) !important; border-top: 1px solid rgba(255,255,255,0.05) !important; }
+        .footer-col li a { color: rgba(255, 255, 255, 0.6) !important; }
+        .footer-col li a:hover { color: #fff !important; }
+        .breadcrumb a { color: rgba(255, 255, 255, 0.6) !important; }
+        .breadcrumb .current { color: #fff !important; }
+
+
+    </style>
+
+</head>
+<body>
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <button class="left-hamburger" id="leftHamburger" aria-label="Yan Menü">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="index.html" class="nav-logo">
+                <img src="../assets/img/Gazi_Universitesi_logo.png" alt="Gazi Üniversitesi" class="gazi-logo">
+                <span class="nav-logo-divider"></span>
+                <span class="nav-logo-text">GUZEM</span>
+            </a>
+            
+            <div class="nav-links" id="navLinks">
+                <a href="index.html">Ana Sayfa</a>
+                <a href="egitimler.html">Eğitimler</a>
+                <a href="blog.html">Blog</a>
+                <a href="kariyer.html">Kariyer</a>
+                
+                <!-- Kullanıcı Profil Menüsü (B Seçeneği) -->
+                <div class="user-menu-container">
+                    <div class="user-dropdown-btn">
+                        <img src="https://i.pravatar.cc/150?img=11" alt="Yusuf Yıldız" class="user-avatar">
+                        <div class="user-info">
+                            <span class="user-name">Yusuf Yıldız</span>
+                            <span class="user-role">Öğrenci</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down" style="font-size: 12px; margin-left: 4px; color: rgba(255,255,255,0.5);"></i>
+                    </div>
+                    
+                    <!-- Hover Açılır Menü -->
+                    <div class="user-dropdown-menu">
+                        <a href="index.html" class="user-menu-item"><i class="fa-solid fa-layer-group"></i> Öğrenim İçeriğim</a>
+                        <a href="index.html" class="user-menu-item"><i class="fa-solid fa-credit-card"></i> Ödeme Seçeneklerim</a>
+                        <a href="index.html" class="user-menu-item"><i class="fa-solid fa-certificate"></i> Sertifikalarım</a>
+                        <a href="index.html" class="user-menu-item"><i class="fa-solid fa-gear"></i> Ayarlar</a>
+                        <div class="menu-divider"></div>
+                        <a href="index.html" class="user-menu-item logout-item"><i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</a>
+                    </div>
+                </div>
+            </div>
+
+            <button class="nav-hamburger" id="hamburger" aria-label="Menü">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="page-header">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="index.html">Ana Sayfa</a><span class="separator">›</span><span class="current">Kullanım Koşulları</span>
+            </div>
+            <h1>Kullanım Koşulları</h1>
+            <p>Son güncelleme: Mart 2026 — Gazi Üniversitesi Uzaktan Eğitim Merkezi (GUZEM)</p>
+        </div>
+    </section>
+
+    <!-- Content -->
+    <section class="section">
+        <div class="container" style="max-width: 860px; margin: 0 auto;">
+
+            <!-- Intro Card -->
+            <div data-aos="fade-up" style="background: var(--primary-50); border-left: 4px solid var(--primary-600); border-radius: var(--radius-md); padding: 20px 24px; margin-bottom: 40px;">
+                <p style="color: var(--primary-800); font-size: 15px; line-height: 1.7; margin: 0;">
+                    Bu sayfada belirtilen koşullar, <strong>Gazi Üniversitesi Uzaktan Eğitim Merkezi (GUZEM)</strong> platformunu kullanımınızı düzenler. Platformumuzu ziyaret eden, bir hesaba kaydolan veya hizmetlerimizden faydalanan herkes, bu Kullanım Koşulları'nı okumuş, anlamış ve kabul etmiş sayılır.
+                </p>
+            </div>
+
+            <!-- Section 1 -->
+            <div data-aos="fade-up" style="margin-bottom: 36px;">
+                <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">1</span>
+                    Hizmetlerin Kullanımı
+                </h2>
+                <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                    <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">GUZEM, kullanıcılara çeşitli akademik, profesyonel ve kişisel gelişim eğitimleri sunan bir online platformdur.</p>
+                    <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0;">
+                        <li>Kullanıcılar, platform üzerinde sunulan eğitim içeriklerine erişim hakkı elde etmek için gerekli kayıt ve/veya ödeme prosedürlerini tamamlamalıdır.</li>
+                        <li>Sunulan eğitimler yalnızca bireysel kullanım içindir. İçeriklerin ticari amaçlarla kullanılması veya indirilerek dağıtılması yasaktır.</li>
+                        <li>Kullanıcılar, kayıt aşamasında verdikleri bilgilerin doğru, eksiksiz ve güncel olduğunu beyan ederler.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section 2 -->
+            <div data-aos="fade-up" style="margin-bottom: 36px;">
+                <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">2</span>
+                    Fikri Mülkiyet Hakları
+                </h2>
+                <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                    <p style="color: var(--text-muted); line-height: 1.7; margin: 0;">
+                        Platformda yer alan her türlü video, ses dosyası, metin, sunum, kod örneği, logo, grafik ve yazılım kodu <strong>Gazi Üniversitesi UZEM'in ve/veya ilgili eğitmenlerin fikri mülkiyetindedir</strong>. Söz konusu içeriklerin kopyalanması, çoğaltılması, üçüncü şahıslara iletilmesi veya kamuya açık platformlarda izinsiz olarak paylaşılması kesinlikle yasaktır ve telif hakları ihlali kapsamına girer.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Section 3 -->
+            <div data-aos="fade-up" style="margin-bottom: 36px;">
+                <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">3</span>
+                    Kullanıcı Yükümlülükleri ve Hesap Güvenliği
+                </h2>
+                <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                    <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0;">
+                        <li><strong>Hesap Paylaşımı:</strong> Hesabınıza ait giriş bilgileri (kullanıcı adı ve şifre) size özeldir. Bu bilgileri üçüncü kişilerle paylaşamazsınız.</li>
+                        <li><strong>İhlal Durumu:</strong> Birden fazla farklı IP adresinden eşzamanlı veya ardışık tutarsız girişler tespit edildiğinde hesabınız güvenlik amacıyla askıya alınabilir.</li>
+                        <li><strong>Davranış Kuralları:</strong> Tartışma forumlarında, yorumlarda veya eğitmenlerle iletişimde saygılı bir dil kullanılması zorunludur. Küfür, hakaret, zorbalık gibi eylemler hesabın kalıcı olarak kapatılmasına yol açabilir.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Section 4 -->
+            <div data-aos="fade-up" style="margin-bottom: 36px;">
+                <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                    <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">4</span>
+                    Hizmetlerin Kesintisi ve Düzenlemeler
+                </h2>
+                <div style="background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                    <p style="color: var(--text-muted); line-height: 1.7; margin: 0;">
+                        GUZEM, platformun 7/24 kesintisiz çalışması için elinden geleni yapar ancak teknik bakım, güncelleme veya mücbir sebeplerden dolayı ortaya çıkabilecek kısa süreli kesintilerden sorumlu tutulamaz. Ek olarak, GUZEM dilediği zaman platformdaki özellikleri, kursları yapısal olarak değiştirme veya yayından kaldırma hakkını saklı tutar.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Contact CTA -->
+            <div data-aos="fade-up" style="text-align: center; padding: 32px; background: var(--primary-50); border-radius: var(--radius-lg); margin-bottom: 16px;">
+                <h4 style="color: var(--primary-800); margin-bottom: 8px;">Kabul Ettiğiniz Şartlar</h4>
+                <p style="color: var(--text-muted); margin-bottom: 16px;">Platformu kullanarak bu metni ve gizlilik politikamızı peşinen onaylamış sayılırsınız.</p>
+                <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                    <a href="gizlilik.html" class="btn btn-primary">Gizlilik Politikası</a>
+                    <a href="kvkk.html" class="btn btn-secondary" style="background: transparent; border: 2px solid var(--primary-600); color: var(--primary-600); padding: 10px 24px; border-radius: var(--radius-md); font-weight: 600; text-decoration: none;">KVKK Metni</a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="../assets/img/Gazi_Universitesi_logo.png" alt="Gazi Üniversitesi" class="gazi-logo">
+                        <span class="footer-logo-divider"></span>
+                        <span style="color: #fff; font-weight: 700;">GUZEM</span>
+                    </div>
+                    <p>Türkiye'nin önde gelen online eğitim platformu. Kariyerinizi bir adım öteye taşıyın.</p>
+                    <div class="footer-social">
+                        <a href="https://www.facebook.com/GaziUniversitesi.1926" target="_blank" title="Facebook" style="padding: 0; overflow: hidden; background: transparent;"><img src="../assets/img/Facebook Logo.jpg" alt="Facebook" style="width: 100%; height: 100%; object-fit: cover;"></a>
+                        <a href="https://www.linkedin.com/school/gazi-university/posts/?feedView=all" target="_blank" title="LinkedIn" style="padding: 0; overflow: hidden; background: transparent;"><img src="../assets/img/LinkedIn Logo.png" alt="LinkedIn" style="width: 100%; height: 100%; object-fit: cover;"></a>
+                        <a href="https://www.instagram.com/gaziuniuzem/" target="_blank" title="Instagram" style="padding: 0; overflow: hidden; background: transparent;"><img src="../assets/img/İnstagram Logo.jpg" alt="Instagram" style="width: 100%; height: 100%; object-fit: cover;"></a>
+                        <a href="https://www.youtube.com/@GaziÜniversitesi-l4w" target="_blank" title="YouTube" style="padding: 0; overflow: hidden; background: transparent;"><img src="../assets/img/Youtube Logo.png" alt="YouTube" style="width: 100%; height: 100%; object-fit: cover;"></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="egitimler.html">Eğitimler</a></li>
+                        <li><a href="egitmenler.html">Eğitmenler</a></li>
+                        <li><a href="blog.html">Blog / Topluluk</a></li>
+                        <li><a href="kariyer.html">Kariyer</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Destek</h4>
+                    <ul>
+                        <li><a href="iletisim.html">İletişim</a></li>
+                        <li><a href="sss.html">SSS</a></li>
+                        <li><a href="#">Yardım Merkezi</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Kurumsal</h4>
+                    <ul>
+                        <li><a href="hakkimizda.html">Hakkımızda</a></li>
+                        <li><a href="gizlilik.html">Gizlilik Politikası</a></li>
+                        <li><a href="#">Kullanım Koşulları</a></li>
+                        <li><a href="kvkk.html">KVKK</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; color: rgba(255,255,255,0.6);">
+                &copy; 2026 GUZEM. Tüm hakları saklıdır.
+            </div>
+        </div>
+    </footer>
+
+    <script src="../assets/js/data.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+      AOS.init({ duration: 800, once: true, offset: 50, easing: 'ease-out-cubic' });
+    </script>
+    <!-- Left Canvas Sidebar -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <aside class="side-drawer" id="sideDrawer">
+        <div class="drawer-header">
+            <h3>Daha Fazlasını Keşfet</h3>
+            <button class="drawer-close" id="drawerClose">&times;</button>
+        </div>
+        <div class="drawer-content">
+            <a href="kariyer.html" class="drawer-link"><span class="dl-icon">🎯</span> Kariyer Yolları</a>
+            <a href="sss.html" class="drawer-link"><span class="dl-icon">❓</span> Sıkça Sorulan Sorular</a>
+            <a href="iletisim.html" class="drawer-link"><span class="dl-icon">✉️</span> İletişim</a>
+            <a href="blog.html" class="drawer-link"><span class="dl-icon">👥</span> Topluluk ve Blog</a>
+            <a href="kvkk.html" class="drawer-link"><span class="dl-icon">🔒</span> KVKK</a>
+            <a href="gizlilik.html" class="drawer-link"><span class="dl-icon">📋</span> Gizlilik Politikası</a>
+            
+            <div class="drawer-divider"></div>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 8px;">GUZEM</p>
+            <div class="nav-social" style="display: flex; gap: 8px;">
+                <a href="https://www.facebook.com/GaziUniversitesi.1926" target="_blank" style="width: 32px; height: 32px; background: #fff; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;"><img src="../assets/img/Facebook Logo.jpg" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+                <a href="https://www.linkedin.com/school/gazi-university/posts/?feedView=all" target="_blank" style="width: 32px; height: 32px; background: #fff; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;"><img src="../assets/img/LinkedIn Logo.png" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+                <a href="https://www.instagram.com/gaziuniuzem/" target="_blank" style="width: 32px; height: 32px; background: #fff; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;"><img src="../assets/img/İnstagram Logo.jpg" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+                <a href="https://www.youtube.com/@GaziÜniversitesi-l4w" target="_blank" style="width: 32px; height: 32px; background: #fff; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;"><img src="../assets/img/Youtube Logo.png" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Floating Contact Button -->
+    <a href="iletisim.html" class="floating-contact" id="floatingContact" title="İletişime Geçin">💬</a>
+</body>
+</html>

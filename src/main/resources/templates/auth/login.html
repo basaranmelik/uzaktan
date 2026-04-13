@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GUZEM platformuna giriş yapın.">
+    <title>Giriş Yap | Gazi Üniversitesi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a6e 50%, #0f172a 100%);
+            display: flex;
+            font-family: 'Inter', sans-serif;
+            padding: 60px 24px;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(76,110,245,0.18) 0%, transparent 70%);
+            top: -200px; right: -150px;
+            pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(32,201,151,0.12) 0%, transparent 70%);
+            bottom: -150px; left: -100px;
+            pointer-events: none;
+        }
+        .bg-watermark {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vmin; height: 100vmin;
+            object-fit: contain;
+            opacity: 0.18;
+            filter: blur(4px);
+            mix-blend-mode: screen;
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+        }
+        .back-home {
+            position: fixed;
+            top: 20px; left: 24px;
+            display: flex; align-items: center; gap: 6px;
+            color: rgba(255,255,255,0.55);
+            text-decoration: none;
+            font-size: 13px; font-weight: 500;
+            transition: color 0.2s;
+            z-index: 10;
+        }
+        .back-home:hover { color: #fff; }
+        .auth-card {
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 48px 44px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.4);
+            position: relative;
+            z-index: 1;
+            margin: auto;
+        }
+        @media (max-width: 480px) {
+            .auth-card { padding: 32px 24px; }
+        }
+        .auth-logo {
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px;
+            margin-bottom: 32px;
+            text-decoration: none;
+        }
+        .auth-logo img {
+            width: 46px; height: 46px;
+            background: #fff; border-radius: 50%;
+            padding: 2px; object-fit: contain;
+        }
+        .auth-logo-divider {
+            width: 1px; height: 28px;
+            background: rgba(255,255,255,0.3);
+        }
+        .auth-logo span {
+            font-size: 22px; font-weight: 800;
+            color: #fff; letter-spacing: -0.5px;
+        }
+        .auth-title {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .auth-title h1 {
+            font-size: 24px; font-weight: 700;
+            color: #fff; margin: 0 0 6px 0;
+        }
+        .auth-title p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.55);
+            margin: 0;
+        }
+        .btn-edevlet {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #e30a17, #be0b14);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 16px rgba(227,10,23,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+        }
+        .btn-edevlet:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(227,10,23,0.45);
+        }
+        .btn-edevlet svg { width: 20px; height: 20px; fill: currentColor; }
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.12);
+        }
+        .divider span {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .alert-box {
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 13.5px;
+            font-weight: 500;
+            margin-bottom: 18px;
+            display: flex; align-items: flex-start; gap: 8px;
+        }
+        .alert-error   { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: #fca5a5; }
+        .alert-success { background: rgba(32,201,151,0.12); border: 1px solid rgba(32,201,151,0.3); color: #6ee7b7; }
+        .alert-warning { background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.3); color: #fcd34d; }
+        .form-field { margin-bottom: 16px; }
+        .form-field label {
+            display: block;
+            font-size: 13px; font-weight: 600;
+            color: rgba(255,255,255,0.75);
+            margin-bottom: 7px; letter-spacing: 0.2px;
+        }
+        .form-field input {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.07);
+            border: 1.5px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            font-size: 14px; color: #fff;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-field input::placeholder { color: rgba(255,255,255,0.3); }
+        .form-field input:focus {
+            border-color: #4c6ef5;
+            background: rgba(76,110,245,0.1);
+            box-shadow: 0 0 0 3px rgba(76,110,245,0.2);
+        }
+        .form-options {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px; margin-top: 4px;
+        }
+        .remember-me {
+            display: flex; align-items: center; gap: 7px;
+            cursor: pointer;
+        }
+        .remember-me input[type="checkbox"] {
+            width: 15px; height: 15px;
+            accent-color: #4c6ef5; cursor: pointer;
+        }
+        .remember-me span { font-size: 13px; color: rgba(255,255,255,0.6); user-select: none; }
+        .btn-auth {
+            width: 100%; padding: 13px;
+            background: linear-gradient(135deg, #4c6ef5, #3b5bdb);
+            color: #fff; border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 16px rgba(76,110,245,0.4);
+            letter-spacing: 0.2px;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 24px;
+        }
+        .btn-auth:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(76,110,245,0.5);
+        }
+        .register-box {
+            background: rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .register-box p {
+            font-size: 13.5px;
+            color: rgba(255,255,255,0.6);
+            margin: 0 0 12px 0;
+            line-height: 1.5;
+        }
+        .btn-register-outline {
+            display: inline-block; width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            border: 1.5px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            font-size: 14.5px; font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .btn-register-outline:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: rgba(255,255,255,0.4);
+            transform: translateY(-1px);
+        }
+    </style>
+</head>
+<body>
+
+<img th:src="@{/images/gazi-logo.png}" alt="" class="bg-watermark">
+
+<a th:href="@{/}" class="back-home">← Ana Sayfaya Dön</a>
+
+<div class="auth-card">
+
+    <a th:href="@{/}" class="auth-logo">
+        <img th:src="@{/images/gazi-logo.png}" alt="Gazi Üniversitesi">
+        <div class="auth-logo-divider"></div>
+        <span>GUZEM</span>
+    </a>
+
+    <div class="auth-title">
+        <h1>Hesabınıza Giriş Yapın</h1>
+        <p>Eğitimlere erişmek için giriş yapın.</p>
+    </div>
+
+    <button type="button" class="btn-edevlet" onclick="alert('Şu an e-Devlet entegrasyonu aktif değildir, sadece görsel bir tasarımdır.')">
+        <svg width="28" height="22" viewBox="28 18 54 44" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <mask id="crescentMask">
+              <rect x="0" y="0" width="120" height="80" fill="white" />
+              <circle cx="56.25" cy="40" r="16" fill="black" />
+            </mask>
+          </defs>
+          <circle cx="50" cy="40" r="20" fill="white" mask="url(#crescentMask)"/>
+          <polygon points="80,40 68.2,36.2 76.6,46.2 72.5,31.5 72.5,48.5 76.6,33.8 68.2,43.8" fill="white"/>
+        </svg>
+        e-Devlet ile Giriş Yap
+    </button>
+
+    <div class="divider"><span>veya sistem girişi</span></div>
+
+    <div th:if="${param.error}" class="alert-box alert-error">
+        <i class="bi bi-exclamation-triangle-fill"></i> E-posta veya şifre hatalı.
+    </div>
+    <div th:if="${param.logout}" class="alert-box alert-success">
+        <i class="bi bi-check-circle-fill"></i> Başarıyla çıkış yapıldı.
+    </div>
+    <div th:if="${param['kayit'] == 'basarili'}" class="alert-box alert-success">
+        <i class="bi bi-check-circle-fill"></i> Kayıt başarılı! Giriş yapabilirsiniz.
+    </div>
+    <div th:if="${param['suresi-doldu']}" class="alert-box alert-warning">
+        <i class="bi bi-hourglass-split"></i> Oturumunuz sona erdi. Lütfen tekrar giriş yapın.
+    </div>
+
+    <form th:action="@{/giris}" method="post">
+        <input type="hidden" name="sonra" th:value="${param.sonra}"/>
+
+        <div class="form-field">
+            <label for="email">E-posta</label>
+            <input type="email" id="email" name="email"
+                   placeholder="E-posta adresinizi girin" required autofocus>
+        </div>
+
+        <div class="form-field">
+            <label for="password">Şifre</label>
+            <input type="password" id="password" name="password"
+                   placeholder="••••••••" required>
+        </div>
+
+        <div class="form-options">
+            <label class="remember-me">
+                <input type="checkbox" name="remember-me">
+                <span>Beni hatırla</span>
+            </label>
+        </div>
+
+        <button type="submit" class="btn-auth">Giriş Yap</button>
+    </form>
+
+    <div class="register-box">
+        <p>Sistemde henüz kaydınız yok mu?</p>
+        <a th:href="@{/kayit-ol}" class="btn-register-outline">Ücretsiz Kayıt Ol</a>
+    </div>
+
+</div>
+
+</body>
+</html>

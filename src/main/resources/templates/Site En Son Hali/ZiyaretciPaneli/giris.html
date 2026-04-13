@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="Gazi_Universitesi_logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GUZEM platformuna giriş yapın.">
+    <title>Giriş Yap — GUZEM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a6e 50%, #0f172a 100%);
+            display: flex;
+            font-family: 'Inter', sans-serif;
+            padding: 60px 24px; /* Mobilde yukarı ve aşağıda boşluk olsun */
+            position: relative;
+            overflow-x: hidden; /* Sadece y ekseninde kaydırmaya izin ver */
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+
+        /* Arka plan dekoratif daireler */
+        body::before {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(76,110,245,0.18) 0%, transparent 70%);
+            top: -200px;
+            right: -150px;
+            pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(32,201,151,0.12) 0%, transparent 70%);
+            bottom: -150px;
+            left: -100px;
+            pointer-events: none;
+        }
+
+        .bg-watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vmin;
+            height: 100vmin;
+            object-fit: contain;
+            opacity: 0.20;
+            filter: blur(4px);
+            mix-blend-mode: screen; /* Siyah arkaplanı veya pürüzleri uzay boşluğuna yedirir */
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+        }
+
+        .auth-card {
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 48px 44px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.4);
+            position: relative;
+            z-index: 1;
+            margin: auto; /* Flex container içinde otomatik ortalanma ve scroll bozulmasını önleme */
+        }
+
+        @media (max-width: 480px) {
+            .auth-card { padding: 32px 24px; }
+        }
+
+        .auth-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 32px;
+            text-decoration: none;
+        }
+        .auth-logo img { width: 46px; height: 46px; background: #fff; border-radius: 50%; padding: 2px; object-fit: contain; box-sizing: border-box; }
+        .auth-logo span {
+            font-size: 22px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: -0.5px;
+        }
+        .auth-logo-divider {
+            width: 1px;
+            height: 28px;
+            background: rgba(255,255,255,0.3);
+        }
+
+        .auth-title {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+        .auth-title h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fff;
+            margin: 0 0 6px 0;
+        }
+        .auth-title p {
+            font-size: 14px;
+            color: rgba(255,255,255,0.55);
+            margin: 0;
+        }
+
+        /* E-Devlet Butonu */
+        .btn-edevlet {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #e30a17, #be0b14);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 16px rgba(227,10,23,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.3px;
+        }
+        .btn-edevlet:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(227,10,23,0.45);
+        }
+        .btn-edevlet svg { width: 20px; height: 20px; fill: currentColor; }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.12);
+        }
+        .divider span {
+            font-size: 12px;
+            color: rgba(255,255,255,0.4);
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-field {
+            margin-bottom: 16px;
+        }
+        .form-field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.75);
+            margin-bottom: 7px;
+            letter-spacing: 0.2px;
+        }
+        .form-field input {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.07);
+            border: 1.5px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            font-size: 14px;
+            color: #fff;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+        }
+        .form-field input::placeholder { color: rgba(255,255,255,0.3); }
+        .form-field input:focus {
+            border-color: #4c6ef5;
+            background: rgba(76,110,245,0.1);
+            box-shadow: 0 0 0 3px rgba(76,110,245,0.2);
+        }
+
+        .form-options {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+            margin-top: 4px;
+        }
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            cursor: pointer;
+        }
+        .remember-me input[type="checkbox"] {
+            width: 15px;
+            height: 15px;
+            accent-color: #4c6ef5;
+            cursor: pointer;
+        }
+        .remember-me span {
+            font-size: 13px;
+            color: rgba(255,255,255,0.6);
+            user-select: none;
+        }
+        .forgot-link {
+            font-size: 13px;
+            color: #93c5fd;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .forgot-link:hover { text-decoration: underline; }
+
+        .btn-auth {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #4c6ef5, #3b5bdb);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+            box-shadow: 0 4px 16px rgba(76,110,245,0.4);
+            letter-spacing: 0.2px;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 24px;
+        }
+        .btn-auth:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(76,110,245,0.5);
+        }
+
+        /* Yeni: Üye Ol Kartı */
+        .register-box {
+            background: rgba(0,0,0,0.15);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .register-box p {
+            font-size: 13.5px;
+            color: rgba(255,255,255,0.6);
+            margin: 0 0 12px 0;
+            line-height: 1.5;
+        }
+        .btn-register-outline {
+            display: inline-block;
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            border: 1.5px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            font-size: 14.5px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            box-sizing: border-box;
+        }
+        .btn-register-outline:hover {
+            background: rgba(255,255,255,0.12);
+            border-color: rgba(255,255,255,0.4);
+            transform: translateY(-1px);
+        }
+
+        .back-home {
+            position: fixed;
+            top: 20px;
+            left: 24px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255,255,255,0.55);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: color 0.2s;
+            z-index: 10;
+        }
+        .back-home:hover { color: #fff; }
+
+        /* Role Tabs */
+        .role-tab {
+            flex: 1;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 13.5px;
+            font-weight: 600;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: color 0.3s;
+            position: relative;
+            z-index: 2;
+            user-select: none;
+        }
+        .role-tab.active { color: #fff; }
+
+        .field-error {
+            font-size: 12px;
+            color: #fca5a5;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <img src="../assets/img/Gazi_Universitesi_logo.png" alt="" class="bg-watermark">
+
+    <a href="../index.html" class="back-home">← Ana Sayfaya Dön</a>
+
+    <div class="auth-card">
+
+        <!-- Logo -->
+        <a href="../index.html" class="auth-logo">
+            <img src="../assets/img/Gazi_Universitesi_logo.png" alt="Gazi Üniversitesi">
+            <div class="auth-logo-divider"></div>
+            <span>GUZEM</span>
+        </a>
+
+        <!-- Role Switcher -->
+        <div class="role-tabs" style="padding: 4px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.05); margin-bottom: 24px;">
+            <div style="position: relative; display: flex; width: 100%;">
+                <div class="tab-indicator" id="tab-indicator" style="position: absolute; top:0; left:0; height: 100%; width: 33.333%; background: rgba(255,255,255,0.15); border-radius: 8px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;"></div>
+                <div class="role-tab active" onclick="switchRole(0, 'Öğrenci')">Öğrenci</div>
+                <div class="role-tab" onclick="switchRole(1, 'Eğitmen')">Eğitmen</div>
+                <div class="role-tab" onclick="switchRole(2, 'Yönetici')">Yönetici</div>
+            </div>
+        </div>
+
+        <!-- Başlık -->
+        <div class="auth-title">
+            <h1 id="auth-main-title">Öğrenci Girişi</h1>
+            <p id="auth-sub-title">Eğitimlere erişmek için hesabınıza giriş yapın.</p>
+        </div>
+
+        <!-- e-Devlet ile Giriş -->
+        <button class="btn-edevlet" onclick="alert('e-Devlet kapısına yönlendiriliyorsunuz...')">
+            <svg width="28" height="22" viewBox="28 18 54 44" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <mask id="crescentMask">
+                  <rect x="0" y="0" width="120" height="80" fill="white" />
+                  <circle cx="56.25" cy="40" r="16" fill="black" />
+                </mask>
+              </defs>
+              <circle cx="50" cy="40" r="20" fill="white" mask="url(#crescentMask)"/>
+              <polygon points="80,40 68.2,36.2 76.6,46.2 72.5,31.5 72.5,48.5 76.6,33.8 68.2,43.8" fill="white"/>
+            </svg>
+            e-Devlet ile Giriş Yap
+        </button>
+
+        <div class="divider"><span>veya sistem girişi</span></div>
+
+        <!-- Form -->
+        <form id="login-form" onsubmit="handleLogin(event)" novalidate>
+
+            <div class="form-field">
+                <label for="login-email">E-posta Adresi veya T.C. Kimlik No</label>
+                <input type="text" id="login-email" placeholder="ornek@email.com" autocomplete="email" required>
+                <div class="field-error" id="email-error">Lütfen geçerli bir bilgi giriniz.</div>
+            </div>
+
+            <div class="form-field">
+                <label for="login-password">Şifre</label>
+                <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required minlength="6">
+                <div class="field-error" id="pass-error">Şifre en az 6 karakter olmalıdır.</div>
+            </div>
+
+            <div class="form-options">
+                <label class="remember-me">
+                    <input type="checkbox" id="remember">
+                    <span>Beni hatırla</span>
+                </label>
+                <a href="#" class="forgot-link">Şifremi unuttum</a>
+            </div>
+
+            <button type="submit" class="btn-auth" id="login-btn">Giriş Yap</button>
+        </form>
+
+        <!-- Kayıt Ol Kutusu -->
+        <div class="register-box">
+            <p>Sistemde henüz kaydınız yok mu?</p>
+            <a href="kayit.html" class="btn-register-outline">Bireysel Üye Ol</a>
+        </div>
+
+    </div>
+
+    <script>
+        function switchRole(index, roleName) {
+            const tabs = document.querySelectorAll('.role-tab');
+            tabs.forEach(t => t.classList.remove('active'));
+            tabs[index].classList.add('active');
+            
+            const indicator = document.getElementById('tab-indicator');
+            indicator.style.transform = `translateX(${index * 100}%)`;
+            
+            const title = document.getElementById('auth-main-title');
+            const subTitle = document.getElementById('auth-sub-title');
+            
+            title.textContent = roleName + ' Girişi';
+            
+            if(roleName === 'Öğrenci') {
+                subTitle.textContent = 'Eğitimlere erişmek için hesabınıza giriş yapın.';
+            } else if(roleName === 'Eğitmen') {
+                subTitle.textContent = 'Derslerinizi ve öğrencilerinizi yönetmek için giriş yapın.';
+            } else {
+                subTitle.textContent = 'Sistem kontrol paneline erişim sağlayın.';
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email');
+            const pass  = document.getElementById('login-password');
+            const emailErr = document.getElementById('email-error');
+            const passErr  = document.getElementById('pass-error');
+            let valid = true;
+
+            if (!email.value) {
+                emailErr.style.display = 'block';
+                email.style.borderColor = '#f87171';
+                valid = false;
+            } else {
+                emailErr.style.display = 'none';
+                email.style.borderColor = '';
+            }
+            if (!pass.value || pass.value.length < 6) {
+                passErr.style.display = 'block';
+                pass.style.borderColor = '#f87171';
+                valid = false;
+            } else {
+                passErr.style.display = 'none';
+                pass.style.borderColor = '';
+            }
+            if (!valid) return;
+
+            const btn = document.getElementById('login-btn');
+            btn.textContent = 'Giriş yapılıyor...';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.textContent = '✓ Giriş Başarılı!';
+                btn.style.background = 'linear-gradient(135deg, #20c997, #12b886)';
+                setTimeout(() => window.location.href = '../OgrenciPaneli/index.html', 1000);
+            }, 1200);
+        }
+    </script>
+
+    <!-- Floating Contact Button -->
+    <a href="iletisim.html" class="floating-contact" id="floatingContact" title="İletişime Geçin">💬</a>
+</body>
+</html>

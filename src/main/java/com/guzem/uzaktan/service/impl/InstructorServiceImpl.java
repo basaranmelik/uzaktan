@@ -1,0 +1,88 @@
+package com.guzem.uzaktan.service.impl;
+
+import com.guzem.uzaktan.dto.request.InstructorCreateRequest;
+import com.guzem.uzaktan.dto.request.InstructorUpdateRequest;
+import com.guzem.uzaktan.dto.response.InstructorResponse;
+import com.guzem.uzaktan.mapper.InstructorMapper;
+import com.guzem.uzaktan.model.Instructor;
+import com.guzem.uzaktan.repository.InstructorRepository;
+import com.guzem.uzaktan.exception.ResourceNotFoundException;
+import com.guzem.uzaktan.service.FileStorageService;
+import com.guzem.uzaktan.service.InstructorService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Transactional(readOnly = true)
+public class InstructorServiceImpl implements InstructorService {
+
+    private final InstructorRepository instructorRepository;
+    private final InstructorMapper instructorMapper;
+    private final FileStorageService fileStorageService;
+
+    @Override
+    public List<InstructorResponse> findAll() {
+        return instructorRepository.findAllByOrderByNameAsc()
+                .stream()
+                .map(instructorMapper::toResponse)
+                .toList();
+    }
+
+    @Override
+    public InstructorResponse findById(Long id) {
+        return instructorMapper.toResponse(loadInstructor(id));
+    }
+
+    @Override
+    @Transactional
+    public InstructorResponse create(InstructorCreateRequest request) {
+        Instructor instructor = new Instructor();
+        instructor.setName(request.getName());
+        instructor.setBio(request.getBio());
+        instructor.setExpertise(request.getExpertise());
+        handlePhotoUpload(instructor, request.getPhoto());
+
+        return instructorMapper.toResponse(instructorRepository.save(instructor));
+    }
+
+    @Override
+    @Transactional
+    public InstructorResponse update(Long id, InstructorUpdateRequest request) {
+        Instructor instructor = loadInstructor(id);
+        instructor.setName(request.getName());
+        instructor.setBio(request.getBio());
+        instructor.setExpertise(request.getExpertise());
+        handlePhotoUpload(instructor, request.getPhoto());
+
+        return instructorMapper.toResponse(instructorRepository.save(instructor));
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        Instructor instructor = loadInstructor(id);
+        instructorRepository.delete(instructor);
+    }
+
+    private Instructor loadInstructor(Long id) {
+        return instructorRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Eğitmen", "id", id));
+    }
+
+    private void handlePhotoUpload(Instructor instructor, MultipartFile photo) {
+        if (photo != null && !photo.isEmpty()) {
+            try {
+                String photoPath = fileStorageService.storeImage(photo);
+                instructor.setPhotoUrl("/uploads/" + photoPath);
+            } catch (IOException e) {
+                throw new RuntimeException("Resim yüklenirken hata oluştu: " + e.getMessage());
+            }
+        }
+    }
+}

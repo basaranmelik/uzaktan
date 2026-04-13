@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yeni Kurs — GUZEM Admin</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .form-section {
+      border:1px solid var(--border); border-radius:12px;
+      padding:1.5rem; margin-bottom:1.5rem; background:var(--bg);
+    }
+    .form-section-title {
+      font-size:0.72rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.8px; color:var(--text-muted); margin:0 0 1.25rem 0;
+      padding-bottom:0.75rem; border-bottom:1px solid var(--gray-100);
+      display:flex; align-items:center; gap:6px;
+    }
+    .form-section-title i { font-size:0.9rem; }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/admin}">Admin</a> <span class="separator">›</span>
+      <a th:href="@{/admin/kurslar}">Kurslar</a> <span class="separator">›</span>
+      <span class="current">Yeni Kurs</span>
+    </div>
+    <h1><i class="bi bi-plus-circle-fill"></i> Yeni Kurs Oluştur</h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:740px;">
+    <form th:action="@{/admin/kurslar}" th:object="${courseCreateRequest}" method="post">
+
+      <!-- Temel Bilgiler -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-card-text"></i> Temel Bilgiler</div>
+
+        <div class="form-group">
+          <label>Kurs Başlığı *</label>
+          <input type="text" th:field="*{title}" class="form-control"
+                 th:classappend="${#fields.hasErrors('title')} ? ' is-invalid'"
+                 placeholder="Kursun tam adı" required autofocus>
+          <div class="invalid-feedback" th:errors="*{title}" th:if="${#fields.hasErrors('title')}"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Açıklama</label>
+          <textarea th:field="*{description}" class="form-control" rows="4"
+                    placeholder="Kursun içeriği, hedef kitlesi, kazanımlar..."></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Kategori *</label>
+            <select th:field="*{category}" class="form-control"
+                    th:classappend="${#fields.hasErrors('category')} ? ' is-invalid'" required>
+              <option value="">Seçiniz...</option>
+              <option th:each="cat : ${categories}"
+                      th:value="${cat.name()}"
+                      th:text="${cat.displayName}"></option>
+            </select>
+            <div class="invalid-feedback" th:errors="*{category}" th:if="${#fields.hasErrors('category')}"></div>
+          </div>
+          <div class="form-group">
+            <label>Fiyat (₺) *</label>
+            <input type="number" th:field="*{price}" class="form-control"
+                   th:classappend="${#fields.hasErrors('price')} ? ' is-invalid'"
+                   step="0.01" min="0" placeholder="0" required>
+            <div class="invalid-feedback" th:errors="*{price}" th:if="${#fields.hasErrors('price')}"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tarih & Süre -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-calendar3"></i> Tarih &amp; Süre</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Başlangıç Tarihi *</label>
+            <input type="date" th:field="*{startDate}" class="form-control"
+                   th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                   th:classappend="${#fields.hasErrors('startDate')} ? ' is-invalid'" required>
+            <div class="invalid-feedback" th:errors="*{startDate}" th:if="${#fields.hasErrors('startDate')}"></div>
+          </div>
+          <div class="form-group">
+            <label>Bitiş Tarihi *</label>
+            <input type="date" th:field="*{endDate}" class="form-control"
+                   th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                   th:classappend="${#fields.hasErrors('endDate')} ? ' is-invalid'" required>
+            <div class="invalid-feedback" th:errors="*{endDate}" th:if="${#fields.hasErrors('endDate')}"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Süre (Saat)</label>
+            <input type="number" th:field="*{hours}" class="form-control" min="1" placeholder="40">
+          </div>
+          <div class="form-group">
+            <label>Modül Sayısı *</label>
+            <input type="number" th:field="*{module}" class="form-control"
+                   th:classappend="${#fields.hasErrors('module')} ? ' is-invalid'"
+                   min="1" placeholder="8" required>
+            <div class="invalid-feedback" th:errors="*{module}" th:if="${#fields.hasErrors('module')}"></div>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">
+              <i class="bi bi-info-circle"></i> Bu kursa yüklenecek video sayısını belirler.
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Kontenjan *</label>
+            <input type="number" th:field="*{quota}" class="form-control"
+                   th:classappend="${#fields.hasErrors('quota')} ? ' is-invalid'"
+                   min="1" placeholder="30" required>
+            <div class="invalid-feedback" th:errors="*{quota}" th:if="${#fields.hasErrors('quota')}"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Eğitmen -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-person-workspace"></i> Eğitmen Bilgisi</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Eğitmen Adı <span style="color:var(--text-muted);font-weight:400;">(görüntülenen)</span></label>
+            <select th:field="*{instructorName}" class="form-control">
+              <option value="">— Seçiniz —</option>
+              <option th:each="ins : ${instructors}"
+                      th:value="${ins.name}"
+                      th:text="${ins.name}"></option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Sistem Kullanıcısı (Öğretmen) <span style="color:var(--text-muted);font-weight:400;">(isteğe bağlı)</span></label>
+            <select th:field="*{instructorId}" class="form-control">
+              <option value="">— Seçilmedi —</option>
+              <option th:each="t : ${teachers}"
+                      th:value="${t.id}"
+                      th:text="${t.firstName + ' ' + t.lastName + ' (' + t.email + ')'}"></option>
+            </select>
+            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">
+              <i class="bi bi-info-circle"></i> Seçilen öğretmen bu kursa erişebilir ve ödev ekleyebilir.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Butonlar -->
+      <div style="display:flex;gap:1rem;">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="bi bi-check-lg"></i> Kursu Oluştur
+        </button>
+        <a th:href="@{/admin/kurslar}" class="btn btn-secondary btn-lg">İptal</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

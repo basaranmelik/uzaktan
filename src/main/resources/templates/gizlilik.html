@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GUZEM Gizlilik Politikası. Kişisel verilerinizi nasıl koruduğumuzu öğrenin.">
+  <title>Gizlilik Politikası — GUZEM</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="breadcrumb">
+            <a th:href="@{/}">Ana Sayfa</a><span class="separator">›</span><span class="current">Gizlilik Politikası</span>
+        </div>
+        <h1>Gizlilik Politikası</h1>
+        <p>Son güncelleme: Mart 2026 — Gazi Üniversitesi Uzaktan Eğitim Merkezi (GUZEM)</p>
+    </div>
+</section>
+
+<!-- Privacy Policy Content -->
+<section class="section">
+    <div class="container" style="max-width: 860px; margin: 0 auto;">
+
+        <!-- Intro Card -->
+        <div class="fade-in" style="background: var(--primary-50); border-left: 4px solid var(--primary-600); border-radius: 8px; padding: 20px 24px; margin-bottom: 40px;">
+            <p style="color: var(--primary-800); font-size: 15px; line-height: 1.7; margin: 0;">
+                Bu Gizlilik Politikası; <strong>Gazi Üniversitesi Uzaktan Eğitim Merkezi (GUZEM)</strong> olarak platformumuzu kullanan ziyaretçi ve kullanıcılarımızın verilerini nasıl topladığımızı, kullandığımızı, sakladığımızı ve koruduğumuzu açıklamaktadır. Platformumuzu kullanmaya devam etmeniz, bu politikayı okuduğunuzu ve kabul ettiğinizi göstermektedir.
+            </p>
+        </div>
+
+        <!-- Section 1 -->
+        <div class="fade-in" style="margin-bottom: 36px;">
+            <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">1</span>
+                Topladığımız Bilgiler
+            </h2>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px;">
+                <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">GUZEM platformunu kullanmanız durumunda aşağıdaki bilgileri toplayabiliriz:</p>
+                <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0;">
+                    <li><strong>Hesap Bilgileri:</strong> Ad, soyad, e-posta adresi, kullanıcı adı ve şifre (şifreli olarak saklanır)</li>
+                    <li><strong>Profil Bilgileri:</strong> Fotoğraf, biyografi, ilgi alanları (isteğe bağlı)</li>
+                    <li><strong>İşlem Bilgileri:</strong> Satın alınan kurslar, ödeme geçmişi, fatura adresi</li>
+                    <li><strong>Kullanım Verileri:</strong> Gezilen sayfalar, tıklamalar, video ilerleme durumu, oturum süresi</li>
+                    <li><strong>Teknik Veriler:</strong> IP adresi, tarayıcı türü ve versiyonu, işletim sistemi, cihaz türü</li>
+                    <li><strong>İletişim Verileri:</strong> Destek talepleri, form mesajları, geri bildirimler</li>
+                    <li><strong>Çerez Verileri:</strong> Oturum çerezleri, tercih çerezleri ve analiz çerezleri</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="fade-in" style="margin-bottom: 36px;">
+            <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">2</span>
+                Bilgileri Nasıl Kullanıyoruz?
+            </h2>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px;">
+                <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">Topladığımız bilgileri aşağıdaki amaçlarla kullanmaktayız:</p>
+                <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0;">
+                    <li>Platformun temel eğitim hizmetlerini sağlamak</li>
+                    <li>Kullanıcı hesabı oluşturmak ve yönetmek</li>
+                    <li>Ödeme ve satın alma işlemlerini gerçekleştirmek</li>
+                    <li>Sertifika ve başarı belgesi düzenlemek</li>
+                    <li>Kullanıcı deneyimini kişiselleştirmek ve iyileştirmek</li>
+                    <li>Teknik destek ve müşteri hizmetleri sunmak</li>
+                    <li>Platform güvenliğini sağlamak ve kötüye kullanımı önlemek</li>
+                    <li>Yasal ve düzenleyici gereksinimlere uymak</li>
+                    <li>Eğitim içeriklerini kullanım verilerine göre geliştirmek</li>
+                    <li>Açık rızanız dahilinde bülten ve kampanya bildirimleri göndermek</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="fade-in" style="margin-bottom: 36px;">
+            <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">3</span>
+                Çerez (Cookie) Kullanımı
+            </h2>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px;">
+                <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">Platformumuzda üç tür çerez kullanılmaktadır:</p>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <div style="padding: 12px 16px; background: var(--primary-50); border-radius: 6px; border-left: 3px solid var(--primary-500);">
+                        <strong style="color: var(--primary-700);"><i class="bi bi-lock-fill"></i> Zorunlu Çerezler</strong>
+                        <p style="color: var(--text-muted); font-size: 14px; margin: 4px 0 0 0;">Oturum yönetimi ve güvenlik için zorunludur. Devre dışı bırakılamaz.</p>
+                    </div>
+                    <div style="padding: 12px 16px; background: #fff4e6; border-radius: 6px; border-left: 3px solid #e8590c;">
+                        <strong style="color: #c94a08;"><i class="bi bi-sliders"></i> Tercih Çerezleri</strong>
+                        <p style="color: var(--text-muted); font-size: 14px; margin: 4px 0 0 0;">Dil, görünüm ve kişisel tercihlerin hatırlanması için kullanılır.</p>
+                    </div>
+                    <div style="padding: 12px 16px; background: #e6fcf5; border-radius: 6px; border-left: 3px solid #20c997;">
+                        <strong style="color: #0f9672;"><i class="bi bi-bar-chart-fill"></i> Analiz Çerezleri</strong>
+                        <p style="color: var(--text-muted); font-size: 14px; margin: 4px 0 0 0;">Platform kullanımını anlamamıza yardımcı olur. Açık rızanıza bağlıdır.</p>
+                    </div>
+                </div>
+                <p style="color: var(--text-muted); font-size: 14px; margin: 16px 0 0 0;">Tarayıcı ayarlarınızdan çerezleri yönetebilir veya reddedebilirsiniz. Zorunlu olmayan çerezler için onayınızı geri alabilirsiniz.</p>
+            </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="fade-in" style="margin-bottom: 36px;">
+            <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">4</span>
+                Bilgilerinizi Kimlerle Paylaşıyoruz?
+            </h2>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px;">
+                <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">Kişisel verilerinizi yalnızca aşağıdaki taraflarla ve belirtilen koşullar dahilinde paylaşmaktayız:</p>
+                <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0;">
+                    <li><strong>Ödeme Hizmet Sağlayıcıları:</strong> İşleminizi güvenli şekilde tamamlamak için (kart numarası bizde saklanmaz)</li>
+                    <li><strong>Bulut Altyapı Sağlayıcıları:</strong> Platform verilerinin depolanması için</li>
+                    <li><strong>E-posta Sağlayıcıları:</strong> Bildirim, sertifika ve fatura iletişimi için</li>
+                    <li><strong>Yetkili Kamu Kurumları:</strong> Yasal yükümlülükler kapsamında talep olması halinde</li>
+                    <li><strong>Eğitim İçerik Ortakları:</strong> Yalnızca sertifika doğrulama süreçlerinde, sınırlı kapsamda</li>
+                </ul>
+                <div style="margin-top: 16px; padding: 14px; background: #fff4e6; border-radius: 6px;">
+                    <p style="color: #c94a08; font-size: 14px; margin: 0;"><i class="bi bi-exclamation-triangle-fill"></i> Kişisel verileriniz hiçbir koşulda ticari amaçlarla üçüncü taraflara <strong>satılmaz veya kiralanmaz</strong>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 5 -->
+        <div class="fade-in" style="margin-bottom: 36px;">
+            <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">5</span>
+                Veri Güvenliği
+            </h2>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px;">
+                <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">Verilerinizin güvenliğini ciddiye alıyoruz. Bu kapsamda uyguladığımız önlemler:</p>
+                <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0;">
+                    <li>Tüm veri iletiminde <strong>SSL/TLS şifreleme</strong> kullanılmaktadır</li>
+                    <li>Şifreler, geri döndürülemez <strong>bcrypt algoritması</strong> ile hash'lenerek saklanır</li>
+                    <li>Ödeme bilgileri platformumuzda tutulmaz; PCI-DSS uyumlu altyapıya yönlendirilir</li>
+                    <li>Sistemlere erişim, <strong>rol tabanlı yetkilendirme</strong> ile sınırlandırılmıştır</li>
+                    <li>Düzenli güvenlik taramaları ve sızma testleri yapılmaktadır</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 6 -->
+        <div class="fade-in" style="margin-bottom: 36px;">
+            <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">6</span>
+                Verilerin Saklanma Süresi
+            </h2>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px;">
+                <p style="color: var(--text-muted); line-height: 1.7; margin: 0;">
+                    Kişisel verileriniz; hesabınızın aktif olduğu süre boyunca veya hizmet sunmak için gerekli olduğu müddetçe saklanmaktadır. Yasal zorunluluk gerektiren finansal kayıtlar <strong>10 yıl</strong>, günlük (log) kayıtları <strong>1 yıl</strong>, iletişim talepleri ise <strong>5 yıl</strong> süreyle tutulmaktadır. Hesabınızı silmeniz durumunda verileriniz, yasal saklama süreleri saklı olmak kaydıyla <strong>30 gün</strong> içinde sistemlerimizden kaldırılır.
+                </p>
+            </div>
+        </div>
+
+        <!-- Section 7 -->
+        <div class="fade-in" style="margin-bottom: 36px;">
+            <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">7</span>
+                Üçüncü Taraf Bağlantıları
+            </h2>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px;">
+                <p style="color: var(--text-muted); line-height: 1.7; margin: 0;">
+                    GUZEM platformu, üçüncü taraflara ait web sitelerine veya hizmetlere bağlantı içerebilir (sosyal medya, harici kaynaklar vb.). Bu bağlantılara tıklamanız halinde söz konusu sitelerin kendi gizlilik politikaları geçerli olacaktır. GUZEM, üçüncü taraf sitelerin gizlilik uygulamalarından sorumlu tutulamaz.
+                </p>
+            </div>
+        </div>
+
+        <!-- Section 8 -->
+        <div class="fade-in" style="margin-bottom: 36px;">
+            <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">8</span>
+                Haklarınız ve Tercihleriniz
+            </h2>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px;">
+                <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">Verileriniz üzerinde aşağıdaki hakları kullanabilirsiniz:</p>
+                <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0 0 16px 0;">
+                    <li>Hakkınızda tutulan verileri <strong>görüntüleme ve kopyasını talep etme</strong></li>
+                    <li>Hatalı verilerin <strong>düzeltilmesini isteme</strong></li>
+                    <li>Belirli koşullarda verilerinizin <strong>silinmesini talep etme</strong></li>
+                    <li>Pazarlama iletişimlerinden <strong>çıkma (opt-out)</strong></li>
+                    <li>Daha önce verdiğiniz rızayı <strong>geri alma</strong></li>
+                    <li>Veri işleme konusunda <strong>itirazda bulunma</strong></li>
+                </ul>
+                <div style="padding: 14px; background: var(--primary-50); border-radius: 6px;">
+                    <p style="color: var(--primary-700); font-size: 14px; margin: 0;">
+                        <i class="bi bi-envelope-fill"></i> Bu haklarınızı kullanmak için <a th:href="@{/iletisim}" style="color: var(--primary-600); font-weight: 600;">iletişim sayfamızı</a> kullanabilir ya da <strong>guzem@gazi.edu.tr</strong> adresine yazabilirsiniz. Talepler 30 gün içinde yanıtlanmaktadır.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section 9 -->
+        <div class="fade-in" style="margin-bottom: 48px;">
+            <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">9</span>
+                Politika Değişiklikleri
+            </h2>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px;">
+                <p style="color: var(--text-muted); line-height: 1.7; margin: 0;">
+                    Bu Gizlilik Politikası zaman zaman güncellenebilir. Önemli değişiklikler yapılması halinde kullanıcılar kayıtlı e-posta adresleri üzerinden veya platform içi bildirimle önceden bilgilendirilecektir. Güncel politikanın son versiyonu her zaman bu sayfada yayımlanmaktadır. Son güncelleme tarihini sayfanın üst kısmından takip edebilirsiniz.
+                </p>
+            </div>
+        </div>
+
+        <!-- Contact CTA -->
+        <div class="fade-in" style="text-align: center; padding: 32px; background: var(--primary-50); border-radius: 12px; margin-bottom: 16px;">
+            <h4 style="color: var(--primary-800); margin-bottom: 8px;">Sorularınız mı var?</h4>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">Gizlilik politikamızla ilgili her türlü soru için bize ulaşın.</p>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a th:href="@{/iletisim}" class="btn btn-primary">İletişime Geç</a>
+                <a th:href="@{/kvkk}" class="btn btn-secondary" style="background: transparent; border: 2px solid var(--primary-600); color: var(--primary-600); padding: 10px 24px; border-radius: 8px; font-weight: 600; text-decoration: none;">KVKK Metni</a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

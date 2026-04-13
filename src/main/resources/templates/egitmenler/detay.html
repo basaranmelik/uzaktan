@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="tr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" th:content="'GUZEM eğitmeni ' + ${instructor.name} + ' hakkında bilgi alın.'">
+  <title th:text="${instructor.name} + ' — GUZEM'">Eğitmen | Gazi Üniversitesi</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}" th:with="activeMenu='instructors'"></div>
+
+<!-- Page Header -->
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/}">Ana Sayfa</a>
+      <span class="separator">›</span>
+      <a th:href="@{/egitmenler}">Eğitmenler</a>
+      <span class="separator">›</span>
+      <span class="current" th:text="${instructor.name}">Eğitmen</span>
+    </div>
+    <h1 th:text="${instructor.name}">Eğitmen Adı</h1>
+    <p th:text="${instructor.expertise}">Uzmanlık Alanı</p>
+  </div>
+</section>
+
+<!-- Instructor Detail -->
+<section class="section">
+  <div class="container">
+    <div class="instructor-detail-card fade-in">
+
+      <!-- Avatar -->
+      <div class="instructor-detail-avatar" th:style="${instructor.photoUrl != null ? 'background-image: url(' + instructor.photoUrl + '); background-size: cover; background-position: center;' : ''}">
+        <i th:unless="${instructor.photoUrl != null}" class="bi bi-person-circle"></i>
+      </div>
+
+      <!-- Info -->
+      <div class="instructor-detail-body">
+        <h2 th:text="${instructor.name}">Ad Soyad</h2>
+
+        <div class="instructor-detail-expertise">
+          <i class="bi bi-patch-check-fill"></i>
+          <span th:text="${instructor.expertise}">Uzmanlık Alanı</span>
+        </div>
+
+        <div class="instructor-detail-bio" th:if="${instructor.bio != null and !instructor.bio.isEmpty()}">
+          <h4><i class="bi bi-journal-text"></i> Hakkında</h4>
+          <p th:text="${instructor.bio}">Biyografi...</p>
+        </div>
+
+        <div class="instructor-detail-bio" th:if="${instructor.bio == null or instructor.bio.isEmpty()}">
+          <p style="color:var(--text-muted);font-style:italic;">Bu eğitmen için henüz biyografi eklenmemiştir.</p>
+        </div>
+
+        <div class="instructor-detail-actions">
+          <a th:href="@{/egitmenler}" class="btn btn-outline">
+            <i class="bi bi-arrow-left"></i> Tüm Eğitmenler
+          </a>
+          <a th:href="@{/egitimler}" class="btn btn-primary">
+            <i class="bi bi-collection-fill"></i> Eğitimleri İncele
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

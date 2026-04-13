@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GUZEM Sıkça Sorulan Sorular. Eğitimler, ödeme ve sertifikalar hakkında bilgi edinin.">
+  <title>Sıkça Sorulan Sorular | Gazi Üniversitesi UZEM</title>
+  
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <style>
+    .accordion-container {
+        display: flex; flex-direction: column; gap: 16px;
+    }
+    .accordion-item {
+        background: var(--bg); border: 1px solid var(--border);
+        border-radius: 12px; overflow: hidden; transition: 0.3s;
+    }
+    .accordion-header {
+        padding: 20px 24px; cursor: pointer; display: flex;
+        justify-content: space-between; align-items: center;
+        background: var(--bg-alt); transition: 0.3s;
+    }
+    .accordion-header:hover {
+        background: var(--primary-50);
+    }
+    .accordion-header h4 {
+        margin: 0; font-size: 16px; color: var(--primary-800);
+    }
+    .accordion-icon {
+        font-size: 14px; transition: transform 0.3s;
+    }
+    .accordion-body {
+        max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;
+    }
+    .accordion-item.active .accordion-header {
+        background: var(--primary-50); border-bottom: 1px solid var(--border);
+    }
+    .accordion-item.active .accordion-icon {
+        transform: rotate(180deg);
+    }
+    .accordion-item.active .accordion-body {
+        max-height: 500px; /* Yaklaşık yükseklik, içerik için yeterli */
+    }
+    .accordion-content-inner {
+        padding: 24px; color: var(--text-muted); line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/}">Ana Sayfa</a>
+      <span class="separator">›</span>
+      <span class="current">SSS</span>
+    </div>
+    <h1>Sıkça Sorulan Sorular</h1>
+    <p>Platformumuz işleyişi, eğitimler ve sertifikasyon süreçleri hakkında aklınıza takılan soruların cevapları.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width: 800px; margin: 0 auto;">
+      
+      <div class="accordion-container fade-in">
+          
+          <!-- Q1 -->
+          <div class="accordion-item active">
+              <div class="accordion-header" onclick="toggleAccordion(this)">
+                  <h4>Sistemdeki eğitimlere kimler katılabilir?</h4>
+                  <span class="accordion-icon"><i class="bi bi-chevron-down"></i></span>
+              </div>
+              <div class="accordion-body" style="max-height: 500px;">
+                  <div class="accordion-content-inner">
+                      Eğitimlerimize her yaş ve eğitim düzeyinden, kendini geliştirmek isteyen herkes katılabilir. Ancak bazı ileri düzey alan eğitimleri için (Örn: İleri Düzey Veri Analizi) programın açıklamasında belirtilen ön koşulların sağlanması tavsiye edilir.
+                  </div>
+              </div>
+          </div>
+
+          <!-- Q2 -->
+          <div class="accordion-item">
+              <div class="accordion-header" onclick="toggleAccordion(this)">
+                  <h4>Sertifikalarınız YÖK ve MEB onaylı mı?</h4>
+                  <span class="accordion-icon"><i class="bi bi-chevron-down"></i></span>
+              </div>
+              <div class="accordion-body">
+                  <div class="accordion-content-inner">
+                      Evet, eğitimlerimizin tamamı ilgili mevzuatlara uygun olarak hazırlanmaktadır. Programı başarıyla bitiren kursiyerlerimize verilen sertifikalar anlaşmalı kurumlara bağlı olarak <strong>e-Devlet üzerinden sorgulanabilir</strong> veya doğrudan uluslararası geçerliliğe sahip kurum onaylıdır.
+                  </div>
+              </div>
+          </div>
+
+          <!-- Q3 -->
+          <div class="accordion-item">
+              <div class="accordion-header" onclick="toggleAccordion(this)">
+                  <h4>Ödeme yöntemleriniz nelerdir? Taksit imkanı var mı?</h4>
+                  <span class="accordion-icon"><i class="bi bi-chevron-down"></i></span>
+              </div>
+              <div class="accordion-body">
+                  <div class="accordion-content-inner">
+                      Platformumuz üzerinde Kredi Kartı (Visa, MasterCard, Troy) ve Havale/EFT ile ödeme yapılabilmektedir. Anlaşmalı kredi kartlarına 12 aya varan taksit imkanları sunulmaktadır.
+                  </div>
+              </div>
+          </div>
+
+          <!-- Q4 -->
+          <div class="accordion-item">
+              <div class="accordion-header" onclick="toggleAccordion(this)">
+                  <h4>Satın aldığım kursa ne kadar süreyle erişebilirim?</h4>
+                  <span class="accordion-icon"><i class="bi bi-chevron-down"></i></span>
+              </div>
+              <div class="accordion-body">
+                  <div class="accordion-content-inner">
+                      Eğitimlerimizin çok büyük bir kısmı <strong>"Ömür Boyu Erişim"</strong> garantilidir. Yani satın aldığınız bir eğitime, sistem açık olduğu müddetçe dilediğiniz zaman, dilediğiniz cihazdan tekrar tekrar girebilirsiniz. Eğitim videoları güncellendiğinde bu güncellemelere de ücretsiz sahip olursunuz.
+                  </div>
+              </div>
+          </div>
+
+          <!-- Q5 -->
+          <div class="accordion-item">
+              <div class="accordion-header" onclick="toggleAccordion(this)">
+                  <h4>Eğitim videolarında indirme (offline izleme) imkanı var mı?</h4>
+                  <span class="accordion-icon"><i class="bi bi-chevron-down"></i></span>
+              </div>
+              <div class="accordion-body">
+                  <div class="accordion-content-inner">
+                      Telif hakları ve içerik güvenliği gereği video eğitimlerimiz direkt olarak bilgisayara indirilememektedir. Sistemi sadece çevrimiçi aktif bir bağlantı ile platformumuz üzerinden (kendi arayüzümizle) izleyebilirsiniz. Sadece PDF ve sunum dosyaları indirilebilir durumdadır.
+                  </div>
+              </div>
+          </div>
+
+      </div>
+      
+      <div class="fade-in" style="margin-top: 40px; text-align: center; padding: 32px; background: var(--primary-50); border-radius: 16px;">
+          <h4 style="color: var(--primary-700); margin-bottom: 8px; font-size: 1.25rem;">Aradığınız cevabı bulamadınız mı?</h4>
+          <p style="color: var(--text-muted); margin-bottom: 16px;">Yönetim ekibimiz size daha detaylı yardımcı olmaktan memnuniyet duyar.</p>
+          <a th:href="@{/iletisim}" class="btn btn-primary">Bize Ulaşın</a>
+      </div>
+      
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+<script>
+    function toggleAccordion(header) {
+        var item = header.parentElement;
+        var body = header.nextElementSibling;
+        
+        var allItems = document.querySelectorAll('.accordion-item');
+        allItems.forEach(function(i) {
+            if (i !== item) {
+                i.classList.remove('active');
+                i.querySelector('.accordion-body').style.maxHeight = null;
+            }
+        });
+        
+        item.classList.toggle('active');
+        if (item.classList.contains('active')) {
+            body.style.maxHeight = "500px";
+        } else {
+            body.style.maxHeight = null;
+        }
+    }
+</script>
+
+</body>
+</html>

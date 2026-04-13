@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GUZEM Kişisel Verilerin Korunması Kanunu (KVKK) Aydınlatma Metni.">
+  <title>KVKK Aydınlatma Metni | Gazi Üniversitesi UZEM</title>
+  
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+  <style>
+    .kvkk-section { margin-bottom: 36px; }
+    .kvkk-section h2 {
+      font-size: 20px; color: var(--primary-800); margin-bottom: 12px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .kvkk-number {
+      background: var(--primary-600); color: #fff; width: 32px; height: 32px;
+      border-radius: 50%; display: inline-flex; align-items: center;
+      justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;
+    }
+    .kvkk-card {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 24px;
+    }
+    .kvkk-card p {
+      color: var(--text-muted); line-height: 1.7; margin: 0;
+    }
+    .kvkk-card ul {
+      color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 12px 0 0 0;
+    }
+    .kvkk-intro {
+      background: var(--primary-50); border-left: 4px solid var(--primary-600);
+      border-radius: 12px; padding: 20px 24px; margin-bottom: 40px;
+    }
+    .kvkk-intro p {
+      color: var(--primary-800); font-size: 15px; line-height: 1.7; margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/}">Ana Sayfa</a>
+      <span class="separator">›</span>
+      <span class="current">KVKK Aydınlatma Metni</span>
+    </div>
+    <h1>Kişisel Verilerin Korunması Kanunu (KVKK) Aydınlatma Metni</h1>
+    <p>Son güncelleme: Mart 2026 — Gazi Üniversitesi Uzaktan Eğitim Merkezi (GUZEM)</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width: 860px; margin: 0 auto;">
+
+    <!-- Intro Card -->
+    <div class="kvkk-intro fade-in">
+        <p>
+            Bu aydınlatma metni, 6698 sayılı <strong>Kişisel Verilerin Korunması Kanunu (KVKK)</strong>'nun 10. maddesi kapsamında, <strong>Gazi Üniversitesi Uzaktan Eğitim Merkezi (GUZEM)</strong> tarafından kişisel veri sahiplerine yönelik hazırlanmıştır.
+        </p>
+    </div>
+
+    <!-- Section 1 -->
+    <div class="kvkk-section fade-in">
+        <h2><span class="kvkk-number">1</span> Veri Sorumlusunun Kimliği</h2>
+        <div class="kvkk-card">
+            <p>
+                Kişisel verileriniz; <strong>Gazi Üniversitesi Uzaktan Eğitim Merkezi (GUZEM)</strong> tarafından, 6698 sayılı Kişisel Verilerin Korunması Kanunu çerçevesinde <strong>veri sorumlusu</strong> sıfatıyla işlenmektedir.<br><br>
+                <strong>Adres:</strong> Gazi Üniversitesi, Beşevler Kampüsü, 06500 Teknikokullar / Ankara<br>
+                <strong>Web:</strong> guzem.gazi.edu.tr<br>
+                <strong>E-posta:</strong> guzem@gazi.edu.tr<br>
+                <strong>Telefon:</strong> 0 (312) 202 82 00
+            </p>
+        </div>
+    </div>
+
+    <!-- Section 2 -->
+    <div class="kvkk-section fade-in">
+        <h2><span class="kvkk-number">2</span> İşlenen Kişisel Veriler</h2>
+        <div class="kvkk-card">
+            <p style="margin-bottom: 12px;">GUZEM platformunu kullanmanız halinde aşağıdaki kişisel veriler işlenebilir:</p>
+            <ul>
+                <li><strong>Kimlik Bilgileri:</strong> Ad, soyad, T.C. kimlik numarası</li>
+                <li><strong>İletişim Bilgileri:</strong> E-posta adresi, telefon numarası, adres</li>
+                <li><strong>Eğitim Bilgileri:</strong> Kayıt olunan kurslar, tamamlama durumu, sınav sonuçları</li>
+                <li><strong>Finansal Bilgiler:</strong> Ödeme yöntemi türü, fatura bilgileri (kart numarası saklanmaz)</li>
+                <li><strong>Teknik Veriler:</strong> IP adresi, tarayıcı türü, cihaz bilgisi, çerez verileri</li>
+                <li><strong>Kullanım Verileri:</strong> Platform üzerindeki etkileşimler, oturum süreleri</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="kvkk-section fade-in">
+        <h2><span class="kvkk-number">3</span> Kişisel Verilerin İşlenme Amaçları</h2>
+        <div class="kvkk-card">
+            <p style="margin-bottom: 12px;">Kişisel verileriniz aşağıdaki amaçlarla işlenmektedir:</p>
+            <ul>
+                <li>Platforma üyelik ve kullanıcı hesabı oluşturulması</li>
+                <li>Satın alınan eğitimlere erişim sağlanması ve takibi</li>
+                <li>Sertifika ve belge düzenlenmesi</li>
+                <li>Ödeme işlemlerinin gerçekleştirilmesi ve faturalama</li>
+                <li>Müşteri desteği ve iletişim hizmetleri</li>
+                <li>Platformun güvenliğinin sağlanması ve hata takibi</li>
+                <li>Yasal yükümlülüklerin yerine getirilmesi</li>
+                <li>Kullanıcıya özel eğitim önerilerinin sunulması (açık rıza ile)</li>
+                <li>E-bülten ve duyuru iletişimi (açık rıza ile)</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="kvkk-section fade-in">
+        <h2><span class="kvkk-number">4</span> Kişisel Verilerin Aktarılması</h2>
+        <div class="kvkk-card">
+            <p>
+                Kişisel verileriniz; yasal zorunluluklar kapsamında <strong>yetkili kamu kurum ve kuruluşlarına</strong>, ödeme altyapısı için <strong>anlaşmalı ödeme kuruluşlarına</strong>, teknik altyapı için <strong>bulut hizmet sağlayıcılarına</strong> ve sertifika doğrulama süreçleri için gerektiğinde ilgili <strong>kurumsal iş ortaklarına</strong> aktarılabilmektedir. Bu aktarımlar KVKK'nın 8. ve 9. maddeleri kapsamında gerçekleştirilmekte; yurt dışına veri aktarımında ise Kurulun belirlediği güvenceler esas alınmaktadır.
+            </p>
+        </div>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="kvkk-section fade-in">
+        <h2><span class="kvkk-number">5</span> Kişisel Verilerin Toplanma Yöntemi ve Hukuki Sebebi</h2>
+        <div class="kvkk-card">
+            <p>
+                Kişisel verileriniz; platform üzerindeki <strong>kayıt formları</strong>, <strong>ödeme ekranları</strong>, <strong>çerezler</strong> ve <strong>iletişim formları</strong> aracılığıyla otomatik ve sözlü/yazılı yollarla toplanmaktadır. Hukuki işleme sebepleri şunlardır:
+            </p>
+            <ul>
+                <li>Sözleşmenin kurulması ve ifası (KVKK md. 5/2-c)</li>
+                <li>Yasal yükümlülüklerin yerine getirilmesi (KVKK md. 5/2-ç)</li>
+                <li>Meşru menfaat kapsamında işleme (KVKK md. 5/2-f)</li>
+                <li>Açık rıza (pazarlama ve e-bülten için)</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Section 6 -->
+    <div class="kvkk-section fade-in">
+        <h2><span class="kvkk-number">6</span> Veri Sahibinin Hakları (KVKK md. 11)</h2>
+        <div class="kvkk-card">
+            <p style="margin-bottom: 12px;">KVKK'nın 11. maddesi kapsamında aşağıdaki haklara sahipsiniz:</p>
+            <ul>
+                <li>Kişisel verilerinizin işlenip işlenmediğini <strong>öğrenme</strong></li>
+                <li>İşlenmişse buna ilişkin bilgi <strong>talep etme</strong></li>
+                <li>İşlenme amacını ve amacına uygun kullanılıp kullanılmadığını <strong>öğrenme</strong></li>
+                <li>Yurt içinde veya dışında aktarıldığı üçüncü kişileri <strong>bilme</strong></li>
+                <li>Eksik veya yanlış işlenmesi hâlinde <strong>düzeltilmesini isteme</strong></li>
+                <li>Şartların ortadan kalkması hâlinde <strong>silinmesini veya yok edilmesini isteme</strong></li>
+                <li>İşlemeye itiraz etme ve zararın <strong>giderilmesini talep etme</strong></li>
+            </ul>
+            <div style="margin-top: 16px; padding: 14px; background: var(--primary-50); border-radius: 8px;">
+                <p style="color: var(--primary-700); font-size: 14px; margin: 0;">
+                    <i class="bi bi-envelope"></i> Bu haklarınızı kullanmak için <a th:href="@{/iletisim}" style="color: var(--primary-600); font-weight: 600;">iletişim sayfamız</a> üzerinden veya doğrudan <strong>guzem@gazi.edu.tr</strong> adresine yazılı başvuru yapabilirsiniz.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 7 -->
+    <div class="kvkk-section fade-in">
+        <h2><span class="kvkk-number">7</span> Çerez (Cookie) Politikası</h2>
+        <div class="kvkk-card">
+            <p>
+                GUZEM platformu; oturum yönetimi, tercih kaydetme ve analiz amacıyla zorunlu ve isteğe bağlı çerezler kullanmaktadır. Zorunlu çerezler platformun temel işlevleri için gereklidir. İsteğe bağlı çerezler ise yalnızca açık rızanız alındıktan sonra etkinleştirilmektedir. Tarayıcı ayarlarınızdan çerezleri yönetebilir veya silebilirsiniz; ancak bu durum bazı platform özelliklerini etkileyebilir.
+            </p>
+        </div>
+    </div>
+
+    <!-- Section 8 -->
+    <div class="kvkk-section fade-in" style="margin-bottom: 48px;">
+        <h2><span class="kvkk-number">8</span> Verilerin Saklanma Süresi</h2>
+        <div class="kvkk-card">
+            <p>
+                Kişisel verileriniz; işleme amacının ortadan kalkması veya ilgili mevzuatta öngörülen yasal saklama süresinin dolması halinde resen ya da talebiniz üzerine <strong>silinmekte, yok edilmekte veya anonim hâle getirilmektedir</strong>. Yasal yükümlülükler kapsamındaki finans ve fatura kayıtları <strong>10 yıl</strong> süreyle, platform üyelik verileri ise hesap aktif olduğu sürece saklanmaktadır.
+            </p>
+        </div>
+    </div>
+
+    <!-- Contact CTA -->
+    <div class="fade-in" style="text-align: center; padding: 32px; background: var(--primary-50); border-radius: 16px; margin-bottom: 16px;">
+        <h4 style="color: var(--primary-800); margin-bottom: 8px; font-size: 1.25rem;">Sorularınız mı var?</h4>
+        <p style="color: var(--text-muted); margin-bottom: 16px;">KVKK kapsamındaki başvurularınız için bizimle iletişime geçin.</p>
+        <a th:href="@{/iletisim}" class="btn btn-primary">İletişime Geç</a>
+    </div>
+
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+
+</body>
+</html>

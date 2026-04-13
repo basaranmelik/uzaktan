@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GUZEM Kullanım Koşulları. Platformumuzu kullanırken dikkat etmeniz gereken şartlar.">
+    <title>Kullanım Koşulları | Gazi Üniversitesi UZEM</title>
+    
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<!-- Page Header -->
+<section class="page-header">
+    <div class="container">
+        <div class="breadcrumb">
+            <a th:href="@{/}">Ana Sayfa</a><span class="separator">›</span><span class="current">Kullanım Koşulları</span>
+        </div>
+        <h1>Kullanım Koşulları</h1>
+        <p>Son güncelleme: Mart 2026 — Gazi Üniversitesi Uzaktan Eğitim Merkezi (GUZEM)</p>
+    </div>
+</section>
+
+<!-- Content -->
+<section class="section">
+    <div class="container" style="max-width: 860px; margin: 0 auto;">
+
+        <!-- Intro Card -->
+        <div class="fade-in" style="background: var(--primary-50); border-left: 4px solid var(--primary-600); border-radius: var(--radius-md); padding: 20px 24px; margin-bottom: 40px;">
+            <p style="color: var(--primary-800); font-size: 15px; line-height: 1.7; margin: 0;">
+                Bu sayfada belirtilen koşullar, <strong>Gazi Üniversitesi Uzaktan Eğitim Merkezi (GUZEM)</strong> platformunu kullanımınızı düzenler. Platformumuzu ziyaret eden, bir hesaba kaydolan veya hizmetlerimizden faydalanan herkes, bu Kullanım Koşulları'nı okumuş, anlamış ve kabul etmiş sayılır.
+            </p>
+        </div>
+
+        <!-- Section 1 -->
+        <div class="fade-in" style="margin-bottom: 36px;">
+            <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">1</span>
+                Hizmetlerin Kullanımı
+            </h2>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                <p style="color: var(--text-muted); line-height: 1.7; margin: 0 0 12px 0;">GUZEM, kullanıcılara çeşitli akademik, profesyonel ve kişisel gelişim eğitimleri sunan bir online platformdur.</p>
+                <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0;">
+                    <li>Kullanıcılar, platform üzerinde sunulan eğitim içeriklerine erişim hakkı elde etmek için gerekli kayıt ve/veya ödeme prosedürlerini tamamlamalıdır.</li>
+                    <li>Sunulan eğitimler yalnızca bireysel kullanım içindir. İçeriklerin ticari amaçlarla kullanılması veya indirilerek dağıtılması yasaktır.</li>
+                    <li>Kullanıcılar, kayıt aşamasında verdikleri bilgilerin doğru, eksiksiz ve güncel olduğunu beyan ederler.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 2 -->
+        <div class="fade-in" style="margin-bottom: 36px;">
+            <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">2</span>
+                Fikri Mülkiyet Hakları
+            </h2>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                <p style="color: var(--text-muted); line-height: 1.7; margin: 0;">
+                    Platformda yer alan her türlü video, ses dosyası, metin, sunum, kod örneği, logo, grafik ve yazılım kodu <strong>Gazi Üniversitesi UZEM'in ve/veya ilgili eğitmenlerin fikri mülkiyetindedir</strong>. Söz konusu içeriklerin kopyalanması, çoğaltılması, üçüncü şahıslara iletilmesi veya kamuya açık platformlarda izinsiz olarak paylaşılması kesinlikle yasaktır ve telif hakları ihlali kapsamına girer.
+                </p>
+            </div>
+        </div>
+
+        <!-- Section 3 -->
+        <div class="fade-in" style="margin-bottom: 36px;">
+            <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">3</span>
+                Kullanıcı Yükümlülükleri ve Hesap Güvenliği
+            </h2>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                <ul style="color: var(--text-muted); line-height: 1.9; padding-left: 20px; margin: 0;">
+                    <li><strong>Hesap Paylaşımı:</strong> Hesabınıza ait giriş bilgileri (kullanıcı adı ve şifre) size özeldir. Bu bilgileri üçüncü kişilerle paylaşamazsınız.</li>
+                    <li><strong>İhlal Durumu:</strong> Birden fazla farklı IP adresinden eşzamanlı veya ardışık tutarsız girişler tespit edildiğinde hesabınız güvenlik amacıyla askıya alınabilir.</li>
+                    <li><strong>Davranış Kuralları:</strong> Tartışma forumlarında, yorumlarda veya eğitmenlerle iletişimde saygılı bir dil kullanılması zorunludur. Küfür, hakaret, zorbalık gibi eylemler hesabın kalıcı olarak kapatılmasına yol açabilir.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Section 4 -->
+        <div class="fade-in" style="margin-bottom: 36px;">
+            <h2 style="font-size: 20px; color: var(--primary-800); margin-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+                <span style="background: var(--primary-600); color: #fff; width: 32px; height: 32px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; flex-shrink: 0;">4</span>
+                Hizmetlerin Kesintisi ve Düzenlemeler
+            </h2>
+            <div style="background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px 24px;">
+                <p style="color: var(--text-muted); line-height: 1.7; margin: 0;">
+                    GUZEM, platformun 7/24 kesintisiz çalışması için elinden geleni yapar ancak teknik bakım, güncelleme veya mücbir sebeplerden dolayı ortaya çıkabilecek kısa süreli kesintilerden sorumlu tutulamaz. Ek olarak, GUZEM dilediği zaman platformdaki özellikleri, kursları yapısal olarak değiştirme veya yayından kaldırma hakkını saklı tutar.
+                </p>
+            </div>
+        </div>
+
+        <!-- Contact CTA -->
+        <div class="fade-in" style="text-align: center; padding: 32px; background: var(--primary-50); border-radius: var(--radius-lg); margin-bottom: 16px;">
+            <h4 style="color: var(--primary-800); margin-bottom: 8px;">Kabul Ettiğiniz Şartlar</h4>
+            <p style="color: var(--text-muted); margin-bottom: 16px;">Platformu kullanarak bu metni ve gizlilik politikamızı peşinen onaylamış sayılırsınız.</p>
+            <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
+                <a th:href="@{/gizlilik}" class="btn btn-primary">Gizlilik Politikası</a>
+                <a th:href="@{/kvkk}" class="btn btn-secondary" style="background: transparent; border: 2px solid var(--primary-600); color: var(--primary-600); padding: 10px 24px; border-radius: var(--radius-md); font-weight: 600; text-decoration: none;">KVKK Metni</a>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+
+</body>
+</html>

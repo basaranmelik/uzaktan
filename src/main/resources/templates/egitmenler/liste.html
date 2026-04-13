@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="tr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GUZEM eğitmenler kadrosu. Alanında uzman eğitmenlerimizle tanışın.">
+  <title>Eğitmenler | Gazi Üniversitesi</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .instructor-image {
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      border-radius: inherit;
+    }
+  </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}" th:with="activeMenu='instructors'"></div>
+
+<!-- Page Header -->
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/}">Ana Sayfa</a>
+      <span class="separator">›</span>
+      <span class="current">Eğitmenler</span>
+    </div>
+    <h1>Uzman Eğitmenlerimiz</h1>
+    <p>Sektörde yılların deneyimine sahip, alanında uzman eğitmenlerimizle tanışın.</p>
+  </div>
+</section>
+
+<!-- Instructors Grid -->
+<section class="section">
+  <div class="container">
+
+    <!-- Eğitmen var -->
+    <div class="instructors-grid" th:if="${not #lists.isEmpty(instructors)}">
+      <a th:each="instructor : ${instructors}"
+         th:href="@{/egitmenler/{id}(id=${instructor.id})}"
+         class="instructor-card fade-in">
+        <div class="instructor-avatar">
+          <div th:if="${instructor.photoUrl != null}" class="instructor-image" th:style="'background-image: url(' + @{${instructor.photoUrl}} + ');'"></div>
+          <i th:unless="${instructor.photoUrl != null}" class="bi bi-person-circle"></i>
+        </div>
+        <div class="instructor-info">
+          <h3 class="instructor-name" th:text="${instructor.name}">Eğitmen Adı</h3>
+          <div class="instructor-expertise">
+            <i class="bi bi-patch-check-fill"></i>
+            <span th:text="${instructor.expertise}">Uzmanlık Alanı</span>
+          </div>
+          <p class="instructor-bio" th:if="${instructor.bio != null and !instructor.bio.isEmpty()}"
+             th:text="${#strings.abbreviate(instructor.bio, 120)}">
+            Kısa biyografi...
+          </p>
+          <span class="instructor-cta">Profili Gör <i class="bi bi-arrow-right"></i></span>
+        </div>
+      </a>
+    </div>
+
+    <!-- Eğitmen yok -->
+    <div th:if="${#lists.isEmpty(instructors)}"
+         class="text-center" style="padding:4rem;color:var(--text-muted);">
+      <i class="bi bi-person-x" style="font-size:3rem;display:block;margin-bottom:1rem;"></i>
+      Henüz kayıtlı eğitmen bulunmamaktadır.
+    </div>
+
+  </div>
+</section>
+
+<!-- Neden Farklı -->
+<section class="section bg-alt">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="section-badge">Farkımız</span>
+      <h2>Eğitmenlerimiz Neden Farklı?</h2>
+      <p>GUZEM eğitmenleri sadece teorik bilgiyle yetinmez, gerçek dünya deneyimlerini aktarır.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card fade-in">
+        <div class="feature-icon" style="background:var(--primary-50);color:var(--primary-500);"><i class="bi bi-building-fill"></i></div>
+        <h4>Endüstri Deneyimi</h4>
+        <p>Tüm eğitmenlerimiz sektörde en az 8 yıl aktif deneyime sahiptir.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon" style="background:#e6fcf5;color:var(--accent-600);"><i class="bi bi-arrow-repeat"></i></div>
+        <h4>Sürekli Güncelleme</h4>
+        <p>Eğitim içerikleri teknoloji trendlerine göre sürekli güncellenir.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon" style="background:#fff4e6;color:#e8590c;"><i class="bi bi-person-check-fill"></i></div>
+        <h4>Birebir Mentorluk</h4>
+        <p>Eğitmenlerimiz öğrencilerle birebir mentorluk seansları düzenler.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-content fade-in">
+      <h2>Siz de Eğitmen Olmak İster misiniz?</h2>
+      <p>Bilgi ve deneyimlerinizi binlerce öğrenciyle paylaşın.</p>
+      <div class="cta-actions">
+        <a th:href="@{/iletisim}" class="btn btn-primary btn-lg">Eğitmen Başvurusu</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

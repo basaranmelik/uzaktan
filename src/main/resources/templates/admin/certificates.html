@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sertifika Yönetimi — GUZEM Admin</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/admin}">Admin</a> <span class="separator">›</span>
+      <span class="current">Sertifikalar</span>
+    </div>
+    <div>
+      <h1><i class="bi bi-award-fill"></i> Sertifika Yönetimi</h1>
+      <p style="margin:0;color:var(--text-muted);" th:if="${!#lists.isEmpty(certificates)}">
+        Toplam <strong th:text="${#lists.size(certificates)}">0</strong> sertifika
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    <div th:if="${successMessage}"
+         style="background:#d3f9d8;border:1px solid #69db7c;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;color:#2b8a3e;font-weight:600;">
+      <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}"
+         style="background:#fff5f5;border:1px solid #ffc9c9;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;color:#c92a2a;font-weight:600;">
+      <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${errorMessage}"></span>
+    </div>
+
+    <!-- Manuel sertifika düzenleme -->
+    <div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:1.5rem 2rem;margin-bottom:2rem;">
+      <div style="font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);margin-bottom:1.25rem;padding-bottom:0.75rem;border-bottom:1px solid var(--gray-100);display:flex;align-items:center;gap:6px;">
+        <i class="bi bi-plus-circle"></i> Manuel Sertifika Düzenle
+      </div>
+      <form th:action="@{/admin/sertifikalar/ver}" method="post"
+            style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
+        <div class="form-group" style="flex:1;min-width:200px;margin-bottom:0;">
+          <label>Kullanıcı</label>
+          <select name="userId" class="form-control" required>
+            <option value="">Kullanıcı seçin...</option>
+            <option th:each="u : ${users}"
+                    th:value="${u.id}"
+                    th:text="${u.fullName} + ' (' + ${u.email} + ')'"></option>
+          </select>
+        </div>
+        <div class="form-group" style="flex:1;min-width:200px;margin-bottom:0;">
+          <label>Kurs</label>
+          <select name="courseId" class="form-control" required>
+            <option value="">Kurs seçin...</option>
+            <option th:each="c : ${courses}"
+                    th:value="${c.id}"
+                    th:text="${c.title}"></option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="padding:0.6rem 1.5rem;font-size:0.9rem;">
+          <i class="bi bi-award"></i> Sertifika Düzenle
+        </button>
+      </form>
+    </div>
+
+    <!-- Sertifika listesi -->
+    <div th:if="${#lists.isEmpty(certificates)}"
+         class="text-center" style="padding:4rem;color:var(--text-muted);">
+      <div style="font-size:3rem;margin-bottom:1rem;"><i class="bi bi-award"></i></div>
+      <p>Henüz sertifika bulunmuyor.</p>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(certificates)}" style="overflow-x:auto;border-radius:12px;border:1px solid var(--border);">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Kullanıcı</th>
+            <th>Kurs</th>
+            <th>Sertifika Kodu</th>
+            <th>Düzenlenme Tarihi</th>
+            <th>Durum</th>
+            <th>İşlem</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr th:each="cert : ${certificates}">
+            <td style="color:var(--text-muted);" th:text="${cert.id}">1</td>
+
+            <td style="font-weight:700;" th:text="${cert.userName}">-</td>
+
+            <td th:text="${cert.courseTitle}">-</td>
+
+            <td>
+              <code style="font-size:0.82rem;background:var(--bg-alt);padding:0.2rem 0.5rem;border-radius:5px;border:1px solid var(--gray-100);"
+                    th:text="${cert.certificateCode}">-</code>
+            </td>
+
+            <td style="white-space:nowrap;font-size:0.82rem;color:var(--text-muted);"
+                th:text="${#temporals.format(cert.issueDate, 'dd.MM.yyyy')}">-</td>
+
+            <td>
+              <span class="status-badge sb-green">
+                <i class="bi bi-check-circle-fill"></i> Aktif
+              </span>
+            </td>
+
+            <td>
+              <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                <!-- Görüntüle -->
+                <a th:href="@{/sertifika/dogrula/{code}(code=${cert.certificateCode})}"
+                   class="action-btn ab-view">
+                  <i class="bi bi-eye"></i>
+                </a>
+                <!-- İptal Et -->
+                <form th:action="@{/admin/sertifikalar/{id}/iptal(id=${cert.id})}" method="post">
+                  <button type="submit" class="action-btn ab-del"
+                          onclick="return confirm('Bu sertifikayı iptal etmek istediğinize emin misiniz?')">
+                    <i class="bi bi-x-circle"></i> İptal
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

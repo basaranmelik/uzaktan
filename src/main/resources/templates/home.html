@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="tr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gazi Üniversitesi | Gazi Üniversitesi Online Eğitim Platformu</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}" th:with="activeMenu='home'"></div>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-content">
+        <h1>Geleceğinizi <span>Şekillendirin</span></h1>
+        <p>Gazi Üniversitesi uzman eğitmenleriyle online eğitimlere katılın, yeni beceriler kazanın ve kariyerinizde fark yaratın.</p>
+        <div class="hero-actions">
+          <a th:href="@{/egitimler}" class="btn btn-primary btn-lg">Eğitimleri Keşfet →</a>
+          <a th:href="@{/hakkimizda}" class="btn btn-outline btn-lg">Daha Fazla Bilgi</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="stat-number" data-count="15000" data-suffix="+">0</div>
+            <div class="stat-label">Aktif Öğrenci</div>
+          </div>
+          <div class="hero-stat">
+            <div class="stat-number" data-count="200" data-suffix="+">0</div>
+            <div class="stat-label">Online Eğitim</div>
+          </div>
+          <div class="hero-stat">
+            <div class="stat-number" data-count="50" data-suffix="+">0</div>
+            <div class="stat-label">Uzman Eğitmen</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-slider" id="heroSlider">
+          <div class="hero-slide active">
+            <div style="display:flex;align-items:center;justify-content:center;height:300px;background:var(--primary-50);border-radius:16px;font-size:5rem;color:var(--primary-600);"><i class="bi bi-mortarboard-fill"></i></div>
+          </div>
+          <div class="hero-slide">
+            <div style="display:flex;align-items:center;justify-content:center;height:300px;background:var(--primary-100);border-radius:16px;font-size:5rem;color:var(--primary-600);"><i class="bi bi-collection-fill"></i></div>
+          </div>
+          <div class="hero-slide">
+            <div style="display:flex;align-items:center;justify-content:center;height:300px;background:var(--primary-50);border-radius:16px;font-size:5rem;color:var(--primary-600);"><i class="bi bi-trophy-fill"></i></div>
+          </div>
+        </div>
+        <button class="slider-btn slider-prev" id="sliderPrev">&#8249;</button>
+        <button class="slider-btn slider-next" id="sliderNext">&#8250;</button>
+        <div class="slider-dots" id="sliderDots">
+          <span class="slider-dot active"></span>
+          <span class="slider-dot"></span>
+          <span class="slider-dot"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Stats -->
+<section class="stats-bar">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="stat-card fade-in">
+        <div class="stat-icon"><i class="bi bi-mortarboard-fill"></i></div>
+        <div class="stat-number" data-count="15000" data-suffix="+">0</div>
+        <div class="stat-label">Mezun Öğrenci</div>
+      </div>
+      <div class="stat-card fade-in">
+        <div class="stat-icon"><i class="bi bi-collection-fill"></i></div>
+        <div class="stat-number" data-count="200" data-suffix="+">0</div>
+        <div class="stat-label">Online Eğitim</div>
+      </div>
+      <div class="stat-card fade-in">
+        <div class="stat-icon"><i class="bi bi-person-workspace"></i></div>
+        <div class="stat-number" data-count="50" data-suffix="+">0</div>
+        <div class="stat-label">Uzman Eğitmen</div>
+      </div>
+      <div class="stat-card fade-in">
+        <div class="stat-icon"><i class="bi bi-star-fill"></i></div>
+        <div class="stat-number" data-count="98" data-suffix="%">0</div>
+        <div class="stat-label">Memnuniyet Oranı</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Courses -->
+<section class="section">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="section-badge">Popüler Eğitimler</span>
+      <h2>Öne Çıkan Eğitimlerimiz</h2>
+      <p>En çok tercih edilen eğitimlerimizi keşfedin.</p>
+    </div>
+
+    <div class="courses-grid" th:if="${not #lists.isEmpty(featuredCourses)}">
+      <a th:each="course : ${featuredCourses}"
+         th:href="@{/egitimler/{id}(id=${course.id})}"
+         class="card course-card fade-in">
+        <div class="card-body">
+          <span class="card-category" th:text="${course.categoryDisplayName}">Kategori</span>
+          <h4 class="card-title" th:text="${course.title}">Kurs Başlığı</h4>
+          <div class="card-meta">
+            <div class="meta-item" th:if="${course.instructorName != null}">
+              <i class="bi bi-person-workspace"></i> <span th:text="${course.instructorName}">Eğitmen</span>
+            </div>
+            <div class="meta-item" th:if="${course.hours != null}">
+              <i class="bi bi-clock"></i> <span th:text="${course.hours} + ' Saat'">0 Saat</span>
+            </div>
+            <span class="card-price"
+                  th:text="${course.price == null or course.price.signum() == 0} ? 'Ücretsiz' : '₺' + ${#numbers.formatDecimal(course.price, 0, 'COMMA', 0, 'POINT')}">
+              ₺0
+            </span>
+          </div>
+        </div>
+      </a>
+    </div>
+
+    <div th:if="${#lists.isEmpty(featuredCourses)}" class="text-center" style="padding:3rem;color:var(--text-muted);">
+      Henüz yayınlanmış eğitim bulunmamaktadır.
+    </div>
+
+    <div class="text-center mt-3 fade-in">
+      <a th:href="@{/egitimler}" class="btn btn-secondary">Tüm Eğitimleri Gör →</a>
+    </div>
+  </div>
+</section>
+
+<!-- Features -->
+<section class="section bg-alt">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="section-badge">Neden GUZEM?</span>
+      <h2>Size Sunduğumuz Avantajlar</h2>
+      <p>Modern eğitim anlayışımızla fark yaratan özelliklerimiz.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card fade-in">
+        <div class="feature-icon" style="background:var(--primary-50);color:var(--primary-500);"><i class="bi bi-bullseye"></i></div>
+        <h4>Pratiğe Dayalı Eğitim</h4>
+        <p>Gerçek dünya projeleriyle öğrenin, portfolyonuzu güçlendirin.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon" style="background:var(--primary-100);color:var(--accent-600);"><i class="bi bi-person-workspace"></i></div>
+        <h4>Uzman Eğitmenler</h4>
+        <p>Gazi Üniversitesi'nin deneyimli akademisyenlerinden öğrenin.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon" style="background:#fff4e6;color:#e8590c;"><i class="bi bi-phone-fill"></i></div>
+        <h4>Her Yerden Erişim</h4>
+        <p>Mobil, tablet veya bilgisayarınızdan istediğiniz zaman erişin.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon" style="background:#f3f0ff;color:#7950f2;"><i class="bi bi-trophy-fill"></i></div>
+        <h4>Sertifikalı Eğitim</h4>
+        <p>Eğitimlerinizi tamamlayın, Gazi Üniversitesi onaylı sertifika alın.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon" style="background:#fff5f5;color:#e03131;"><i class="bi bi-infinity"></i></div>
+        <h4>Ömür Boyu Erişim</h4>
+        <p>Kayıt olduğunuz eğitimlere süresiz erişim imkanı.</p>
+      </div>
+      <div class="feature-card fade-in">
+        <div class="feature-icon" style="background:#e7f5ff;color:#1c7ed6;"><i class="bi bi-chat-square-dots-fill"></i></div>
+        <h4>Topluluk Desteği</h4>
+        <p>Eğitmen ve diğer öğrencilerle etkileşimde kalın.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-content fade-in">
+      <h2>Öğrenmeye Başlamaya Hazır mısınız?</h2>
+      <p>Hemen kayıt olun ve yüzlerce eğitime erişim kazanın.</p>
+      <div class="cta-actions">
+        <span sec:authorize="isAnonymous()">
+          <a th:href="@{/kayit-ol}" class="btn btn-primary btn-lg">Ücretsiz Kayıt Ol</a>
+        </span>
+        <span sec:authorize="isAuthenticated()">
+          <a th:href="@{/egitimler}" class="btn btn-primary btn-lg">Eğitimleri Keşfet</a>
+        </span>
+        <a th:href="@{/iletisim}" class="btn btn-outline btn-lg">Bize Ulaşın</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+
+<script th:src="@{/js/main.js}"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    animateCounters();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="_csrf"        th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
+  <title th:text="${course.title} + ' — Videolar'">Kurs Videoları</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .upload-form {
+      border:1px solid var(--border); border-radius:12px;
+      padding:1.5rem; background:var(--bg); margin-bottom:2rem;
+    }
+    .upload-form-title {
+      font-size:0.72rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.8px; color:var(--text-muted); margin:0 0 1.25rem 0;
+      padding-bottom:0.75rem; border-bottom:1px solid var(--gray-100);
+      display:flex; align-items:center; gap:6px;
+    }
+    .progress-bar-wrap {
+      background:var(--gray-100); border-radius:99px; height:6px; overflow:hidden;
+    }
+    .progress-bar-fill {
+      background:var(--primary-600); height:100%; border-radius:99px;
+    }
+
+    /* ── Video list (drag-and-drop) ── */
+    .vl-wrap {
+      border:1px solid var(--border); border-radius:12px;
+      /* overflow:hidden kaldırıldı — SortableJS ghost elementi klipleniyor */
+    }
+    .vl-row:first-child { border-radius:12px 12px 0 0; }
+    .vl-row:last-child  { border-radius:0 0 12px 12px; border-bottom:none; }
+    .vl-row {
+      display:grid;
+      grid-template-columns: 36px 44px 1fr auto auto;
+      align-items:center; gap:0.75rem;
+      padding:0.85rem 1.25rem;
+      border-bottom:1px solid var(--gray-100);
+      background:var(--bg);
+      transition:background 0.15s;
+    }
+    .vl-row:last-child { border-bottom:none; }
+    .vl-row.sortable-ghost { background:var(--primary-50); opacity:0.7; }
+    .vl-row.sortable-drag  { box-shadow:0 4px 16px rgba(0,0,0,0.12); border-radius:8px; }
+    .vl-handle {
+      cursor:grab; color:var(--gray-400); font-size:1.1rem;
+      display:flex; align-items:center; justify-content:center;
+      padding:0.25rem;
+      border-radius:4px;
+      transition:color 0.15s, background 0.15s;
+    }
+    .vl-handle:hover { color:var(--primary-500); background:var(--primary-50); }
+    .vl-num {
+      width:32px; height:32px; border-radius:8px;
+      background:var(--bg-alt); color:var(--text-muted);
+      font-size:0.75rem; font-weight:700;
+      display:flex; align-items:center; justify-content:center;
+      flex-shrink:0;
+    }
+    .vl-info-title { font-weight:600; font-size:0.9rem; color:var(--text); }
+    .vl-info-desc  { font-size:0.76rem; color:var(--text-muted); margin-top:2px;
+                     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:400px; }
+    .vl-info-file  { font-size:0.72rem; color:var(--text-muted); margin-top:2px; }
+    .vl-actions    { display:flex; gap:0.4rem; flex-shrink:0; }
+
+    /* "Sırayı Kaydet" pill */
+    #saveOrderBar {
+      display:none;
+      background:var(--primary-50); border:1px solid var(--primary-200);
+      border-radius:10px; padding:0.75rem 1.25rem;
+      margin-bottom:1.25rem;
+      align-items:center; justify-content:space-between; gap:1rem;
+      flex-wrap:wrap;
+    }
+    #saveOrderBar.visible { display:flex; }
+
+    /* Edit modal */
+    .vl-modal-backdrop {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,0.45); z-index:9000;
+      align-items:center; justify-content:center;
+    }
+    .vl-modal-backdrop.open { display:flex; }
+    .vl-modal {
+      background:var(--bg); border-radius:14px;
+      padding:2rem; width:100%; max-width:480px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.2);
+      position:relative;
+    }
+    .vl-modal h3 { margin:0 0 1.5rem; font-size:1.1rem; color:var(--text); }
+    .vl-modal-close {
+      position:absolute; top:1rem; right:1rem;
+      background:none; border:none; font-size:1.25rem;
+      color:var(--text-muted); cursor:pointer; line-height:1;
+    }
+    .vl-modal-close:hover { color:var(--text); }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/admin}">Admin</a> <span class="separator">›</span>
+      <a th:href="@{/admin/kurslar}">Kurslar</a> <span class="separator">›</span>
+      <a th:href="@{/admin/kurslar/{id}/duzenle(id=${course.id})}" th:text="${course.title}">Kurs</a>
+      <span class="separator">›</span>
+      <span class="current">Videolar</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <h1><i class="bi bi-play-circle-fill"></i> Kurs Videoları</h1>
+        <p style="margin:0;">
+          <span th:text="${course.title}">Kurs</span>
+          <span class="status-badge sb-blue" style="margin-left:0.5rem;"
+                th:text="${videos.size()} + ' / ' + (${course.module} != null ? ${course.module} : '?') + ' Video'">0 / 0 Video</span>
+          <span th:if="${course.module != null and videos.size() >= course.module}"
+                class="status-badge" style="background:#d3f9d8;color:#2b8a3e;margin-left:0.25rem;">Tamamlandi</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    <div th:if="${successMessage}"
+         style="background:#d3f9d8;border:1px solid #69db7c;border-radius:8px;padding:1rem;margin-bottom:1.5rem;color:#2b8a3e;font-weight:600;">
+      <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}"
+         style="background:#ffe3e3;border:1px solid #ffa8a8;border-radius:8px;padding:1rem;margin-bottom:1.5rem;color:#c92a2a;font-weight:600;">
+      <i class="bi bi-exclamation-circle-fill"></i> <span th:text="${errorMessage}"></span>
+    </div>
+
+    <!-- Upload Form — modül sayısı dolduğunda gizle -->
+    <div th:if="${course.module != null and videos.size() >= course.module}"
+         style="background:#fff4e6;border:1px solid #ffd8a8;border-radius:12px;padding:1.25rem;margin-bottom:2rem;color:#e8590c;font-weight:600;">
+      <i class="bi bi-info-circle-fill"></i>
+      Bu kursun modül sayısı (<span th:text="${course.module}">0</span>) kadar video zaten yüklenmiş.
+      Daha fazla video eklemek için modül sayısını artırın.
+    </div>
+
+    <div class="upload-form" th:if="${course.module == null or videos.size() < course.module}">
+      <div class="upload-form-title"><i class="bi bi-cloud-upload"></i> Video Yükle</div>
+      <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;">
+        <i class="bi bi-info-circle"></i>
+        Bu kursa <strong th:text="${course.module != null ? (course.module - videos.size()) : '?'}">0</strong> video daha eklenebilir
+        (Modül sayısı: <span th:text="${course.module}">?</span>).
+      </div>
+      <form th:action="@{/admin/kurslar/{id}/videolar(id=${course.id})}"
+            method="post" enctype="multipart/form-data" id="uploadForm"
+            th:data-current-count="${videos.size()}"
+            th:data-module-count="${course.module}">
+
+        <!-- Dosya seçim alanı -->
+        <div class="form-group">
+          <label>Video Dosyaları * <span style="font-weight:400;color:var(--text-muted);">(birden fazla seçebilirsiniz)</span></label>
+          <input type="file" name="files" id="fileInput" class="form-control"
+                 accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo"
+                 multiple required
+                 onchange="showPreview(this)">
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">
+            Desteklenen formatlar: MP4, WebM, OGG, MOV, AVI &nbsp;·&nbsp;
+            Sıra numarası mevcut videoların devamından otomatik atanır
+          </div>
+        </div>
+
+        <!-- Seçilen dosyalar önizlemesi — her video için başlık girişi -->
+        <div id="filePreview" style="display:none;margin-bottom:1rem;">
+          <div style="font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;
+                      color:var(--text-muted);margin-bottom:0.5rem;">Seçilen Dosyalar — Her video için başlık girin</div>
+          <div id="fileList"
+               style="border:1px solid var(--border);border-radius:8px;overflow:hidden;"></div>
+        </div>
+
+        <div id="limitWarning" style="display:none;background:#fff5f5;border:1px solid #ffc9c9;border-radius:8px;padding:0.75rem;margin-bottom:1rem;color:#c92a2a;font-size:0.85rem;font-weight:600;">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span id="limitWarningText"></span>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+          <button type="submit" class="btn btn-primary" id="uploadBtn">
+            <i class="bi bi-cloud-upload"></i> Yükle
+          </button>
+          <span id="uploadHint" style="font-size:0.85rem;color:var(--text-muted);display:none;">
+            Yükleme devam ediyor, lütfen bekleyin...
+          </span>
+        </div>
+      </form>
+    </div>
+
+    <!-- Video Listesi -->
+    <div th:if="${#lists.isEmpty(videos)}"
+         class="text-center" style="padding:4rem;color:var(--text-muted);">
+      <div style="font-size:3rem;margin-bottom:1rem;"><i class="bi bi-camera-video"></i></div>
+      <p>Bu kursa henüz video eklenmemiş.</p>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(videos)}">
+
+      <!-- Sıra kaydet çubuğu (sürükle sonrası görünür) -->
+      <div id="saveOrderBar">
+        <div style="display:flex;align-items:center;gap:0.6rem;font-size:0.9rem;font-weight:600;color:var(--primary-700);">
+          <i class="bi bi-arrow-down-up"></i>
+          Video sırası değiştirildi. Kaydetmek istiyor musunuz?
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+          <button id="saveOrderBtn" class="btn btn-primary" style="padding:0.45rem 1.1rem;font-size:0.88rem;">
+            <i class="bi bi-check-lg"></i> Sırayı Kaydet
+          </button>
+          <button id="cancelOrderBtn" class="btn" style="padding:0.45rem 1.1rem;font-size:0.88rem;background:var(--bg);border:1px solid var(--border);">
+            Vazgeç
+          </button>
+        </div>
+      </div>
+
+      <!-- Draggable list -->
+      <div class="vl-wrap" id="videoList"
+           th:data-reorder-url="@{/admin/kurslar/{id}/videolar/sira(id=${course.id})}">
+        <div th:each="v, stat : ${videos}" class="vl-row"
+             th:data-video-id="${v.id}">
+          <!-- Drag handle -->
+          <div class="vl-handle" title="Sürükle">
+            <i class="bi bi-grip-vertical"></i>
+          </div>
+          <!-- Sıra no -->
+          <div class="vl-num" th:text="${v.orderIndex}">1</div>
+          <!-- Başlık + açıklama -->
+          <div style="min-width:0;">
+            <div class="vl-info-title" th:text="${v.title}">Video</div>
+            <div th:if="${v.description != null and !#strings.isEmpty(v.description)}"
+                 class="vl-info-desc" th:text="${v.description}"></div>
+            <div class="vl-info-file">
+              <i class="bi bi-file-earmark-play" style="font-size:0.7rem;"></i>
+              <span th:text="${v.originalFileName}">dosya.mp4</span>
+              <span style="margin-left:0.4rem;" th:if="${v.createdAt != null}"
+                    th:text="'· ' + ${#temporals.format(v.createdAt,'dd.MM.yyyy')}"></span>
+            </div>
+          </div>
+          <!-- Düzenle butonu -->
+          <button type="button" class="action-btn"
+                  style="background:var(--primary-50);color:var(--primary-700);border:1px solid var(--primary-200);"
+                  th:data-id="${v.id}"
+                  th:data-title="${v.title}"
+                  th:data-description="${v.description != null ? v.description : ''}"
+                  onclick="openEditModal(this)">
+            <i class="bi bi-pencil"></i> Düzenle
+          </button>
+          <!-- Sil butonu -->
+          <form th:action="@{/admin/videolar/{id}/sil(id=${v.id})}" method="post">
+            <button type="submit" class="action-btn ab-del"
+                    onclick="return confirm('Bu videoyu silmek istediğinize emin misiniz?')">
+              <i class="bi bi-trash3"></i> Sil
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModalBackdrop" class="vl-modal-backdrop" onclick="closeEditModal(event)">
+      <div class="vl-modal">
+        <button class="vl-modal-close" onclick="closeEditModalDirect()" type="button">&times;</button>
+        <h3><i class="bi bi-pencil-square" style="color:var(--primary-500);margin-right:0.4rem;"></i>Video Düzenle</h3>
+        <form id="editForm" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+          <div class="form-group">
+            <label>Video Başlığı *</label>
+            <input type="text" name="title" id="editTitle" class="form-control"
+                   placeholder="Video başlığı" required maxlength="200">
+          </div>
+          <div class="form-group">
+            <label>Açıklama <span style="font-weight:400;color:var(--text-muted);">(isteğe bağlı)</span></label>
+            <textarea name="description" id="editDescription" class="form-control"
+                      rows="3" placeholder="Kısa bir açıklama ekleyin..."
+                      style="resize:vertical;"></textarea>
+          </div>
+          <div style="display:flex;gap:0.75rem;margin-top:1.25rem;">
+            <button type="submit" class="btn btn-primary">
+              <i class="bi bi-check-lg"></i> Kaydet
+            </button>
+            <button type="button" class="btn"
+                    style="background:var(--bg);border:1px solid var(--border);"
+                    onclick="closeEditModalDirect()">
+              İptal
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
+<script th:inline="javascript">
+function showPreview(input) {
+  const preview = document.getElementById('filePreview');
+  const list = document.getElementById('fileList');
+  const btn = document.getElementById('uploadBtn');
+  const warning = document.getElementById('limitWarning');
+  const warningText = document.getElementById('limitWarningText');
+  const form = document.getElementById('uploadForm');
+  const files = Array.from(input.files);
+
+  if (files.length === 0) {
+    preview.style.display = 'none';
+    if (warning) warning.style.display = 'none';
+    return;
+  }
+
+  const currentCount = parseInt(form.dataset.currentCount || '0');
+  const moduleCount = parseInt(form.dataset.moduleCount || '0');
+  const startIndex = currentCount + 1;
+  const remaining = moduleCount > 0 ? moduleCount - currentCount : 999;
+
+  // Limit kontrolü
+  if (moduleCount > 0 && files.length > remaining) {
+    warning.style.display = 'block';
+    warningText.textContent = 'En fazla ' + remaining + ' video daha ekleyebilirsiniz (Modül sayısı: ' + moduleCount + ', mevcut: ' + currentCount + '). Lütfen ' + remaining + ' veya daha az dosya seçin.';
+    btn.disabled = true;
+  } else {
+    if (warning) warning.style.display = 'none';
+    btn.disabled = false;
+  }
+
+  list.innerHTML = files.map((f, i) => {
+    const nameNoExt = f.name.includes('.') ? f.name.substring(0, f.name.lastIndexOf('.')) : f.name;
+    const sizeMb = (f.size / (1024 * 1024)).toFixed(1);
+    return `
+      <div style="padding:0.75rem 1rem;${i < files.length - 1 ? 'border-bottom:1px solid var(--gray-100);' : ''}">
+        <div style="display:flex;align-items:center;gap:0.75rem;font-size:0.875rem;margin-bottom:0.5rem;">
+          <span style="min-width:26px;height:26px;border-radius:50%;background:var(--primary-100);
+                       color:var(--primary-700);font-size:0.72rem;font-weight:700;
+                       display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            ${startIndex + i}
+          </span>
+          <span style="color:var(--text-muted);font-size:0.78rem;">${f.name}</span>
+          <span style="color:var(--text-muted);font-size:0.78rem;flex-shrink:0;">${sizeMb} MB</span>
+        </div>
+        <div style="padding-left:2.25rem;">
+          <input type="text" name="titles" value="${nameNoExt}" class="form-control"
+                 placeholder="Video başlığı girin" required
+                 style="font-size:0.85rem;padding:0.4rem 0.65rem;">
+        </div>
+      </div>`;
+  }).join('');
+
+  btn.innerHTML = '<i class="bi bi-cloud-upload"></i> Yükle (' + files.length + ' video)';
+  preview.style.display = 'block';
+}
+
+var uploadForm = document.getElementById('uploadForm');
+if (uploadForm) {
+  uploadForm.addEventListener('submit', function(e) {
+    var titleInputs = this.querySelectorAll('input[name="titles"]');
+    for (var i = 0; i < titleInputs.length; i++) {
+      if (!titleInputs[i].value.trim()) {
+        e.preventDefault();
+        titleInputs[i].focus();
+        titleInputs[i].style.borderColor = '#c92a2a';
+        return;
+      }
+    }
+    document.getElementById('uploadBtn').disabled = true;
+    document.getElementById('uploadHint').style.display = 'inline';
+  });
+}
+
+// ── Drag-and-drop sıralama ──
+var videoList = document.getElementById('videoList');
+var saveOrderBar = document.getElementById('saveOrderBar');
+var originalOrder = [];
+
+if (videoList && typeof Sortable !== 'undefined') {
+  // Başlangıç sırasını kaydet
+  function captureOrder() {
+    return Array.from(videoList.querySelectorAll('.vl-row')).map(r => r.dataset.videoId);
+  }
+  originalOrder = captureOrder();
+
+  Sortable.create(videoList, {
+    handle: '.vl-handle',
+    animation: 150,
+    ghostClass: 'sortable-ghost',
+    dragClass: 'sortable-drag',
+    onEnd: function() {
+      var currentOrder = captureOrder();
+      var changed = currentOrder.some((id, i) => id !== originalOrder[i]);
+      // Sıra numaralarını güncelle
+      videoList.querySelectorAll('.vl-row').forEach(function(row, idx) {
+        var numEl = row.querySelector('.vl-num');
+        if (numEl) numEl.textContent = idx + 1;
+      });
+      saveOrderBar.classList.toggle('visible', changed);
+    }
+  });
+
+  document.getElementById('saveOrderBtn').addEventListener('click', function() {
+    var ids = captureOrder().map(Number);
+    var url = videoList.dataset.reorderUrl;
+    this.disabled = true;
+    this.innerHTML = '<i class="bi bi-hourglass-split"></i> Kaydediliyor...';
+    var csrfToken  = document.querySelector('meta[name="_csrf"]').getAttribute('content');
+    var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
+    fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', [csrfHeader]: csrfToken },
+      body: JSON.stringify(ids)
+    }).then(function(res) {
+      if (res.ok) {
+        originalOrder = captureOrder();
+        saveOrderBar.classList.remove('visible');
+        showToast('Sıralama kaydedildi.');
+      } else {
+        showToast('Sıralama kaydedilemedi!', true);
+      }
+    }).catch(function() {
+      showToast('Bağlantı hatası!', true);
+    }).finally(function() {
+      var btn = document.getElementById('saveOrderBtn');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-check-lg"></i> Sırayı Kaydet';
+    });
+  });
+
+  document.getElementById('cancelOrderBtn').addEventListener('click', function() {
+    // DOM sırasını geri al
+    originalOrder.forEach(function(id) {
+      var row = videoList.querySelector('[data-video-id="' + id + '"]');
+      if (row) videoList.appendChild(row);
+    });
+    // Numaraları geri yükle
+    videoList.querySelectorAll('.vl-row').forEach(function(row, idx) {
+      var numEl = row.querySelector('.vl-num');
+      if (numEl) numEl.textContent = idx + 1;
+    });
+    saveOrderBar.classList.remove('visible');
+  });
+}
+
+// Toast bildirimi
+function showToast(msg, isError) {
+  var t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;padding:0.75rem 1.25rem;border-radius:10px;font-size:0.9rem;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.15);transition:opacity 0.4s;' +
+    (isError ? 'background:#ffe3e3;color:#c92a2a;border:1px solid #ffa8a8;' : 'background:#d3f9d8;color:#2b8a3e;border:1px solid #69db7c;');
+  document.body.appendChild(t);
+  setTimeout(function() { t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 400); }, 2500);
+}
+
+// ── Edit modal ──
+function openEditModal(btn) {
+  var id = btn.dataset.id;
+  var title = btn.dataset.title;
+  var desc = btn.dataset.description;
+  document.getElementById('editTitle').value = title || '';
+  document.getElementById('editDescription').value = desc || '';
+  document.getElementById('editForm').action = '/admin/videolar/' + id + '/duzenle';
+  document.getElementById('editModalBackdrop').classList.add('open');
+  document.getElementById('editTitle').focus();
+}
+
+function closeEditModal(e) {
+  if (e.target === document.getElementById('editModalBackdrop')) {
+    document.getElementById('editModalBackdrop').classList.remove('open');
+  }
+}
+
+function closeEditModalDirect() {
+  document.getElementById('editModalBackdrop').classList.remove('open');
+}
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeEditModalDirect();
+});
+</script>
+</body>
+</html>

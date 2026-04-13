@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="Gazi_Universitesi_logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="GUZEM eğitim detay sayfası. Eğitim müfredatı, eğitmen bilgisi ve kayıt seçenekleri.">
+    <title>Eğitim Detay — GUZEM</title>
+    <link rel="stylesheet" href="../assets/css/style.css">
+
+    <style>
+
+        /* ============================================
+           STUDENT ECOSYSTEM - GLOBAL UI & ACCESSIBILITY
+           ============================================ */
+        body {
+            background-color: #0f172a;
+            background-image: 
+                radial-gradient(ellipse at top right, rgba(76, 110, 245, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at bottom left, rgba(32, 201, 151, 0.1) 0%, transparent 50%);
+            min-height: 100vh;
+            color: #fff;
+            padding-top: 100px;
+        }
+        
+        /* Fixed Navbar Overrides */
+        .navbar {
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+            z-index: 1000;
+        }
+        .nav-links > a { color: rgba(255,255,255,0.8) !important; }
+        .nav-links > a:hover { color: #fff !important; }
+        .nav-logo, .nav-logo-divider, .nav-logo-text { color: #fff !important; }
+
+        /* --- User Dropdown Styles --- */
+        .user-menu-container { position: relative; margin-left: 10px; }
+        .user-dropdown-btn {
+            display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 6px 16px 6px 6px;
+            border-radius: 50px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+        .user-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid #4c6ef5; }
+        .user-name { font-size: 13.5px; font-weight: 600; color: #fff; line-height: 1.2; text-align: left;}
+        .user-role { font-size: 11px; color: rgba(255,255,255,0.6); display: block; }
+        .user-dropdown-menu {
+            position: absolute; top: calc(100% + 12px); right: 0; width: 250px;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; padding: 12px; opacity: 0; visibility: hidden; transform: translateY(10px);
+            transition: all 0.3s ease; z-index: 1000; text-align: left;
+        }
+        .user-menu-container:hover .user-dropdown-menu { opacity: 1; visibility: visible; transform: translateY(0); }
+        .user-menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; color: rgba(255,255,255,0.8); text-decoration: none; border-radius: 10px; transition: all 0.2s; font-size: 14px; border-bottom: none !important; }
+        .user-menu-item:hover { background: rgba(255,255,255,0.08); color: #fff; }
+        .logout-item { color: #fca5a5 !important; }
+        .menu-divider { height: 1px; background: rgba(255,255,255,0.1); margin: 8px 0; }
+
+        /* Global Readability Overrides (Light text for dark backgrounds) */
+        p, li, .course-desc, .instructor-bio, .section-header p, .breadcrumb, .footer p {
+            color: rgba(255, 255, 255, 0.75) !important;
+        }
+        h1, h2, h3, h4, h5, .slider-title, .section-title, .instructor-name, .footer-col h4 {
+            color: #ffffff !important;
+        }
+        
+        /* 
+           SÜPER KRİTİK: BEYAZ KARTLAR VE BEYAZ ALANLAR İÇİN SİYAH YAZI ZORLAMASI
+           (FORCE BLACK TEXT FOR WHITE COMPONENTS)
+        */
+        .card *, .course-card *, .mini-course-card *, .sidebar-wrapper *, .filter-bar *, .filter-group *, .instructor-card *, .modal *, .white-bg * {
+            color: #212529 !important;
+        }
+        /* Dashboard specific cards fix */
+        .stat-card *, .welcome-banner *, .upcoming-session * {
+            color: #fff !important; /* Keep dashboard specific elements light */
+        }
+        .welcome-banner p { color: rgba(255,255,255,0.8) !important; }
+        
+        /* Buttons should always have white text */
+        .btn, .btn-primary, .mini-btn, .cookie-accept, .cookie-decline {
+            color: #fff !important;
+        }
+        /* Rating stars and specific badges */
+        .stars, .card-badge, .section-badge, .mini-price {
+            color: #4c6ef5 !important;
+        }
+
+        .career-path-card {
+            background: rgba(255, 255, 255, 0.04) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Component Specifics & Navigation */
+        .footer { background: rgba(0,0,0,0.2) !important; border-top: 1px solid rgba(255,255,255,0.05) !important; }
+        .footer-col li a { color: rgba(255, 255, 255, 0.6) !important; }
+        .footer-col li a:hover { color: #fff !important; }
+        .breadcrumb a { color: rgba(255, 255, 255, 0.6) !important; }
+        .breadcrumb .current { color: #fff !important; }
+
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <button class="left-hamburger" id="leftHamburger" aria-label="Yan Menü">
+                <span></span><span></span><span></span>
+            </button>
+            <a href="index.html" class="nav-logo">
+                <img src="../assets/img/Gazi_Universitesi_logo.png" alt="Gazi Üniversitesi" class="gazi-logo">
+                <span class="nav-logo-divider"></span>
+                <span class="nav-logo-text">GUZEM</span>
+            </a>
+            
+            <div class="nav-links" id="navLinks">
+                <a href="index.html">Ana Sayfa</a>
+                <a href="egitimler.html">Eğitimler</a>
+                <a href="blog.html">Blog</a>
+                <a href="kariyer.html">Kariyer</a>
+                
+                <!-- Kullanıcı Profil Menüsü (B Seçeneği) -->
+                <div class="user-menu-container">
+                    <div class="user-dropdown-btn">
+                        <img src="https://i.pravatar.cc/150?img=11" alt="Yusuf Yıldız" class="user-avatar">
+                        <div class="user-info">
+                            <span class="user-name">Yusuf Yıldız</span>
+                            <span class="user-role">Öğrenci</span>
+                        </div>
+                        <i class="fa-solid fa-chevron-down" style="font-size: 12px; margin-left: 4px; color: rgba(255,255,255,0.5);"></i>
+                    </div>
+                    
+                    <!-- Hover Açılır Menü -->
+                    <div class="user-dropdown-menu">
+                        <a href="index.html" class="user-menu-item"><i class="fa-solid fa-layer-group"></i> Öğrenim İçeriğim</a>
+                        <a href="index.html" class="user-menu-item"><i class="fa-solid fa-credit-card"></i> Ödeme Seçeneklerim</a>
+                        <a href="index.html" class="user-menu-item"><i class="fa-solid fa-certificate"></i> Sertifikalarım</a>
+                        <a href="index.html" class="user-menu-item"><i class="fa-solid fa-gear"></i> Ayarlar</a>
+                        <div class="menu-divider"></div>
+                        <a href="index.html" class="user-menu-item logout-item"><i class="fa-solid fa-right-from-bracket"></i> Çıkış Yap</a>
+                    </div>
+                </div>
+            </div>
+
+            <button class="nav-hamburger" id="hamburger" aria-label="Menü">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Course Detail Hero -->
+    <section class="course-detail-hero">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="index.html">Ana Sayfa</a>
+                <span class="separator">›</span>
+                <a href="egitimler.html">Eğitimler</a>
+                <span class="separator">›</span>
+                <span class="current" id="breadcrumb-title">Eğitim Detay</span>
+            </div>
+            <div class="course-detail-grid">
+                <div class="course-hero-info">
+                    <span class="course-category-tag" id="course-category-tag">Kategori</span>
+                    <h1 id="course-title">Eğitim Başlığı</h1>
+                    <p class="course-desc" id="course-desc">Eğitim açıklaması burada yer alacak.</p>
+                    <div class="course-meta-row">
+                        <div class="course-meta-item">
+                            <span class="meta-icon">👨‍🏫</span>
+                            <span id="course-instructor-name">Eğitmen</span>
+                        </div>
+                        <div class="course-meta-item">
+                            <span class="meta-icon">⏱</span>
+                            <span id="course-duration">0 Saat</span>
+                        </div>
+                        <div class="course-meta-item">
+                            <span class="meta-icon">📖</span>
+                            <span id="course-lesson-count">0 Ders</span>
+                        </div>
+                        <div class="course-meta-item">
+                            <span class="meta-icon">👥</span>
+                            <span id="course-student-count">0 Öğrenci</span>
+                        </div>
+                        <div class="course-meta-item">
+                            <span id="course-rating">⭐ 0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <div class="course-sidebar">
+                    <div class="sidebar-image">
+                        <img id="sidebar-image"
+                            src="https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=600&h=400&fit=crop"
+                            alt="Eğitim görseli">
+                    </div>
+                    <div class="sidebar-body">
+                        <div class="price-row">
+                            <span class="price-current" id="course-price">₺0</span>
+                            <span class="price-old" id="course-old-price">₺0</span>
+                        </div>
+                        <button class="btn btn-primary sidebar-btn btn-lg"
+                            onclick="alert('Bu bir demo sayfasıdır. Gerçek kayıt sistemi bulunmamaktadır.')">Hemen Kayıt
+                            Ol</button>
+                        <button class="btn btn-secondary sidebar-btn" onclick="alert('Bu bir demo sayfasıdır.')">Sepete
+                            Ekle</button>
+                        <ul class="sidebar-features">
+                            <li>
+                                <span class="feature-label">📺 Video Eğitim</span>
+                                <span class="feature-value" id="sidebar-duration">42 Saat</span>
+                            </li>
+                            <li>
+                                <span class="feature-label">📄 Ders Sayısı</span>
+                                <span class="feature-value" id="sidebar-lessons">68 Ders</span>
+                            </li>
+                            <li>
+                                <span class="feature-label">📊 Seviye</span>
+                                <span class="feature-value" id="sidebar-level">Başlangıç</span>
+                            </li>
+                            <li>
+                                <span class="feature-label">🏆 Sertifika</span>
+                                <span class="feature-value">Evet</span>
+                            </li>
+                            <li>
+                                <span class="feature-label">♾️ Erişim Süresi</span>
+                                <span class="feature-value">Ömür Boyu</span>
+                            </li>
+                            <li>
+                                <span class="feature-label">📱 Mobil Erişim</span>
+                                <span class="feature-value">Evet</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Curriculum -->
+    <section class="curriculum-section">
+        <div class="container">
+            <div class="section-header fade-in">
+                <span class="section-badge">Müfredat</span>
+                <h2>Eğitim İçeriği</h2>
+                <p>Bu eğitimde öğreneceğiniz tüm konuları inceleyin.</p>
+            </div>
+            <div class="accordion-container" id="curriculum-accordion">
+                <!-- Dynamically rendered -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Related Courses -->
+    <section class="related-section">
+        <div class="container">
+            <div class="section-header fade-in">
+                <span class="section-badge">Benzer Eğitimler</span>
+                <h2>İlginizi Çekebilecek Eğitimler</h2>
+                <p>Bu eğitimle benzer kategorideki diğer eğitimlerimiz.</p>
+            </div>
+            <div class="courses-grid" id="related-courses">
+                <!-- Dynamically rendered -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <img src="../assets/img/Gazi_Universitesi_logo.png" alt="Gazi Üniversitesi" class="gazi-logo">
+                        <span class="footer-logo-divider"></span>
+                        <span style="color: #fff; font-weight: 700;">GUZEM</span>
+                    </div>
+                    <p>Türkiye'nin önde gelen online eğitim platformu. Kariyerinizi bir adım öteye taşıyın.</p>
+                    <div class="footer-social">
+                        <a href="https://www.facebook.com/GaziUniversitesi.1926" target="_blank" title="Facebook" style="padding: 0; overflow: hidden; background: transparent;"><img src="../assets/img/Facebook Logo.jpg" alt="Facebook" style="width: 100%; height: 100%; object-fit: cover;"></a>
+                        <a href="https://www.linkedin.com/school/gazi-university/posts/?feedView=all" target="_blank" title="LinkedIn" style="padding: 0; overflow: hidden; background: transparent;"><img src="../assets/img/LinkedIn Logo.png" alt="LinkedIn" style="width: 100%; height: 100%; object-fit: cover;"></a>
+                        <a href="https://www.instagram.com/gaziuniuzem/" target="_blank" title="Instagram" style="padding: 0; overflow: hidden; background: transparent;"><img src="../assets/img/İnstagram Logo.jpg" alt="Instagram" style="width: 100%; height: 100%; object-fit: cover;"></a>
+                        <a href="https://www.youtube.com/@GaziÜniversitesi-l4w" target="_blank" title="YouTube" style="padding: 0; overflow: hidden; background: transparent;"><img src="../assets/img/Youtube Logo.png" alt="YouTube" style="width: 100%; height: 100%; object-fit: cover;"></a>
+                    </div>
+                </div>
+                <div class="footer-col">
+                    <h4>Platform</h4>
+                    <ul>
+                        <li><a href="egitimler.html">Eğitimler</a></li>
+                        <li><a href="egitmenler.html">Eğitmenler</a></li>
+                        <li><a href="blog.html">Blog / Topluluk</a></li>
+                        <li><a href="kariyer.html">Kariyer</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Destek</h4>
+                    <ul>
+                        <li><a href="iletisim.html">İletişim</a></li>
+                        <li><a href="sss.html">SSS</a></li>
+                        <li><a href="#">Yardım Merkezi</a></li>
+                    </ul>
+                </div>
+                <div class="footer-col">
+                    <h4>Kurumsal</h4>
+                    <ul>
+                        <li><a href="hakkimizda.html">Hakkımızda</a></li>
+                        <li><a href="gizlilik.html">Gizlilik Politikası</a></li>
+                        <li><a href="#">Kullanım Koşulları</a></li>
+                        <li><a href="kvkk.html">KVKK</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom" style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 20px; color: rgba(255,255,255,0.6);">
+                &copy; 2026 GUZEM. Tüm hakları saklıdır.
+            </div>
+        </div>
+    </footer>
+
+    <script src="../assets/js/data.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script>initCourseDetailPage();</script>
+    <!-- Left Canvas Sidebar -->
+    <div class="drawer-overlay" id="drawerOverlay"></div>
+    <aside class="side-drawer" id="sideDrawer">
+        <div class="drawer-header">
+            <h3>Daha Fazlasını Keşfet</h3>
+            <button class="drawer-close" id="drawerClose">&times;</button>
+        </div>
+        <div class="drawer-content">
+            <a href="kariyer.html" class="drawer-link"><span class="dl-icon">🎯</span> Kariyer Yolları</a>
+            <a href="sss.html" class="drawer-link"><span class="dl-icon">❓</span> Sıkça Sorulan Sorular</a>
+            <a href="iletisim.html" class="drawer-link"><span class="dl-icon">✉️</span> İletişim</a>
+            <a href="blog.html" class="drawer-link"><span class="dl-icon">👥</span> Topluluk ve Blog</a>
+            <a href="kvkk.html" class="drawer-link"><span class="dl-icon">🔒</span> KVKK</a>
+            <a href="gizlilik.html" class="drawer-link"><span class="dl-icon">📋</span> Gizlilik Politikası</a>
+            
+            <div class="drawer-divider"></div>
+            <p style="font-size: 13px; color: rgba(255,255,255,0.5); margin-bottom: 8px;">GUZEM</p>
+            <div class="nav-social" style="display: flex; gap: 8px;">
+                <a href="https://www.facebook.com/GaziUniversitesi.1926" target="_blank" style="width: 32px; height: 32px; background: #fff; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;"><img src="../assets/img/Facebook Logo.jpg" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+                <a href="https://www.linkedin.com/school/gazi-university/posts/?feedView=all" target="_blank" style="width: 32px; height: 32px; background: #fff; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;"><img src="../assets/img/LinkedIn Logo.png" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+                <a href="https://www.instagram.com/gaziuniuzem/" target="_blank" style="width: 32px; height: 32px; background: #fff; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;"><img src="../assets/img/İnstagram Logo.jpg" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+                <a href="https://www.youtube.com/@GaziÜniversitesi-l4w" target="_blank" style="width: 32px; height: 32px; background: #fff; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;"><img src="../assets/img/Youtube Logo.png" style="width:135%; height:135%; object-fit:cover; max-width:none;"></a>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Floating Contact Button -->
+    <a href="iletisim.html" class="floating-contact" id="floatingContact" title="İletişime Geçin">💬</a>
+</body>
+
+</html>

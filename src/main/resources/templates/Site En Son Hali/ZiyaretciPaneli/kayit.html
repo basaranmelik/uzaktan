@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="Gazi_Universitesi_logo.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GUZEM platformuna ücretsiz kayıt olun.">
+    <title>Kayıt Ol — GUZEM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a6e 50%, #0f172a 100%);
+            display: flex;
+            font-family: 'Inter', sans-serif;
+            padding: 60px 24px;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+            box-sizing: border-box;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(76,110,245,0.18) 0%, transparent 70%);
+            top: -200px;
+            right: -150px;
+            pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(32,201,151,0.12) 0%, transparent 70%);
+            bottom: -150px;
+            left: -100px;
+            pointer-events: none;
+        }
+
+        .bg-watermark {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vmin;
+            height: 100vmin;
+            object-fit: contain;
+            opacity: 0.20;
+            filter: blur(4px);
+            mix-blend-mode: screen;
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+        }
+
+        .auth-card {
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 44px 44px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.4);
+            position: relative;
+            z-index: 1;
+            margin: auto;
+        }
+        @media (max-width: 480px) {
+            .auth-card { padding: 28px 20px; }
+        }
+
+        .auth-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 28px;
+            text-decoration: none;
+        }
+        .auth-logo img { width: 46px; height: 46px; background: #fff; border-radius: 50%; padding: 2px; object-fit: contain; box-sizing: border-box; }
+        .auth-logo span { font-size: 22px; font-weight: 800; color: #fff; }
+        
+        .auth-title { text-align: center; margin-bottom: 24px; }
+        .auth-title h1 { font-size: 23px; color: #fff; margin: 0 0 6px 0; }
+        .auth-title p { font-size: 13.5px; color: rgba(255,255,255,0.5); margin: 0; }
+
+        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 400px) { .form-row-2 { grid-template-columns: 1fr; } }
+
+        .form-field { margin-bottom: 14px; }
+        .form-field label { display: block; font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.7); margin-bottom: 7px; }
+        .form-field input, .form-field select {
+            width: 100%; padding: 11px 13px; background: rgba(255,255,255,0.07);
+            border: 1.5px solid rgba(255,255,255,0.12); border-radius: 10px;
+            font-size: 14px; color: #fff; outline: none; transition: 0.2s; box-sizing: border-box;
+        }
+        .form-field input:focus, .form-field select:focus {
+            border-color: #4c6ef5; background: rgba(76,110,245,0.1);
+            box-shadow: 0 0 0 3px rgba(76,110,245,0.2);
+        }
+        .form-field select option { background: #1e3a6e; }
+
+        .consent-row { display: flex; align-items: flex-start; gap: 9px; margin: 16px 0; }
+        .consent-row input { width: 15px; height: 15px; margin-top: 2px; accent-color: #4c6ef5; cursor:pointer;}
+        .consent-row label { font-size: 12.5px; color: rgba(255,255,255,0.55); line-height: 1.5; cursor:pointer;}
+        .consent-row label a { color: #93c5fd; font-weight: 600; text-decoration: none; }
+
+        .btn-auth {
+            width: 100%; padding: 13px; background: linear-gradient(135deg, #4c6ef5, #3b5bdb);
+            color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: 0.2s; box-shadow: 0 4px 16px rgba(76,110,245,0.4);
+            margin-bottom: 24px;
+        }
+        .btn-auth:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(76,110,245,0.5); }
+
+        .auth-footer { text-align: center; font-size: 13.5px; color: rgba(255,255,255,0.5); }
+        .auth-footer a { color: #93c5fd; font-weight: 600; text-decoration: none; padding-left: 5px;}
+
+        .back-home { position: fixed; top: 20px; left: 24px; color: rgba(255,255,255,0.55); text-decoration: none; font-size: 13px; font-weight: 500; }
+    </style>
+</head>
+<body>
+
+    <img src="../assets/img/Gazi_Universitesi_logo.png" alt="" class="bg-watermark">
+
+    <a href="../index.html" class="back-home">← Ana Sayfaya Dön</a>
+
+    <div class="auth-card">
+        <a href="../index.html" class="auth-logo">
+            <img src="../assets/img/Gazi_Universitesi_logo.png" alt="Gazi Üniversitesi">
+            <span class="auth-logo-divider"></span>
+            <span>GUZEM</span>
+        </a>
+
+        <div class="auth-title">
+            <h1>Ücretsiz Üye Ol 🎓</h1>
+            <p>Eğitimlere erişim için bireysel kaydınızı oluşturun.</p>
+        </div>
+
+        <form id="register-form" onsubmit="handleRegister(event)" novalidate>
+            <div class="form-row-2">
+                <div class="form-field">
+                    <label>Ad</label>
+                    <input type="text" placeholder="Adınız" required>
+                </div>
+                <div class="form-field">
+                    <label>Soyad</label>
+                    <input type="text" placeholder="Soyadınız" required>
+                </div>
+            </div>
+
+            <div class="form-field">
+                <label>T.C. Kimlik No</label>
+                <input type="text" placeholder="11 Haneli T.C. Kimlik No" maxlength="11" required>
+            </div>
+
+            <div class="form-field">
+                <label>E-posta Adresi</label>
+                <input type="email" placeholder="ornek@email.com" required>
+            </div>
+
+            <div class="form-field">
+                <label>Şifre</label>
+                <input type="password" placeholder="En az 8 karakter" required>
+            </div>
+
+            <div class="consent-row">
+                <input type="checkbox" id="reg-consent" required>
+                <label for="reg-consent">
+                    <a href="kvkk.html">KVKK</a> ve <a href="gizlilik.html">Gizlilik Politikası</a>'nı okudum, kabul ediyorum.
+                </label>
+            </div>
+
+            <button type="submit" class="btn-auth" id="register-btn">Kayıt Ol</button>
+        </form>
+
+        <div class="auth-footer">
+            Zaten hesabınız var mı? <a href="giris.html">Giriş Yapın</a>
+        </div>
+    </div>
+
+    <script>
+        function handleRegister(e) {
+            e.preventDefault();
+            const btn = document.getElementById('register-btn');
+            if(!document.getElementById('reg-consent').checked) {
+                alert("Uyarıları onaylamanız gerekmektedir!");
+                return;
+            }
+            btn.textContent = 'Hesap oluşturuluyor...';
+            btn.disabled = true;
+            setTimeout(() => {
+                btn.textContent = '✓ Başarılı!';
+                btn.style.background = 'linear-gradient(135deg, #20c997, #12b886)';
+                setTimeout(() => window.location.href = 'giris.html', 1500);
+            }, 1200);
+        }
+    </script>
+
+    <!-- Floating Contact Button -->
+    <a href="iletisim.html" class="floating-contact" id="floatingContact" title="İletişime Geçin">💬</a>
+</body>
+</html>

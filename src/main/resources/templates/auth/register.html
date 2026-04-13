@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GUZEM platformuna ücretsiz kayıt olun.">
+    <title>Kayıt Ol | Gazi Üniversitesi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a6e 50%, #0f172a 100%);
+            display: flex;
+            font-family: 'Inter', sans-serif;
+            padding: 60px 24px;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(76,110,245,0.18) 0%, transparent 70%);
+            top: -200px; right: -150px;
+            pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(32,201,151,0.12) 0%, transparent 70%);
+            bottom: -150px; left: -100px;
+            pointer-events: none;
+        }
+        .bg-watermark {
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100vmin; height: 100vmin;
+            object-fit: contain;
+            opacity: 0.18;
+            filter: blur(4px);
+            mix-blend-mode: screen;
+            pointer-events: none;
+            z-index: 0;
+            user-select: none;
+        }
+        .back-home {
+            position: fixed;
+            top: 20px; left: 24px;
+            color: rgba(255,255,255,0.55);
+            text-decoration: none;
+            font-size: 13px; font-weight: 500;
+            transition: color 0.2s;
+            z-index: 10;
+        }
+        .back-home:hover { color: #fff; }
+        .auth-card {
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 44px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 32px 64px rgba(0,0,0,0.4);
+            position: relative;
+            z-index: 1;
+            margin: auto;
+        }
+        @media (max-width: 480px) {
+            .auth-card { padding: 28px 20px; }
+        }
+        .auth-logo {
+            display: flex; align-items: center; justify-content: center;
+            gap: 10px;
+            margin-bottom: 28px;
+            text-decoration: none;
+        }
+        .auth-logo img {
+            width: 46px; height: 46px;
+            background: #fff; border-radius: 50%;
+            padding: 2px; object-fit: contain;
+        }
+        .auth-logo-divider { width: 1px; height: 28px; background: rgba(255,255,255,0.3); }
+        .auth-logo span { font-size: 22px; font-weight: 800; color: #fff; }
+        .auth-title { text-align: center; margin-bottom: 24px; }
+        .auth-title h1 { font-size: 23px; color: #fff; margin: 0 0 6px 0; }
+        .auth-title p { font-size: 13.5px; color: rgba(255,255,255,0.5); margin: 0; }
+
+        .alert-box {
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 13.5px; font-weight: 500;
+            margin-bottom: 18px;
+            display: flex; align-items: flex-start; gap: 8px;
+        }
+        .alert-error { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.35); color: #fca5a5; }
+
+        .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        @media (max-width: 420px) { .form-row-2 { grid-template-columns: 1fr; } }
+
+        .form-field { margin-bottom: 14px; }
+        .form-field label {
+            display: block;
+            font-size: 13px; font-weight: 600;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 7px;
+        }
+        .form-field input {
+            width: 100%; padding: 11px 13px;
+            background: rgba(255,255,255,0.07);
+            border: 1.5px solid rgba(255,255,255,0.12);
+            border-radius: 10px;
+            font-size: 14px; color: #fff;
+            outline: none; transition: 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+        .form-field input::placeholder { color: rgba(255,255,255,0.3); }
+        .form-field input:focus {
+            border-color: #4c6ef5;
+            background: rgba(76,110,245,0.1);
+            box-shadow: 0 0 0 3px rgba(76,110,245,0.2);
+        }
+        .form-field input.is-invalid {
+            border-color: #f87171;
+            background: rgba(239,68,68,0.08);
+        }
+        .invalid-feedback {
+            font-size: 12px;
+            color: #fca5a5;
+            margin-top: 5px;
+        }
+        .btn-auth {
+            width: 100%; padding: 13px;
+            background: linear-gradient(135deg, #4c6ef5, #3b5bdb);
+            color: #fff; border: none; border-radius: 10px;
+            font-size: 15px; font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 16px rgba(76,110,245,0.4);
+            margin-bottom: 20px;
+            font-family: 'Inter', sans-serif;
+        }
+        .btn-auth:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(76,110,245,0.5);
+        }
+        .auth-footer {
+            text-align: center;
+            font-size: 13.5px;
+            color: rgba(255,255,255,0.5);
+        }
+        .auth-footer a {
+            color: #93c5fd; font-weight: 600;
+            text-decoration: none; padding-left: 4px;
+        }
+        .auth-footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<img th:src="@{/images/gazi-logo.png}" alt="" class="bg-watermark">
+
+<a th:href="@{/}" class="back-home">← Ana Sayfaya Dön</a>
+
+<div class="auth-card">
+
+    <a th:href="@{/}" class="auth-logo">
+        <img th:src="@{/images/gazi-logo.png}" alt="Gazi Üniversitesi">
+        <div class="auth-logo-divider"></div>
+        <span>GUZEM</span>
+    </a>
+
+    <div class="auth-title">
+        <h1>Ücretsiz Üye Ol</h1>
+        <p>Eğitimlere erişim için hesabınızı oluşturun.</p>
+    </div>
+
+    <div th:if="${globalError}" class="alert-box alert-error">
+        <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${globalError}"></span>
+    </div>
+
+    <form th:action="@{/kayit-ol}" th:object="${registerRequest}" method="post">
+
+
+        <div class="form-row-2">
+            <div class="form-field">
+                <label for="firstName">Ad</label>
+                <input type="text" id="firstName" th:field="*{firstName}"
+                       th:classappend="${#fields.hasErrors('firstName')} ? ' is-invalid'"
+                       placeholder="Adınız" required>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('firstName')}"
+                     th:errors="*{firstName}"></div>
+            </div>
+            <div class="form-field">
+                <label for="lastName">Soyad</label>
+                <input type="text" id="lastName" th:field="*{lastName}"
+                       th:classappend="${#fields.hasErrors('lastName')} ? ' is-invalid'"
+                       placeholder="Soyadınız" required>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('lastName')}"
+                     th:errors="*{lastName}"></div>
+            </div>
+        </div>
+
+
+
+        <div class="form-field">
+            <label for="email">E-posta</label>
+            <input type="email" id="email" th:field="*{email}"
+                   th:classappend="${#fields.hasErrors('email')} ? ' is-invalid'"
+                   placeholder="ornek@gazi.edu.tr" required>
+            <div class="invalid-feedback" th:if="${#fields.hasErrors('email')}"
+                 th:errors="*{email}"></div>
+        </div>
+
+        <div class="form-row-2">
+            <div class="form-field">
+                <label for="phoneNumber">Telefon <span style="color:rgba(255,255,255,0.35);font-weight:400;">(Opsiyonel)</span></label>
+                <input type="tel" id="phoneNumber" th:field="*{phoneNumber}"
+                       placeholder="+90 5XX XXX XX XX">
+            </div>
+
+            <div class="form-field">
+                <label for="birthDate">Doğum Tarihi</label>
+                <input type="date" id="birthDate" th:field="*{birthDate}"
+                       th:max="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
+                       th:classappend="${#fields.hasErrors('birthDate')} ? ' is-invalid'" required>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('birthDate')}"
+                     th:errors="*{birthDate}"></div>
+            </div>
+        </div>
+
+        <div class="form-row-2">
+            <div class="form-field">
+                <label for="password">Şifre</label>
+                <input type="password" id="password" th:field="*{password}"
+                       th:classappend="${#fields.hasErrors('password')} ? ' is-invalid'"
+                       placeholder="Şifrenizi belirleyin" required>
+                <p style="font-size: 11px; color: rgba(255,255,255,0.5); margin: 5px 0 0 0;">
+                    Büyük/küçük harf, rakam, özel karakter (@$!%*?&) (min. 8)
+                </p>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('password')}"
+                     th:errors="*{password}"></div>
+            </div>
+            <div class="form-field">
+                <label for="confirmPassword">Şifre Tekrar</label>
+                <input type="password" id="confirmPassword" th:field="*{confirmPassword}"
+                       th:classappend="${#fields.hasErrors('confirmPassword')} ? ' is-invalid'"
+                       placeholder="Şifrenizi tekrar girin" required>
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('confirmPassword')}"
+                     th:errors="*{confirmPassword}"></div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn-auth" style="margin-top:8px;">Kayıt Ol</button>
+    </form>
+
+    <div class="auth-footer">
+        Zaten hesabınız var mı? <a th:href="@{/giris}">Giriş Yapın</a>
+    </div>
+
+</div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const phoneInput = document.getElementById("phoneNumber");
+            if (phoneInput) {
+                if(!phoneInput.value.startsWith('+90 ')) {
+                    phoneInput.value = '+90 ';
+                }
+                phoneInput.addEventListener('input', function (e) {
+                    let input = phoneInput.value.replace(/\D/g, ''); 
+                    if(input.length === 0) {
+                        phoneInput.value = '+90 ';
+                        return;
+                    }
+                    if(!input.startsWith('90')) {
+                        input = '90' + input;
+                    }
+                    if(input.length > 12) input = input.substring(0, 12);
+                    
+                    let formatted = '+90 ';
+                    if (input.length > 2) formatted += input.substring(2, 5);
+                    if (input.length > 5) formatted += ' ' + input.substring(5, 8);
+                    if (input.length > 8) formatted += ' ' + input.substring(8, 10);
+                    if (input.length > 10) formatted += ' ' + input.substring(10, 12);
+                    
+                    phoneInput.value = formatted;
+                });
+                phoneInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Backspace' && phoneInput.value.length <= 4) {
+                        e.preventDefault();
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teslim Notlandır | Gazi Üniversitesi</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .form-section {
+      border:1px solid var(--border); border-radius:12px;
+      padding:1.5rem; margin-bottom:1.5rem; background:var(--bg);
+    }
+    .form-section-title {
+      font-size:0.72rem; font-weight:700; text-transform:uppercase;
+      letter-spacing:0.8px; color:var(--text-muted); margin:0 0 1.25rem 0;
+      padding-bottom:0.75rem; border-bottom:1px solid var(--gray-100);
+      display:flex; align-items:center; gap:6px;
+    }
+    .form-section-title i { font-size:0.9rem; }
+    .submission-content {
+      background:var(--bg-alt); border:1px solid var(--border);
+      border-radius:8px; padding:1rem; font-size:0.9rem;
+      white-space:pre-wrap; max-height:250px; overflow-y:auto;
+      color:var(--text);
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/egitmen/panel}">Eğitmen Paneli</a> <span class="separator">›</span>
+      <a th:href="@{/egitmen/odevler/{id}/teslimler(id=${submission.assignmentId})}"
+         th:text="${submission.assignmentTitle}">Ödev</a> <span class="separator">›</span>
+      <span class="current">Notlandır</span>
+    </div>
+    <h1><i class="bi bi-star-fill"></i> Teslim Notlandır</h1>
+    <p style="margin:0;" th:text="${submission.userFullName} + ' — ' + ${submission.assignmentTitle}">Öğrenci — Ödev</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:720px;">
+
+    <!-- Teslim Özeti -->
+    <div class="form-section">
+      <div class="form-section-title"><i class="bi bi-person-lines-fill"></i> Teslim Bilgileri</div>
+
+      <div style="display:flex;flex-wrap:wrap;gap:1.5rem;margin-bottom:1.25rem;font-size:0.875rem;">
+        <div>
+          <div style="color:var(--text-muted);font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Öğrenci</div>
+          <div style="font-weight:700;" th:text="${submission.userFullName}">—</div>
+        </div>
+        <div>
+          <div style="color:var(--text-muted);font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Ödev</div>
+          <div style="font-weight:700;" th:text="${submission.assignmentTitle}">—</div>
+        </div>
+        <div>
+          <div style="color:var(--text-muted);font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Kurs</div>
+          <div th:text="${submission.courseTitle}">—</div>
+        </div>
+        <div>
+          <div style="color:var(--text-muted);font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Teslim Tarihi</div>
+          <div th:text="${submission.submittedAt != null ? #temporals.format(submission.submittedAt,'dd.MM.yyyy HH:mm') : '—'}">—</div>
+        </div>
+        <div>
+          <div style="color:var(--text-muted);font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Durum</div>
+          <span class="status-badge"
+                th:text="${submission.statusDisplayName}"
+                th:classappend="${submission.status.name() == 'GRADED'} ? ' sb-green' : ' sb-orange'">
+          </span>
+        </div>
+      </div>
+
+      <!-- Metin cevap -->
+      <div th:if="${submission.textAnswer != null and !#strings.isEmpty(submission.textAnswer)}"
+           class="form-group">
+        <label>Öğrencinin Cevabı</label>
+        <div class="submission-content" th:text="${submission.textAnswer}"></div>
+      </div>
+
+      <!-- Dosya -->
+      <div th:if="${submission.hasFile}" class="form-group" style="margin-top:0.75rem;">
+        <label>Yüklenen Dosya</label>
+        <div>
+          <a th:href="@{/dosyalar/teslimler/{id}(id=${submission.id})}"
+             class="action-btn ab-view">
+            <i class="bi bi-download"></i> <span th:text="${submission.originalFileName}">dosya.pdf</span>
+          </a>
+        </div>
+      </div>
+
+      <div th:if="${submission.textAnswer == null or #strings.isEmpty(submission.textAnswer) and !submission.hasFile}"
+           style="color:var(--text-muted);font-style:italic;font-size:0.875rem;">
+        (Yalnızca dosya ile teslim yapılmış)
+      </div>
+    </div>
+
+    <!-- Notlandırma Formu -->
+    <div class="form-section">
+      <div class="form-section-title"><i class="bi bi-star"></i> Not & Geri Bildirim</div>
+
+      <form th:action="@{/egitmen/teslimler/{id}/notlandir(id=${submission.id})}"
+            th:object="${gradeSubmissionRequest}" method="post">
+
+        <div class="form-group">
+          <label>
+            Not *
+            <span style="font-size:0.8rem;font-weight:400;color:var(--text-muted);">
+              (0 — <span th:text="${submission.assignmentMaxScore}">100</span> arası)
+            </span>
+          </label>
+          <input type="number" th:field="*{score}" class="form-control"
+                 th:classappend="${#fields.hasErrors('score')} ? ' is-invalid'"
+                 min="0" th:max="${submission.assignmentMaxScore}"
+                 style="max-width:180px;" required>
+          <div class="invalid-feedback" th:errors="*{score}" th:if="${#fields.hasErrors('score')}"></div>
+        </div>
+
+        <div class="form-group">
+          <label>Geri Bildirim <span style="font-weight:400;color:var(--text-muted);">(isteğe bağlı)</span></label>
+          <textarea th:field="*{feedback}" class="form-control" rows="4"
+                    placeholder="Öğrenciye göndermek istediğiniz yorum veya öneri..."></textarea>
+          <div class="invalid-feedback" th:errors="*{feedback}" th:if="${#fields.hasErrors('feedback')}"></div>
+        </div>
+
+        <div style="display:flex;gap:1rem;">
+          <button type="submit" class="btn btn-primary btn-lg">
+            <i class="bi bi-check-lg"></i> Notu Kaydet
+          </button>
+          <a th:href="@{/egitmen/odevler/{id}/teslimler(id=${submission.assignmentId})}"
+             class="btn btn-secondary btn-lg">İptal</a>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

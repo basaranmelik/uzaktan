@@ -1,0 +1,111 @@
+package com.guzem.uzaktan.config;
+
+import com.guzem.uzaktan.model.Role;
+import com.guzem.uzaktan.security.CustomUserDetailsService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity
+@RequiredArgsConstructor
+public class SecurityConfig {
+
+    private final CustomUserDetailsService userDetailsService;
+
+    @Bean
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/", "/home",
+                                "/egitimler", "/egitimler/{id}",
+                                "/egitmenler", "/egitmenler/{id}",
+                                "/kayit-ol", "/giris",
+                                "/hakkimizda", "/iletisim",
+                                "/sertifika/dogrula/**",
+                                "/css/**", "/js/**", "/images/**",
+                                "/uploads/images/**",
+                                "/error/**",
+                                "/sss",
+                                "/kvkk",
+                                "/kullanim", "/gizlilik"
+                        ).permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/egitmen/**").hasAnyRole("TEACHER", "ADMIN")
+                        .anyRequest().authenticated()
+                )
+                .formLogin(form -> form
+                        .loginPage("/giris")
+                        .loginProcessingUrl("/giris")
+                        .usernameParameter("email")
+                        .successHandler((req, res, auth) -> {
+                            String sonra = req.getParameter("sonra");
+                            // Open-Redirect Korumasi
+                            if (org.springframework.util.StringUtils.hasText(sonra)
+                                    && sonra.startsWith("/")
+                                    && !sonra.startsWith("//")
+                                    && !sonra.contains("\\")
+                                    && !sonra.contains("%")
+                                    && !sonra.contains(":")) {
+                                res.sendRedirect(req.getContextPath() + sonra);
+                            } else {
+                                boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ADMIN.getAuthority()));
+                                boolean isTeacher = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.TEACHER.getAuthority()));
+                                
+                                if (isAdmin) {
+                                    res.sendRedirect(req.getContextPath() + "/admin");
+                                } else if (isTeacher) {
+                                    res.sendRedirect(req.getContextPath() + "/egitmen/panel");
+                                } else {
+                                    res.sendRedirect(req.getContextPath() + "/panom");
+                                }
+                            }
+                        })
+                        .failureUrl("/giris?error=true")
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/cikis")
+                        .logoutSuccessUrl("/?cikis")
+                        .invalidateHttpSession(true)
+                        .deleteCookies("JSESSIONID")
+                        .permitAll()
+                )
+                .sessionManagement(session -> session
+                        .sessionFixation().changeSessionId()
+                        .maximumSessions(1)
+                        .expiredUrl("/giris?suresi-doldu=true")
+                )
+                .authenticationProvider(authenticationProvider());
+
+        return http.build();
+    }
+
+    @Bean
+    public DaoAuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder());
+        return provider;
+    }
+
+    @Bean
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+        return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);
+    }
+}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<footer class="footer" th:fragment="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <img th:src="@{/images/gazi-logo.png}" alt="GUZEM"
+               style="width:36px;height:36px;object-fit:contain;filter:brightness(0) invert(1);">
+          GUZEM
+        </div>
+        <p>Gazi Üniversitesi Uzaktan Eğitim Merkezi. Kariyerinizi bir adım öteye taşıyın.</p>
+        <div class="footer-social">
+          <a href="https://www.facebook.com/GaziUniversitesi.1926/" title="Facebook" target="_blank"><i class="bi bi-facebook"></i></a>
+          <a href="https://x.com/Gazi_Universite" title="Twitter/X" target="_blank"><i class="bi bi-twitter-x"></i></a>
+          <a href="https://www.instagram.com/gazi_universitesi/" title="Instagram" target="_blank"><i class="bi bi-instagram"></i></a>
+          <a href="https://www.linkedin.com/school/gazi-university" title="LinkedIn" target="_blank"><i class="bi bi-linkedin"></i></a>
+          <a href="https://www.youtube.com/@GaziÜniversitesi-l4w" title="YouTube" target="_blank"><i class="bi bi-youtube"></i></a>
+        </div>
+      </div>
+      <div class="footer-col">
+        <h4>Platform</h4>
+        <ul>
+          <li><a th:href="@{/egitimler}">Eğitimler</a></li>
+          <li><a th:href="@{/hakkimizda}">Hakkımızda</a></li>
+          <li><a th:href="@{/iletisim}">İletişim</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Destek</h4>
+        <ul>
+          <li><a th:href="@{/iletisim}">İletişim</a></li>
+          <li><a th:href="@{/sss}">SSS</a></li>
+          <li><a th:href="@{/sss}">Yardım Merkezi</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Kurumsal</h4>
+        <ul>
+          <li><a th:href="@{/hakkimizda}">Hakkımızda</a></li>
+          <li><a th:href="@{/kvkk}">Gizlilik Politikası</a></li>
+          <li><a th:href="@{/kullanim}">Kullanım Koşulları</a></li>
+          <li><a th:href="@{/kvkk}">KVKK</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      &copy; 2026 GUZEM — Gazi Üniversitesi Uzaktan Eğitim Merkezi. Tüm hakları saklıdır.
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

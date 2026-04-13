@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kullanıcı Yönetimi — GUZEM Admin</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/admin}">Admin</a> <span class="separator">›</span>
+      <span class="current">Kullanıcılar</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <h1><i class="bi bi-people-fill"></i> Kullanıcı Yönetimi</h1>
+        <p style="margin:0;color:var(--text-muted);">
+          Toplam <strong th:text="${#lists.size(users)}">0</strong> kullanıcı
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    <div th:if="${successMessage}"
+         style="background:#d3f9d8;border:1px solid #69db7c;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;color:#2b8a3e;font-weight:600;">
+      <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
+    </div>
+    <div th:if="${errorMessage}"
+         style="background:#fff5f5;border:1px solid #ffc9c9;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;color:#c92a2a;font-weight:600;">
+      <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${errorMessage}"></span>
+    </div>
+
+    <!-- Arama -->
+    <div class="admin-search-bar">
+      <input type="text" id="user-filter" placeholder="Ad, kullanıcı adı veya e-posta ara..." autocomplete="off">
+      <span style="font-size:0.82rem;color:var(--text-muted);" id="filter-count"></span>
+    </div>
+
+    <div th:if="${#lists.isEmpty(users)}"
+         class="text-center" style="padding:4rem;color:var(--text-muted);">
+      <div style="font-size:3rem;margin-bottom:1rem;"><i class="bi bi-people"></i></div>
+      <p>Henüz kayıtlı kullanıcı bulunmuyor.</p>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(users)}" style="overflow-x:auto;border-radius:12px;border:1px solid var(--border);">
+      <table class="admin-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Ad Soyad</th>
+
+            <th>E-posta</th>
+            <th>Rol</th>
+            <th>Durum</th>
+            <th>Kayıt Tarihi</th>
+            <th>İşlemler</th>
+          </tr>
+        </thead>
+        <tbody id="users-table-body">
+          <tr th:each="u : ${users}"
+              class="user-row">
+            <td style="color:var(--text-muted);" th:text="${u.id}">1</td>
+
+            <td>
+              <span style="font-weight:700;" class="row-fullname" th:text="${u.fullName}">Ad Soyad</span>
+            </td>
+
+            <td class="row-email" th:text="${u.email}" style="font-size:0.82rem;color:var(--text-muted);">email</td>
+
+            <td>
+              <form th:action="@{/admin/kullanicilar/{id}/rol(id=${u.id})}" method="post" style="display:inline;">
+                <select name="role" onchange="this.form.submit()"
+                        style="font-size:0.78rem;padding:0.25rem 0.4rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer;">
+                  <option th:each="r : ${roles}"
+                          th:value="${r.name()}"
+                          th:text="${r.displayName}"
+                          th:selected="${r.name() == u.role.name()}">
+                  </option>
+                </select>
+              </form>
+            </td>
+
+            <td>
+              <span th:if="${u.locked}" class="status-badge sb-orange">
+                <i class="bi bi-lock-fill"></i> Kilitli
+              </span>
+              <span th:if="${!u.locked}" class="status-badge sb-green">
+                <i class="bi bi-check-circle-fill"></i> Aktif
+              </span>
+            </td>
+
+            <td style="white-space:nowrap;font-size:0.82rem;color:var(--text-muted);"
+                th:text="${#temporals.format(u.createdAt, 'dd.MM.yyyy')}">Tarih</td>
+
+            <td>
+              <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                
+                <!-- Detay Butonu -->
+                <button type="button" class="action-btn" style="background:#e7f5ff;color:#1c7ed6;" title="Detay"
+                        th:attr="onclick=|showUserModal('${u.fullName}', '${u.email}', '${u.phoneNumber}', '${u.birthDate}', '${u.city}', '${u.district}', '${u.fullAddress}', '${u.zipCode}')|">
+                  <i class="bi bi-info-circle-fill"></i>
+                </button>
+
+                <!-- Kilitle / Aç -->
+                <form th:action="@{/admin/kullanicilar/{id}/kilitle(id=${u.id})}" method="post">
+                  <button type="submit"
+                          th:class="${u.locked} ? 'action-btn ab-success' : 'action-btn ab-warn'"
+                          th:title="${u.locked} ? 'Kilidi Aç' : 'Kilitle'">
+                    <i th:class="${u.locked} ? 'bi bi-unlock-fill' : 'bi bi-lock-fill'"></i>
+                  </button>
+                </form>
+                <!-- Sil -->
+                <form th:if="${!u.locked}"
+                      th:action="@{/admin/kullanicilar/{id}/sil(id=${u.id})}" method="post">
+                  <button type="submit" class="action-btn ab-del"
+                          onclick="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')"
+                          title="Sil">
+                    <i class="bi bi-trash3"></i>
+                  </button>
+                </form>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</section>
+
+<!-- Kullanıcı Detay Modal -->
+<div id="userModalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:9998; backdrop-filter:blur(4px);"></div>
+<div id="userModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:90%; max-width:500px; background:var(--bg); border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 40px rgba(0,0,0,0.2); z-index:9999; padding:24px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:12px;">
+        <h3 style="margin:0; font-size:18px; color:var(--text-primary);"><i class="bi bi-person-vcard"></i> Kullanıcı Detayları</h3>
+        <button onclick="closeUserModal()" style="background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05);">
+            <strong style="color:var(--text-secondary); font-size:14px;">Ad Soyad:</strong>
+            <span id="modalFullName" style="font-weight:600; color:var(--text-primary);"></span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05);">
+            <strong style="color:var(--text-secondary); font-size:14px;">E-posta:</strong>
+            <span id="modalEmail" style="color:var(--text-primary);"></span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05);">
+            <strong style="color:var(--text-secondary); font-size:14px;">Telefon:</strong>
+            <span id="modalPhone" style="color:var(--text-primary);"></span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05);">
+            <strong style="color:var(--text-secondary); font-size:14px;">Doğum Tarihi:</strong>
+            <span id="modalBirthDate" style="color:var(--text-primary);"></span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05);">
+            <strong style="color:var(--text-secondary); font-size:14px;">İl / İlçe:</strong>
+            <span id="modalLocation" style="color:var(--text-primary);"></span>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05);">
+            <strong style="color:var(--text-secondary); font-size:14px;">Tam Adres (<span id="modalZipcode"></span>)</strong>
+            <p id="modalAddress" style="margin:0; font-size:14px; color:var(--text-muted); line-height:1.5;"></p>
+        </div>
+    </div>
+    <div style="text-align:right; margin-top:24px;">
+        <button onclick="closeUserModal()" class="btn btn-primary" style="padding:10px 24px; border-radius:8px;">Kapat</button>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+<script>
+(function() {
+  const input = document.getElementById('user-filter');
+  const count = document.getElementById('filter-count');
+  if (!input) return;
+  const rows = Array.from(document.querySelectorAll('.user-row'));
+  input.addEventListener('input', function() {
+    const q = this.value.trim().toLowerCase();
+    let visible = 0;
+    rows.forEach(r => {
+      const name  = (r.querySelector('.row-fullname')?.textContent || '').toLowerCase();
+      const email = (r.querySelector('.row-email')?.textContent || '').toLowerCase();
+      const show  = !q || name.includes(q) || email.includes(q);
+      r.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    count.textContent = q ? visible + ' sonuç' : '';
+  });
+})();
+
+function showUserModal(name, email, phone, birthDate, city, district, address, zip) {
+    document.getElementById('modalFullName').textContent = name || '-';
+    document.getElementById('modalEmail').textContent = email || '-';
+    document.getElementById('modalPhone').textContent = phone && phone !== 'null' ? phone : 'Belirtilmemiş';
+    document.getElementById('modalBirthDate').textContent = birthDate && birthDate !== 'null' ? birthDate : 'Belirtilmemiş';
+    
+    let locationStr = 'Belirtilmemiş';
+    if (city && city !== 'null') {
+        locationStr = city;
+        if (district && district !== 'null') locationStr += ' / ' + district;
+    }
+    document.getElementById('modalLocation').textContent = locationStr;
+    
+    document.getElementById('modalAddress').textContent = address && address !== 'null' ? address : 'Adres bilgisi yok';
+    document.getElementById('modalZipcode').textContent = zip && zip !== 'null' ? zip : 'Posta Kodu Yok';
+
+    document.getElementById('userModalOverlay').style.display = 'block';
+    document.getElementById('userModal').style.display = 'block';
+}
+
+function closeUserModal() {
+    document.getElementById('userModalOverlay').style.display = 'none';
+    document.getElementById('userModal').style.display = 'none';
+}
+</script>
+</body>
+</html>

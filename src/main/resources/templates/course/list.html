@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="tr"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eğitimler | Gazi Üniversitesi</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    /* ---------- Sidebar Filtre Stilleri ---------- */
+    .filter-section { margin-bottom: 20px; }
+    .filter-section h4 {
+      font-size: 0.82rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin: 0 0 10px 0;
+    }
+    .sort-options { display: flex; flex-direction: column; gap: 4px; }
+    .sort-option {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.87rem;
+      color: var(--text-secondary);
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .sort-option:hover { background: var(--bg-alt); }
+    .sort-option.active { background: var(--bg-alt); font-weight: 600; color: var(--primary); }
+    .sort-option input[type="radio"] { accent-color: var(--primary); width: 14px; height: 14px; }
+
+    .price-range-display {
+      display: flex; justify-content: space-between;
+      font-size: 0.88rem; font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 8px;
+    }
+    .price-inputs { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+    .price-inputs input[type="range"] {
+      width: 100%; accent-color: var(--primary); cursor: pointer;
+    }
+    .price-presets { display: flex; flex-wrap: wrap; gap: 6px; }
+    .price-preset {
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+      background: transparent;
+      font-size: 0.78rem;
+      cursor: pointer;
+      transition: all 0.15s;
+      color: var(--text-secondary);
+    }
+    .price-preset:hover, .price-preset.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+    }
+
+    .result-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+    #active-filter-badge {
+      display: none;
+      background: var(--bg-alt);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 0.78rem;
+      color: var(--primary);
+      font-weight: 600;
+    }
+    .course-card-hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<div th:replace="~{fragments/navbar :: navbar}" th:with="activeMenu='courses'"></div>
+
+<!-- Page Header -->
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/}">Ana Sayfa</a>
+      <span class="separator">›</span>
+      <span class="current">Eğitimler</span>
+    </div>
+    <h1>Eğitim Kataloğu</h1>
+    <p>İlgi alanınıza göre eğitimleri keşfedin ve öğrenmeye hemen başlayın.</p>
+  </div>
+</section>
+
+<!-- Courses Section -->
+<section class="section">
+  <div class="container">
+    <div class="courses-layout">
+
+      <!-- ===== Sidebar ===== -->
+      <aside class="sidebar-wrapper fade-in">
+
+        <!-- Arama -->
+        <div class="filter-bar" style="margin-bottom:20px;">
+          <div class="search-box">
+            <span><i class="bi bi-search"></i></span>
+            <input type="text" id="course-search"
+                   th:value="${keyword}"
+                   placeholder="Eğitim ara...">
+          </div>
+        </div>
+
+        <!-- Kategoriler -->
+        <div class="filter-bar" style="margin-bottom:20px;">
+          <h3>Kategoriler</h3>
+          <a th:href="@{/egitimler}"
+             class="filter-btn"
+             th:classappend="${selectedCategory == null} ? ' active'">Tümü</a>
+          <a th:each="cat : ${categories}"
+             th:href="@{/egitimler(category=${cat.name()})}"
+             class="filter-btn"
+             th:classappend="${selectedCategory != null and selectedCategory.name() == cat.name()} ? ' active'"
+             th:text="${cat.displayName}">Kategori</a>
+        </div>
+
+        <!-- Filtrele & Sırala -->
+        <div class="filter-bar">
+          <h3>Filtrele &amp; Sırala</h3>
+
+          <!-- Sıralama -->
+          <div class="filter-section">
+            <h4>Sıralama</h4>
+            <div class="sort-options">
+              <label class="sort-option active" data-sort="default">
+                <input type="radio" name="sort" value="default" checked> Varsayılan
+              </label>
+              <label class="sort-option" data-sort="az">
+                <input type="radio" name="sort" value="az"> A'dan Z'ye
+              </label>
+              <label class="sort-option" data-sort="za">
+                <input type="radio" name="sort" value="za"> Z'den A'ya
+              </label>
+              <label class="sort-option" data-sort="price-asc">
+                <input type="radio" name="sort" value="price-asc"> Fiyat: Düşükten Yükseğe
+              </label>
+              <label class="sort-option" data-sort="price-desc">
+                <input type="radio" name="sort" value="price-desc"> Fiyat: Yüksekten Düşüğe
+              </label>
+            </div>
+          </div>
+
+          <!-- Fiyat Aralığı -->
+          <div class="filter-section">
+            <h4>Fiyat Aralığı</h4>
+            <div class="price-range-display">
+              <span id="price-min-label">₺0</span>
+              <span>—</span>
+              <span id="price-max-label">₺200.000</span>
+            </div>
+            <div class="price-inputs">
+              <input type="range" id="price-min" min="0" max="200000" value="0" step="1000">
+              <input type="range" id="price-max" min="0" max="200000" value="200000" step="1000">
+            </div>
+            <div class="price-presets">
+              <button class="price-preset active" data-min="0" data-max="200000">Tümü</button>
+              <button class="price-preset" data-min="0" data-max="0">Ücretsiz</button>
+              <button class="price-preset" data-min="1" data-max="4999">₺1–₺4.999</button>
+              <button class="price-preset" data-min="5000" data-max="200000">₺5.000+</button>
+            </div>
+          </div>
+
+          <button class="btn btn-secondary" id="reset-filters"
+                  style="width:100%;margin-top:8px;">
+            <i class="bi bi-arrow-counterclockwise"></i> Filtreleri Sıfırla
+          </button>
+        </div>
+
+      </aside>
+
+      <!-- ===== Main ===== -->
+      <div class="courses-main">
+
+        <!-- Sonuç / aktif filtre çubuğu -->
+        <div class="result-bar">
+          <span id="result-count">
+            <span th:text="${courses.totalElements}">0</span> eğitim bulundu
+            <span th:if="${keyword != null and !#strings.isEmpty(keyword)}">
+              — "<strong th:text="${keyword}"></strong>"
+            </span>
+          </span>
+          <span id="active-filter-badge">Filtre aktif</span>
+        </div>
+
+        <!-- Kurs grid — her karta data attribute'ları ekliyoruz -->
+        <div class="courses-grid" id="courses-grid"
+             th:if="${courses.totalElements > 0}">
+          <a th:each="course : ${courses.content}"
+             th:href="@{/egitimler/{id}(id=${course.id})}"
+             class="card course-card fade-in"
+             th:attr="data-title=${course.title},
+                      data-price=${course.price != null ? course.price : 0},
+                      data-category=${course.categoryDisplayName}">
+            <div class="card-body">
+              <span class="card-category" th:text="${course.categoryDisplayName}">Kategori</span>
+              <h4 class="card-title" th:text="${course.title}">Kurs Başlığı</h4>
+              <div class="card-meta">
+                <div class="meta-item" th:if="${course.instructorName != null}">
+                  <i class="bi bi-person-workspace"></i>
+                  <span th:text="${course.instructorName}">Eğitmen</span>
+                </div>
+                <div class="meta-item" th:if="${course.startDate != null}">
+                  <i class="bi bi-calendar3"></i>
+                  <span th:text="${#temporals.format(course.startDate, 'dd.MM.yyyy')}">Tarih</span>
+                </div>
+                <span class="card-price"
+                      th:text="${course.price == null or course.price.signum() == 0} ? 'Ücretsiz' : '₺' + ${#numbers.formatDecimal(course.price, 1, 'POINT', 0, 'COMMA')}">
+                  ₺0
+                </span>
+              </div>
+              <div th:if="${course.enrolled}"
+                   style="margin-top:0.5rem;font-size:0.8rem;color:var(--accent-600);font-weight:600;">
+                <i class="bi bi-check-circle-fill"></i> Kayıtlısınız
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Filtre sonucu boş mesajı (JS yönetir) -->
+        <div id="no-results-msg" style="display:none;text-align:center;padding:3rem;color:var(--text-muted);">
+          <div style="font-size:3rem;margin-bottom:1rem;"><i class="bi bi-funnel"></i></div>
+          <p>Filtreyle eşleşen eğitim bulunamadı.</p>
+          <button onclick="document.getElementById('reset-filters').click()"
+                  class="btn btn-secondary" style="margin-top:1rem;">
+            Filtreleri Sıfırla
+          </button>
+        </div>
+
+        <!-- DB sonucu boş -->
+        <div th:if="${courses.totalElements == 0}"
+             class="text-center" style="padding:4rem;color:var(--text-muted);">
+          <div style="font-size:3rem;margin-bottom:1rem;"><i class="bi bi-search"></i></div>
+          <p>Aramanızla eşleşen eğitim bulunamadı.</p>
+          <a th:href="@{/egitimler}" class="btn btn-secondary" style="margin-top:1rem;">
+            Tüm Eğitimleri Gör
+          </a>
+        </div>
+
+        <!-- Sayfalama -->
+        <div th:if="${totalPages > 1}"
+             style="display:flex;gap:0.5rem;justify-content:center;margin-top:2rem;">
+          <a th:if="${currentPage > 0}"
+             th:href="@{/egitimler(page=${currentPage - 1}, category=${selectedCategory?.name()}, keyword=${keyword})}"
+             class="btn btn-secondary">← Önceki</a>
+          <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+            <a th:href="@{/egitimler(page=${i}, category=${selectedCategory?.name()}, keyword=${keyword})}"
+               class="btn"
+               th:classappend="${i == currentPage} ? ' btn-primary' : ' btn-secondary'"
+               th:text="${i + 1}">1</a>
+          </th:block>
+          <a th:if="${currentPage < totalPages - 1}"
+             th:href="@{/egitimler(page=${currentPage + 1}, category=${selectedCategory?.name()}, keyword=${keyword})}"
+             class="btn btn-secondary">Sonraki →</a>
+        </div>
+
+      </div><!-- courses-main -->
+
+    </div><!-- courses-layout -->
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-content fade-in">
+      <h2>Aradığınız Eğitimi Bulamadınız mı?</h2>
+      <p>Bize eğitim önerilerinizi iletin, sizin için en uygun içeriği hazırlayalım.</p>
+      <div class="cta-actions">
+        <a th:href="@{/iletisim}" class="btn btn-primary btn-lg">Bizimle İletişime Geçin</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+<script>
+(function () {
+  const grid = document.getElementById('courses-grid');
+  if (!grid) return;
+
+  const searchInput  = document.getElementById('course-search');
+  const noResultsMsg = document.getElementById('no-results-msg');
+  const resultCount  = document.getElementById('result-count');
+  const filterBadge  = document.getElementById('active-filter-badge');
+
+  let allCards = Array.from(grid.querySelectorAll('.course-card'));
+  let originalOrder = allCards.slice();
+  let activeSort  = 'default';
+  let minPrice    = 0;
+  let maxPrice    = 200000;
+
+  // --- Fiyat yardımcı ---
+  function getPrice(card) {
+    return parseFloat(card.dataset.price) || 0;
+  }
+
+  // --- Sıralama ---
+  document.querySelectorAll('.sort-option').forEach(opt => {
+    opt.addEventListener('click', () => {
+      document.querySelectorAll('.sort-option').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      activeSort = opt.dataset.sort;
+      applyFilters();
+    });
+  });
+
+  // --- Fiyat range slider ---
+  const minEl  = document.getElementById('price-min');
+  const maxEl  = document.getElementById('price-max');
+  const minLbl = document.getElementById('price-min-label');
+  const maxLbl = document.getElementById('price-max-label');
+
+  minEl.addEventListener('input', () => {
+    minPrice = parseInt(minEl.value);
+    if (minPrice > maxPrice) { minPrice = maxPrice; minEl.value = minPrice; }
+    minLbl.textContent = '₺' + minPrice.toLocaleString('tr-TR');
+    applyFilters();
+  });
+  maxEl.addEventListener('input', () => {
+    maxPrice = parseInt(maxEl.value);
+    if (maxPrice < minPrice) { maxPrice = minPrice; maxEl.value = maxPrice; }
+    maxLbl.textContent = '₺' + maxPrice.toLocaleString('tr-TR');
+    applyFilters();
+  });
+
+  // --- Fiyat preset butonları ---
+  document.querySelectorAll('.price-preset').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.price-preset').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      minPrice = parseInt(btn.dataset.min);
+      maxPrice = parseInt(btn.dataset.max);
+      minEl.value = minPrice; minLbl.textContent = '₺' + minPrice.toLocaleString('tr-TR');
+      maxEl.value = maxPrice; maxLbl.textContent = '₺' + maxPrice.toLocaleString('tr-TR');
+      applyFilters();
+    });
+  });
+
+  // --- Canlı arama ---
+  searchInput && searchInput.addEventListener('input', applyFilters);
+
+  // --- Sıfırla ---
+  document.getElementById('reset-filters').addEventListener('click', () => {
+    activeSort = 'default'; minPrice = 0; maxPrice = 200000;
+    document.querySelectorAll('.sort-option')[0].click();
+    document.querySelectorAll('.price-preset')[0].click();
+    minEl.value = 0;  minLbl.textContent = '₺0';
+    maxEl.value = 200000; maxLbl.textContent = '₺200.000';
+    if (searchInput) searchInput.value = '';
+    applyFilters();
+  });
+
+  // --- Ana filtre + sıralama fonksiyonu ---
+  function applyFilters() {
+    const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
+    const isFiltered = q || minPrice > 0 || maxPrice < 200000 || activeSort !== 'default';
+    filterBadge.style.display = isFiltered ? 'inline-block' : 'none';
+
+    // Hangi kartlar görünür?
+    let visible = allCards.filter(card => {
+      const price = getPrice(card);
+      const title = (card.dataset.title || '').toLowerCase();
+      const cat   = (card.dataset.category || '').toLowerCase();
+      const matchPrice  = price >= minPrice && price <= maxPrice;
+      const matchSearch = !q || title.includes(q) || cat.includes(q);
+      return matchPrice && matchSearch;
+    });
+
+    // Sıralama
+    if (activeSort === 'az')
+      visible.sort((a, b) => (a.dataset.title || '').localeCompare(b.dataset.title || '', 'tr'));
+    else if (activeSort === 'za')
+      visible.sort((a, b) => (b.dataset.title || '').localeCompare(a.dataset.title || '', 'tr'));
+    else if (activeSort === 'price-asc')
+      visible.sort((a, b) => getPrice(a) - getPrice(b));
+    else if (activeSort === 'price-desc')
+      visible.sort((a, b) => getPrice(b) - getPrice(a));
+    else
+      visible.sort((a, b) => originalOrder.indexOf(a) - originalOrder.indexOf(b));
+
+    // Tüm kartları gizle, sonra sıralı olarak ekle
+    allCards.forEach(c => c.classList.add('course-card-hidden'));
+    visible.forEach(c => {
+      c.classList.remove('course-card-hidden');
+      grid.appendChild(c); // sırayı güncelle
+    });
+
+    // Sonuç sayısı
+    const countSpan = resultCount.querySelector('span:first-child');
+    if (countSpan) countSpan.textContent = visible.length;
+
+    // Boş durum
+    noResultsMsg.style.display = visible.length === 0 ? 'block' : 'none';
+    grid.style.display = visible.length === 0 ? 'none' : '';
+  }
+
+  applyFilters();
+})();
+</script>
+</body>
+</html>
