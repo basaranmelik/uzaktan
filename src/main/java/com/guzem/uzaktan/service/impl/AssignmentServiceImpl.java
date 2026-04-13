@@ -19,7 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +30,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -147,15 +152,18 @@ public class AssignmentServiceImpl implements AssignmentService {
         boolean hasText = request.getTextAnswer() != null && !request.getTextAnswer().isBlank();
         boolean hasFile = file != null && !file.isEmpty();
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", userId));
+
         String filePath = null;
         String originalFileName = null;
         if (hasFile) {
-            filePath = storeSubmissionFile(file, assignmentId);
+            String baseName = user.getLastName() + "_" + user.getFirstName()
+                    + "_" + assignment.getCourse().getTitle()
+                    + "_" + assignment.getTitle();
+            filePath = storeSubmissionFile(file, assignmentId, baseName);
             originalFileName = file.getOriginalFilename();
         }
-
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", userId));
 
         AssignmentSubmission submission = AssignmentSubmission.builder()
                 .assignment(assignment)
@@ -165,6 +173,51 @@ public class AssignmentServiceImpl implements AssignmentService {
                 .originalFileName(originalFileName)
                 .status(SubmissionStatus.SUBMITTED)
                 .build();
+
+        return assignmentMapper.toSubmissionResponse(submissionRepository.save(submission));
+    }
+
+    @Override
+    public SubmissionResponse updateSubmission(Long assignmentId, Long userId,
+                                               SubmissionCreateRequest request,
+                                               MultipartFile file) {
+        Assignment assignment = loadAssignment(assignmentId);
+
+        if (LocalDateTime.now().isAfter(assignment.getDueDate())) {
+            throw new UnauthorizedActionException("Son teslim tarihi geçtiği için güncelleme yapılamaz.");
+        }
+
+        AssignmentSubmission submission = submissionRepository
+                .findByAssignmentIdAndUserId(assignmentId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Teslim", "assignmentId", assignmentId));
+
+        boolean hasText = request.getTextAnswer() != null && !request.getTextAnswer().isBlank();
+        boolean hasFile = file != null && !file.isEmpty();
+        if (!hasText && !hasFile && submission.getFilePath() == null && submission.getTextAnswer() == null) {
+            throw new UnauthorizedActionException("Metin cevabı veya dosya yüklemelisiniz.");
+        }
+
+        if (hasFile) {
+            if (submission.getFilePath() != null) {
+                fileStorageService.delete(submission.getFilePath());
+            }
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", userId));
+            String baseName = user.getLastName() + "_" + user.getFirstName()
+                    + "_" + assignment.getCourse().getTitle()
+                    + "_" + assignment.getTitle();
+            submission.setFilePath(storeSubmissionFile(file, assignmentId, baseName));
+            submission.setOriginalFileName(file.getOriginalFilename());
+        }
+
+        if (request.getTextAnswer() != null) {
+            submission.setTextAnswer(request.getTextAnswer().isBlank() ? null : request.getTextAnswer());
+        }
+
+        submission.setStatus(SubmissionStatus.SUBMITTED);
+        submission.setScore(null);
+        submission.setFeedback(null);
+        submission.setGradedAt(null);
 
         return assignmentMapper.toSubmissionResponse(submissionRepository.save(submission));
     }
@@ -208,6 +261,29 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional(readOnly = true)
+    public byte[] downloadSubmissionsZip(Long assignmentId, Long requestingUserId) throws IOException {
+        Assignment assignment = loadAssignment(assignmentId);
+        checkTeacherOrAdmin(assignment.getCourse(), requestingUserId);
+
+        List<AssignmentSubmission> submissions = submissionRepository.findByAssignmentIdWithUser(assignmentId);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        try (ZipOutputStream zip = new ZipOutputStream(baos)) {
+            for (AssignmentSubmission s : submissions) {
+                if (s.getFilePath() == null) continue;
+                Path file = fileStorageService.resolve(s.getFilePath());
+                if (!Files.exists(file)) continue;
+                String entryName = file.getFileName().toString();
+                zip.putNextEntry(new ZipEntry(entryName));
+                Files.copy(file, zip);
+                zip.closeEntry();
+            }
+        }
+        return baos.toByteArray();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public long countAllAssignments() {
         return assignmentRepository.count();
     }
@@ -247,9 +323,9 @@ public class AssignmentServiceImpl implements AssignmentService {
         }
     }
 
-    private String storeSubmissionFile(MultipartFile file, Long assignmentId) {
+    private String storeSubmissionFile(MultipartFile file, Long assignmentId, String baseName) {
         try {
-            return fileStorageService.store(file, assignmentId);
+            return fileStorageService.storeWithName(file, assignmentId, baseName);
         } catch (IOException e) {
             throw new RuntimeException("Dosya kaydedilemedi: " + e.getMessage(), e);
         }

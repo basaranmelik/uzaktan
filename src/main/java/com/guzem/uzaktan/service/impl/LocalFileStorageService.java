@@ -38,6 +38,13 @@ public class LocalFileStorageService implements FileStorageService {
     }
 
     @Override
+    public String storeWithName(MultipartFile file, Long assignmentId, String baseName) throws IOException {
+        String extension = extractExtension(file.getOriginalFilename(), "");
+        String storedName = sanitizeFileName(baseName) + extension;
+        return storeFile(file, "odevler/" + assignmentId + "/" + storedName);
+    }
+
+    @Override
     public String storeVideo(MultipartFile file, Long courseId) throws IOException {
         String extension = extractExtension(file.getOriginalFilename(), ".mp4");
         String storedName = generateFileName("video", extension);
@@ -75,6 +82,16 @@ public class LocalFileStorageService implements FileStorageService {
     private String generateFileName(String prefix, String extension) {
         return prefix + "_" + System.currentTimeMillis()
                 + "_" + UUID.randomUUID().toString().substring(0, 8) + extension;
+    }
+
+    public static String sanitizeFileName(String input) {
+        if (input == null) return "dosya";
+        String s = input.toLowerCase(java.util.Locale.forLanguageTag("tr"))
+                .replace('ç', 'c').replace('ğ', 'g').replace('ı', 'i')
+                .replace('ö', 'o').replace('ş', 's').replace('ü', 'u')
+                .replace('â', 'a').replace('î', 'i').replace('û', 'u');
+        return s.replaceAll("[^a-z0-9_]+", "_").replaceAll("_+", "_")
+                .replaceAll("^_|_$", "");
     }
 
     private String extractExtension(String originalFilename, String defaultExtension) {

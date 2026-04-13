@@ -15,9 +15,10 @@ import java.time.LocalDate;
 @Setter
 public class CourseUpdateRequest {
 
-    @Size(max = 150)
+    @Size(min = 3, max = 150, message = "Başlık 3-150 karakter arası olmalıdır.")
     private String title;
 
+    @Size(max = 5000, message = "Açıklama en fazla 5000 karakter olabilir.")
     private String description;
 
     @Positive

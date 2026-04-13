@@ -78,19 +78,19 @@
 
         <div class="form-group">
           <label for="name">Eğitmen Adı Soyadı *</label>
-          <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="Örn: Dr. Ali Yılmaz">
+          <input type="text" id="name" th:field="*{name}" class="form-control" placeholder="Örn: Dr. Ali Yılmaz" maxlength="150">
           <span class="text-danger" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></span>
         </div>
 
         <div class="form-group">
           <label for="expertise">Uzmanlık Alanı *</label>
-          <input type="text" id="expertise" th:field="*{expertise}" class="form-control" placeholder="Örn: Yazılım Mühendisliği">
+          <input type="text" id="expertise" th:field="*{expertise}" class="form-control" placeholder="Örn: Yazılım Mühendisliği" maxlength="500">
           <span class="text-danger" th:if="${#fields.hasErrors('expertise')}" th:errors="*{expertise}"></span>
         </div>
 
         <div class="form-group">
           <label for="bio">Biyografi (Özgeçmiş)</label>
-          <textarea id="bio" th:field="*{bio}" class="form-control" rows="5" placeholder="Eğitim, tecrübe, çalışma alanları..."></textarea>
+          <textarea id="bio" th:field="*{bio}" class="form-control" rows="5" placeholder="Eğitim, tecrübe, çalışma alanları..." maxlength="2000"></textarea>
           <span class="text-danger" th:if="${#fields.hasErrors('bio')}" th:errors="*{bio}"></span>
         </div>
 

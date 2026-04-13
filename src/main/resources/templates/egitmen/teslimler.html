@@ -55,6 +55,12 @@
         <i class="bi bi-hourglass-split"></i>
         Bekleyen: <strong th:text="${assignment.pendingGradeCount}">0</strong>
       </div>
+      <div th:if="${assignment.submissionCount > 0}" style="margin-left:auto;">
+        <a th:href="@{/egitmen/odevler/{id}/teslimler-indir(id=${assignment.id})}"
+           class="btn btn-primary" style="font-size:0.82rem;padding:0.4rem 1rem;">
+          <i class="bi bi-file-earmark-zip-fill"></i> Tümünü İndir (.zip)
+        </a>
+      </div>
     </div>
 
     <div th:if="${#lists.isEmpty(submissions)}"

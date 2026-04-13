@@ -71,53 +71,70 @@ public class CourseVideoServiceImpl implements CourseVideoService {
     }
 
     @Override
-    public List<CourseVideoResponse> uploadMultiple(Long courseId, MultipartFile[] files, String[] titles) throws IOException {
+    public List<CourseVideoResponse> uploadMultiple(Long courseId, MultipartFile[] files,
+                                                    String[] titles, Integer[] orderIndices) throws IOException {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kurs", "id", courseId));
 
         int moduleCount = course.getModule() != null ? course.getModule() : 0;
-        long existingCount = courseVideoRepository.countByCourseId(courseId);
+        List<CourseVideo> existing = courseVideoRepository.findByCourseIdOrderByOrderIndex(courseId);
+        int existingCount = existing.size();
 
-        // Boş olmayan dosya sayısını hesapla
         long nonEmptyCount = java.util.Arrays.stream(files).filter(f -> !f.isEmpty()).count();
-
-        // Toplam video sayısı modül sayısını aşamaz
         if (moduleCount > 0 && (existingCount + nonEmptyCount) > moduleCount) {
             throw new IllegalArgumentException(
                     "Bu kursa en fazla " + moduleCount + " video eklenebilir. " +
                     "Mevcut: " + existingCount + ", eklenmek istenen: " + nonEmptyCount + ".");
         }
 
-        int startIndex = (int) existingCount + 1;
-        List<CourseVideoResponse> results = new java.util.ArrayList<>();
-
-        int fileIndex = 0;
+        // Build pending list with desired positions
+        record Pending(MultipartFile file, String title, int desiredPos) {}
+        List<Pending> pending = new java.util.ArrayList<>();
+        int fileIdx = 0;
         for (int i = 0; i < files.length; i++) {
-            MultipartFile file = files[i];
-            if (file.isEmpty()) continue;
+            if (files[i].isEmpty()) continue;
+            String original = files[i].getOriginalFilename() != null ? files[i].getOriginalFilename() : "video";
+            String videoTitle = (titles != null && i < titles.length && titles[i] != null && !titles[i].trim().isEmpty())
+                    ? titles[i].trim()
+                    : (original.contains(".") ? original.substring(0, original.lastIndexOf('.')) : original);
+            int desiredPos = (orderIndices != null && i < orderIndices.length && orderIndices[i] != null)
+                    ? Math.max(1, orderIndices[i])
+                    : existingCount + fileIdx + 1;
+            pending.add(new Pending(files[i], videoTitle, desiredPos));
+            fileIdx++;
+        }
 
-            String original = file.getOriginalFilename() != null ? file.getOriginalFilename() : "video";
+        // Process in ascending desired-position order so earlier insertions shift correctly
+        pending.sort(java.util.Comparator.comparingInt(Pending::desiredPos));
 
-            // Başlık: titles dizisinden al, yoksa dosya adından türet
-            String videoTitle;
-            if (titles != null && i < titles.length && titles[i] != null && !titles[i].trim().isEmpty()) {
-                videoTitle = titles[i].trim();
-            } else {
-                videoTitle = original.contains(".")
-                        ? original.substring(0, original.lastIndexOf('.'))
-                        : original;
-            }
+        // Working list starts with existing videos
+        List<CourseVideo> workingList = new java.util.ArrayList<>(existing);
 
-            String filePath = fileStorageService.storeVideo(file, courseId);
+        List<CourseVideoResponse> results = new java.util.ArrayList<>();
+        int insertionOffset = 0;
+        for (Pending p : pending) {
+            String filePath = fileStorageService.storeVideo(p.file(), courseId);
+            String original = p.file().getOriginalFilename() != null ? p.file().getOriginalFilename() : "video";
             CourseVideo video = CourseVideo.builder()
                     .course(course)
-                    .title(videoTitle)
-                    .orderIndex(startIndex + fileIndex)
+                    .title(p.title())
+                    .orderIndex(0)
                     .filePath(filePath)
                     .originalFileName(original)
                     .build();
-            results.add(courseVideoMapper.toResponse(courseVideoRepository.save(video), false));
-            fileIndex++;
+            int insertAt = Math.min(Math.max(0, p.desiredPos() + insertionOffset - 1), workingList.size());
+            workingList.add(insertAt, video);
+            insertionOffset++;
+        }
+
+        // Renumber all and save new ones (existing managed entities auto-flush)
+        for (int i = 0; i < workingList.size(); i++) {
+            workingList.get(i).setOrderIndex(i + 1);
+        }
+        for (CourseVideo v : workingList) {
+            if (v.getId() == null) {
+                results.add(courseVideoMapper.toResponse(courseVideoRepository.save(v), false));
+            }
         }
 
         return results;

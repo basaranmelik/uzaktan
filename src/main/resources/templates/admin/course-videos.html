@@ -169,7 +169,7 @@
                  onchange="showPreview(this)">
           <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">
             Desteklenen formatlar: MP4, WebM, OGG, MOV, AVI &nbsp;·&nbsp;
-            Sıra numarası mevcut videoların devamından otomatik atanır
+            Her video için başlık ve liste konumu belirleyebilirsiniz
           </div>
         </div>
 
@@ -334,24 +334,28 @@ function showPreview(input) {
     btn.disabled = false;
   }
 
+  const maxPos = startIndex + files.length - 1;
   list.innerHTML = files.map((f, i) => {
     const nameNoExt = f.name.includes('.') ? f.name.substring(0, f.name.lastIndexOf('.')) : f.name;
     const sizeMb = (f.size / (1024 * 1024)).toFixed(1);
+    const defaultPos = startIndex + i;
     return `
       <div style="padding:0.75rem 1rem;${i < files.length - 1 ? 'border-bottom:1px solid var(--gray-100);' : ''}">
         <div style="display:flex;align-items:center;gap:0.75rem;font-size:0.875rem;margin-bottom:0.5rem;">
-          <span style="min-width:26px;height:26px;border-radius:50%;background:var(--primary-100);
-                       color:var(--primary-700);font-size:0.72rem;font-weight:700;
-                       display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-            ${startIndex + i}
-          </span>
-          <span style="color:var(--text-muted);font-size:0.78rem;">${f.name}</span>
+          <i class="bi bi-file-earmark-play" style="color:var(--primary-400);flex-shrink:0;"></i>
+          <span style="color:var(--text-muted);font-size:0.78rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</span>
           <span style="color:var(--text-muted);font-size:0.78rem;flex-shrink:0;">${sizeMb} MB</span>
         </div>
-        <div style="padding-left:2.25rem;">
+        <div style="display:flex;gap:0.6rem;align-items:center;">
           <input type="text" name="titles" value="${nameNoExt}" class="form-control"
-                 placeholder="Video başlığı girin" required
-                 style="font-size:0.85rem;padding:0.4rem 0.65rem;">
+                 placeholder="Video başlığı girin" maxlength="200" required
+                 style="font-size:0.85rem;padding:0.4rem 0.65rem;flex:1;">
+          <div style="display:flex;align-items:center;gap:0.35rem;flex-shrink:0;">
+            <label style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;margin:0;">Sıra:</label>
+            <input type="number" name="orderIndices" value="${defaultPos}" min="1" max="${maxPos}"
+                   class="form-control"
+                   style="font-size:0.85rem;padding:0.4rem 0.5rem;width:72px;text-align:center;">
+          </div>
         </div>
       </div>`;
   }).join('');

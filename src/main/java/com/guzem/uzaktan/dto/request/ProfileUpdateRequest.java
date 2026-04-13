@@ -2,6 +2,7 @@ package com.guzem.uzaktan.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -10,9 +11,11 @@ import lombok.Setter;
 public class ProfileUpdateRequest {
 
     @NotBlank(message = "Ad boş olamaz.")
+    @Size(min = 2, max = 100, message = "Ad 2-100 karakter arası olmalıdır.")
     private String firstName;
 
     @NotBlank(message = "Soyad boş olamaz.")
+    @Size(min = 2, max = 100, message = "Soyad 2-100 karakter arası olmalıdır.")
     private String lastName;
 
     @Email(message = "Geçerli bir e-posta giriniz.")
@@ -24,11 +27,15 @@ public class ProfileUpdateRequest {
     )
     private String phoneNumber;
 
+    @Size(max = 100, message = "Şehir adı en fazla 100 karakter olabilir.")
     private String city;
 
+    @Size(max = 100, message = "İlçe adı en fazla 100 karakter olabilir.")
     private String district;
 
+    @Size(max = 10, message = "Posta kodu en fazla 10 karakter olabilir.")
     private String zipCode;
 
+    @Size(max = 500, message = "Adres en fazla 500 karakter olabilir.")
     private String fullAddress;
 }

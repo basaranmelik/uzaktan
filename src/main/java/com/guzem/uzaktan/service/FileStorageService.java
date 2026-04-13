@@ -9,6 +9,8 @@ public interface FileStorageService {
 
     String store(MultipartFile file, Long assignmentId) throws IOException;
 
+    String storeWithName(MultipartFile file, Long assignmentId, String baseName) throws IOException;
+
     String storeVideo(MultipartFile file, Long courseId) throws IOException;
 
     String storeImage(MultipartFile file) throws IOException;

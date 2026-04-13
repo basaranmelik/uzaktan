@@ -17,9 +17,10 @@ import java.time.LocalDate;
 public class CourseCreateRequest {
 
     @NotBlank(message = "Kurs başlığı boş olamaz.")
-    @Size(max = 150, message = "Başlık en fazla 150 karakter olabilir.")
+    @Size(min = 3, max = 150, message = "Başlık 3-150 karakter arası olmalıdır.")
     private String title;
 
+    @Size(max = 5000, message = "Açıklama en fazla 5000 karakter olabilir.")
     private String description;
 
     @NotNull(message = "Fiyat boş olamaz.")

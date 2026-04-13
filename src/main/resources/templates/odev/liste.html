@@ -50,7 +50,28 @@
           </div>
 
           <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.5rem;">
-            <!-- Submission durumu model'de yoksa sadece link göster -->
+
+            <!-- Teslim durumu rozeti -->
+            <span th:with="sub=${submissionByAssignment[a.id]}">
+              <span th:if="${sub == null and a.dueDate.isBefore(#temporals.createNow())}"
+                    style="padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:600;background:#fff5f5;color:#e03131;">
+                <i class="bi bi-x-circle-fill"></i> Teslim Edilmedi
+              </span>
+              <span th:if="${sub == null and !a.dueDate.isBefore(#temporals.createNow())}"
+                    style="padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:600;background:#fff9db;color:#e67700;">
+                <i class="bi bi-hourglass-split"></i> Bekliyor
+              </span>
+              <span th:if="${sub != null and sub.status.name() == 'SUBMITTED'}"
+                    style="padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:600;background:#fff4e6;color:#e8590c;">
+                <i class="bi bi-send-check-fill"></i> Teslim Edildi
+              </span>
+              <span th:if="${sub != null and sub.status.name() == 'GRADED'}"
+                    style="padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:600;background:#d3f9d8;color:#2b8a3e;">
+                <i class="bi bi-trophy-fill"></i>
+                Notlandı: <span th:text="${sub.score}">0</span> / <span th:text="${sub.assignmentMaxScore}">100</span>
+              </span>
+            </span>
+
             <a th:href="@{/odevlerim/{id}(id=${a.id})}"
                class="btn btn-primary" style="padding:0.4rem 1rem;font-size:0.85rem;">
               <i class="bi bi-arrow-right-circle"></i> Görüntüle

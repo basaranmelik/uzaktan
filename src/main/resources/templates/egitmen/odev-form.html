@@ -52,14 +52,14 @@
           <label>Ödev Başlığı *</label>
           <input type="text" th:field="*{title}" class="form-control"
                  th:classappend="${#fields.hasErrors('title')} ? ' is-invalid'"
-                 placeholder="Ödevi tanımlayan kısa bir başlık" required autofocus>
+                 placeholder="Ödevi tanımlayan kısa bir başlık" maxlength="200" required autofocus>
           <div class="invalid-feedback" th:errors="*{title}" th:if="${#fields.hasErrors('title')}"></div>
         </div>
 
         <div class="form-group">
           <label>Açıklama / Görev Tanımı</label>
           <textarea th:field="*{description}" class="form-control" rows="5"
-                    placeholder="Öğrencilerin ne yapması gerektiğini açıklayın..."></textarea>
+                    placeholder="Öğrencilerin ne yapması gerektiğini açıklayın..." maxlength="3000"></textarea>
         </div>
 
         <div class="form-row">

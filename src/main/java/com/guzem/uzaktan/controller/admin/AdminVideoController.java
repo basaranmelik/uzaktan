@@ -32,6 +32,7 @@ public class AdminVideoController {
     public String uploadVideos(@PathVariable Long courseId,
                                @RequestParam("files") MultipartFile[] files,
                                @RequestParam(value = "titles", required = false) String[] titles,
+                               @RequestParam(value = "orderIndices", required = false) Integer[] orderIndices,
                                RedirectAttributes redirectAttributes) {
         try {
             long nonEmpty = java.util.Arrays.stream(files).filter(f -> !f.isEmpty()).count();
@@ -39,7 +40,7 @@ public class AdminVideoController {
                 redirectAttributes.addFlashAttribute("errorMessage", "Lütfen en az bir video dosyası seçin.");
                 return "redirect:/admin/kurslar/" + courseId + "/videolar";
             }
-            courseVideoService.uploadMultiple(courseId, files, titles);
+            courseVideoService.uploadMultiple(courseId, files, titles, orderIndices);
             redirectAttributes.addFlashAttribute("successMessage",
                     nonEmpty + " video başarıyla yüklendi.");
         } catch (IllegalArgumentException e) {

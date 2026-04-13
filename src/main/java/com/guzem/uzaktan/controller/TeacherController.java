@@ -9,6 +9,10 @@ import com.guzem.uzaktan.service.CourseService;
 import com.guzem.uzaktan.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -128,6 +132,19 @@ public class TeacherController {
         model.addAttribute("assignment", assignmentService.findById(id));
         model.addAttribute("submissions", assignmentService.findSubmissionsByAssignment(id, userService.findUserIdByEmail(principal.getUsername())));
         return "egitmen/teslimler";
+    }
+
+    @GetMapping("/odevler/{id}/teslimler-indir")
+    public ResponseEntity<byte[]> downloadSubmissionsZip(@PathVariable Long id,
+                                                         @AuthenticationPrincipal UserDetails principal) throws java.io.IOException {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        byte[] zip = assignmentService.downloadSubmissionsZip(id, userId);
+        var assignment = assignmentService.findById(id);
+        String filename = com.guzem.uzaktan.service.impl.LocalFileStorageService.sanitizeFileName(assignment.getTitle()) + "_teslimler.zip";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("application/zip"));
+        headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());
+        return ResponseEntity.ok().headers(headers).body(zip);
     }
 
     @GetMapping("/teslimler/{submissionId}/notlandir")

@@ -125,7 +125,7 @@
         <div class="form-group">
           <label>Geri Bildirim <span style="font-weight:400;color:var(--text-muted);">(isteğe bağlı)</span></label>
           <textarea th:field="*{feedback}" class="form-control" rows="4"
-                    placeholder="Öğrenciye göndermek istediğiniz yorum veya öneri..."></textarea>
+                    placeholder="Öğrenciye göndermek istediğiniz yorum veya öneri..." maxlength="2000"></textarea>
           <div class="invalid-feedback" th:errors="*{feedback}" th:if="${#fields.hasErrors('feedback')}"></div>
         </div>
 

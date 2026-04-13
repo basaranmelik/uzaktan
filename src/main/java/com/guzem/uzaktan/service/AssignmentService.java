@@ -37,6 +37,10 @@ public interface AssignmentService {
                               SubmissionCreateRequest request,
                               MultipartFile file);
 
+    SubmissionResponse updateSubmission(Long assignmentId, Long userId,
+                                        SubmissionCreateRequest request,
+                                        MultipartFile file);
+
     Optional<SubmissionResponse> findSubmission(Long assignmentId, Long userId);
 
     SubmissionResponse findSubmissionById(Long submissionId);
@@ -44,6 +48,8 @@ public interface AssignmentService {
     List<SubmissionResponse> findAllSubmissionsForStudent(Long userId);
 
     List<AssignmentResponse> findPendingAssignmentsForStudent(Long userId);
+
+    byte[] downloadSubmissionsZip(Long assignmentId, Long requestingUserId) throws java.io.IOException;
 
     // --- Admin istatistikleri ---
 

@@ -10,7 +10,7 @@ public interface CourseVideoService {
 
     CourseVideoResponse upload(Long courseId, String title, String description, Integer orderIndex, MultipartFile file) throws IOException;
 
-    List<CourseVideoResponse> uploadMultiple(Long courseId, MultipartFile[] files, String[] titles) throws IOException;
+    List<CourseVideoResponse> uploadMultiple(Long courseId, MultipartFile[] files, String[] titles, Integer[] orderIndices) throws IOException;
 
     List<CourseVideoResponse> findByCourse(Long courseId);
 

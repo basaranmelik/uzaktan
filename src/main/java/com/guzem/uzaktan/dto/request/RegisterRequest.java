@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -28,9 +29,11 @@ public class RegisterRequest {
     private String confirmPassword;
 
     @NotBlank(message = "Ad boş olamaz.")
+    @Size(min = 2, max = 100, message = "Ad 2-100 karakter arası olmalıdır.")
     private String firstName;
 
     @NotBlank(message = "Soyad boş olamaz.")
+    @Size(min = 2, max = 100, message = "Soyad 2-100 karakter arası olmalıdır.")
     private String lastName;
 
     @jakarta.validation.constraints.Pattern(

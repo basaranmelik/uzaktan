@@ -48,14 +48,14 @@
           <label>Kurs Başlığı *</label>
           <input type="text" th:field="*{title}" class="form-control"
                  th:classappend="${#fields.hasErrors('title')} ? ' is-invalid'"
-                 placeholder="Kursun tam adı" required autofocus>
+                 placeholder="Kursun tam adı" maxlength="150" required autofocus>
           <div class="invalid-feedback" th:errors="*{title}" th:if="${#fields.hasErrors('title')}"></div>
         </div>
 
         <div class="form-group">
           <label>Açıklama</label>
           <textarea th:field="*{description}" class="form-control" rows="4"
-                    placeholder="Kursun içeriği, hedef kitlesi, kazanımlar..."></textarea>
+                    placeholder="Kursun içeriği, hedef kitlesi, kazanımlar..." maxlength="5000"></textarea>
         </div>
 
         <div class="form-row">

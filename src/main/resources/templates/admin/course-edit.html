@@ -109,7 +109,7 @@
         <div class="form-group">
           <label>Kurs Başlığı</label>
           <input type="text" th:field="*{title}" class="form-control"
-                 th:placeholder="${course.title}">
+                 th:placeholder="${course.title}" maxlength="150">
           <div class="current-val">
             <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.title}">—</strong>
           </div>
@@ -118,7 +118,7 @@
         <div class="form-group">
           <label>Açıklama</label>
           <textarea th:field="*{description}" class="form-control" rows="4"
-                    th:placeholder="${course.description}"></textarea>
+                    th:placeholder="${course.description}" maxlength="5000"></textarea>
         </div>
 
         <div class="form-row">

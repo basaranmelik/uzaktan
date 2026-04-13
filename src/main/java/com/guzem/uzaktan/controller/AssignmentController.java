@@ -61,8 +61,28 @@ public class AssignmentController {
                          @AuthenticationPrincipal UserDetails principal,
                          RedirectAttributes redirectAttributes) {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
-        assignmentService.submit(assignmentId, userId, request, file);
-        redirectAttributes.addFlashAttribute("successMessage", "Ödeviniz başarıyla teslim edildi.");
+        try {
+            assignmentService.submit(assignmentId, userId, request, file);
+            redirectAttributes.addFlashAttribute("successMessage", "Ödeviniz başarıyla teslim edildi.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
+        return "redirect:/odevlerim/" + assignmentId;
+    }
+
+    @PostMapping("/{assignmentId}/guncelle")
+    public String update(@PathVariable Long assignmentId,
+                         @ModelAttribute SubmissionCreateRequest request,
+                         @RequestParam(value = "file", required = false) MultipartFile file,
+                         @AuthenticationPrincipal UserDetails principal,
+                         RedirectAttributes redirectAttributes) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        try {
+            assignmentService.updateSubmission(assignmentId, userId, request, file);
+            redirectAttributes.addFlashAttribute("successMessage", "Tesliminiz güncellendi.");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+        }
         return "redirect:/odevlerim/" + assignmentId;
     }
 }

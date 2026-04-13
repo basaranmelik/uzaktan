@@ -19,7 +19,15 @@
       "Bash(grep -n \"^[[:space:]]*//\\\\|^[[:space:]]*\\\\/\\\\*\\\\|^\\\\s*\\\\*\" /Users/basaran/Desktop/uzaktan/src/main/java/com/guzem/uzaktan/service/impl/*.java)",
       "Bash(grep -n \"isOwner\\\\|isAdminOrTeacher\\\\|isAdmin\\\\|isTeacher\" /Users/basaran/Desktop/uzaktan/src/main/java/com/guzem/uzaktan/controller/*.java)",
       "Bash(xargs ls:*)",
-      "Bash(./mvnw clean:*)"
+      "Bash(./mvnw clean:*)",
+      "Bash(/tmp/final_check.sh:*)",
+      "Bash(chmod +x /tmp/final_check.sh)",
+      "Bash(/tmp/final_check.sh)",
+      "Bash(./mvnw spring-boot:run)",
+      "Bash(curl -s http://localhost:8080)",
+      "Bash(pkill -f \"spring-boot:run\")",
+      "Bash(pkill -f \"UzaktanApplication\")",
+      "Bash(kill -9 58565 58380)"
     ]
   }
 }

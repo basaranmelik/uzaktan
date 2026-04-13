@@ -13,9 +13,10 @@ import java.time.LocalDateTime;
 @Setter
 public class AssignmentUpdateRequest {
 
-    @Size(max = 200, message = "Başlık en fazla 200 karakter olabilir.")
+    @Size(min = 3, max = 200, message = "Başlık 3-200 karakter arası olmalıdır.")
     private String title;
 
+    @Size(max = 3000, message = "Açıklama en fazla 3000 karakter olabilir.")
     private String description;
 
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
