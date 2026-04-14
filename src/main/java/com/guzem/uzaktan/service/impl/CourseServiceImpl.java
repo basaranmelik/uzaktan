@@ -16,13 +16,16 @@ import com.guzem.uzaktan.repository.CourseReviewRepository;
 import com.guzem.uzaktan.repository.EnrollmentRepository;
 import com.guzem.uzaktan.repository.UserRepository;
 import com.guzem.uzaktan.service.CourseService;
+import com.guzem.uzaktan.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -35,10 +38,13 @@ import java.util.stream.Collectors;
 @Transactional
 public class CourseServiceImpl implements CourseService {
 
+    private static final long MAX_IMAGE_SIZE = 5 * 1024 * 1024; // 5 MB
+
     private final CourseRepository courseRepository;
     private final CourseReviewRepository courseReviewRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
+    private final FileStorageService fileStorageService;
     private final CourseMapper courseMapper;
 
     @Override
@@ -88,7 +94,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
-    public CourseResponse create(CourseCreateRequest request) {
+    public CourseResponse create(CourseCreateRequest request, MultipartFile image) {
         Course course = courseMapper.toEntity(request);
         if (request.getInstructorId() != null) {
             User instructor = userRepository.findById(request.getInstructorId())
@@ -96,11 +102,13 @@ public class CourseServiceImpl implements CourseService {
             course.setInstructor(instructor);
         }
         Course saved = courseRepository.save(course);
+        handleCourseImage(saved, image);
+        saved = courseRepository.save(saved);
         return courseMapper.toResponse(saved, 0);
     }
 
     @Override
-    public CourseResponse update(Long id, CourseUpdateRequest request) {
+    public CourseResponse update(Long id, CourseUpdateRequest request, MultipartFile image) {
         Course course = loadCourse(id);
         courseMapper.updateEntity(course, request);
         if (request.getInstructorId() != null) {
@@ -108,9 +116,26 @@ public class CourseServiceImpl implements CourseService {
                     .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", request.getInstructorId()));
             course.setInstructor(instructor);
         }
+        handleCourseImage(course, image);
         Course saved = courseRepository.save(course);
         long enrolledCount = courseRepository.countActiveEnrollments(id);
         return courseMapper.toResponse(saved, enrolledCount);
+    }
+
+    private void handleCourseImage(Course course, MultipartFile image) {
+        if (image == null || image.isEmpty()) return;
+        if (image.getSize() > MAX_IMAGE_SIZE) {
+            throw new IllegalArgumentException("Fotoğraf boyutu en fazla 5 MB olabilir.");
+        }
+        if (course.getImagePath() != null) {
+            fileStorageService.delete(course.getImagePath());
+        }
+        try {
+            String path = fileStorageService.storeCourseImage(image, course.getId());
+            course.setImagePath(path);
+        } catch (IOException e) {
+            throw new IllegalStateException("Fotoğraf yüklenirken hata oluştu.", e);
+        }
     }
 
     @Override

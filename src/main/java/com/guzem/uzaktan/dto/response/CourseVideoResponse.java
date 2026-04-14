@@ -18,4 +18,5 @@ public class CourseVideoResponse {
     private String originalFileName;
     private LocalDateTime createdAt;
     private boolean watched;
+    private boolean locked;
 }

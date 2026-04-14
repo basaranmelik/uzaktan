@@ -224,7 +224,10 @@
             <div class="form-field">
                 <label for="phoneNumber">Telefon <span style="color:rgba(255,255,255,0.35);font-weight:400;">(Opsiyonel)</span></label>
                 <input type="tel" id="phoneNumber" th:field="*{phoneNumber}"
+                       th:classappend="${#fields.hasErrors('phoneNumber')} ? ' is-invalid'"
                        placeholder="+90 5XX XXX XX XX">
+                <div class="invalid-feedback" th:if="${#fields.hasErrors('phoneNumber')}"
+                     th:errors="*{phoneNumber}"></div>
             </div>
 
             <div class="form-field">

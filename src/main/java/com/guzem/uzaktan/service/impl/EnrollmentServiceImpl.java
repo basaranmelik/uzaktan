@@ -174,7 +174,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     @Transactional(readOnly = true)
     public boolean isActiveEnrollment(Long userId, Long courseId) {
         return enrollmentRepository.findByUserIdAndCourseId(userId, courseId)
-                .map(e -> e.getStatus() == EnrollmentStatus.ACTIVE)
+                .map(e -> e.getStatus() == EnrollmentStatus.ACTIVE || e.getStatus() == EnrollmentStatus.COMPLETED)
                 .orElse(false);
     }
 

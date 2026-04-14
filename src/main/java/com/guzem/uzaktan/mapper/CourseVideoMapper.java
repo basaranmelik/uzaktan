@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CourseVideoMapper {
 
-    public CourseVideoResponse toResponse(CourseVideo video, boolean watched) {
+    public CourseVideoResponse toResponse(CourseVideo video, boolean watched, boolean locked) {
         return CourseVideoResponse.builder()
                 .id(video.getId())
                 .courseId(video.getCourse().getId())
@@ -19,6 +19,7 @@ public class CourseVideoMapper {
                 .originalFileName(video.getOriginalFileName())
                 .createdAt(video.getCreatedAt())
                 .watched(watched)
+                .locked(locked)
                 .build();
     }
 }

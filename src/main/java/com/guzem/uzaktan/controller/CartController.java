@@ -11,6 +11,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -21,6 +25,12 @@ public class CartController {
 
     private final CartService cartService;
     private final UserService userService;
+    private final com.guzem.uzaktan.service.EnrollmentService enrollmentService;
+
+    @GetMapping
+    public String viewCart() {
+        return "cart/index";
+    }
 
     @PostMapping("/ekle")
     public String addToCart(@RequestParam Long courseId,
@@ -38,15 +48,18 @@ public class CartController {
 
     @PostMapping("/kaldir")
     public String removeFromCart(@RequestParam Long courseId,
+                                 @RequestParam(defaultValue = "false") boolean fromCart,
                                  @AuthenticationPrincipal UserDetails principal,
                                  RedirectAttributes ra) {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         cartService.removeFromCart(userId, courseId);
         ra.addFlashAttribute("successMessage", "Kurs sepetten kaldırıldı.");
+        if (fromCart) {
+            return "redirect:/sepet";
+        }
         return "redirect:/egitimler/" + courseId;
     }
 
-    /** Navbar panelinden AJAX ile çağrılır — sayfa yenilenmez */
     @PostMapping(value = "/kaldir-ajax", produces = "application/json")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> removeAjax(@RequestParam Long courseId,
@@ -54,6 +67,21 @@ public class CartController {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         cartService.removeFromCart(userId, courseId);
         int newCount = cartService.getCartCount(userId);
-        return ResponseEntity.ok(Map.of("count", newCount));
+        BigDecimal newTotal = cartService.getCartTotalByUser(userId);
+        return ResponseEntity.ok(Map.of("count", newCount, "total", newTotal));
+    }
+
+    @PostMapping("/checkout")
+    public String checkoutCart(@AuthenticationPrincipal UserDetails principal, RedirectAttributes ra) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        List<com.guzem.uzaktan.dto.response.CartItemResponse> items = cartService.getCartItems(userId);
+        
+        for (com.guzem.uzaktan.dto.response.CartItemResponse item : items) {
+            enrollmentService.enroll(userId, item.getCourseId());
+            cartService.removeFromCart(userId, item.getCourseId());
+        }
+        
+        ra.addFlashAttribute("successMessage", "Test: Sepetteki eğitimlere kayıt talebi oluşturuldu. Yönetici onayı bekleniyor.");
+        return "redirect:/panom";
     }
 }

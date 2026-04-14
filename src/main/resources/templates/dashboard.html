@@ -157,11 +157,15 @@
 
         <!-- Tamamlandı: sertifika -->
         <div th:if="${enrollment.status.name() == 'COMPLETED'}"
-             style="display:flex;align-items:center;gap:0.75rem;">
+             style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-top:0.75rem;">
           <span style="color:#1864ab;font-weight:600;"><i class="bi bi-trophy-fill"></i> Tamamlandı</span>
+          <a th:href="@{/egitimler/izle/{id}(id=${enrollment.courseId})}" class="btn btn-primary"
+             style="padding:0.3rem 0.75rem;font-size:0.85rem;">
+            <i class="bi bi-play-circle"></i> Tekrar İzle
+          </a>
           <a th:href="@{/profilim}" class="btn btn-secondary"
              style="padding:0.3rem 0.75rem;font-size:0.85rem;">
-            Sertifikamı Gör
+            <i class="bi bi-award-fill"></i> Sertifikamı Gör
           </a>
         </div>
 

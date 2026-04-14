@@ -55,36 +55,34 @@
 
           <!-- Sepet -->
           <div class="nav-panel-wrap" id="cartWrap">
-            <button type="button" class="nav-icon-btn" title="Sepetim"
-                    onclick="toggleNavPanel('cartWrap', event)">
+            <a th:href="@{/sepet}" class="nav-icon-btn" title="Sepetim">
               <i class="bi bi-cart3"></i>
               <span class="nav-badge" id="cartBadge"
                     th:text="${cartCount}"
                     th:style="${cartCount == 0} ? 'display:none' : ''">0</span>
-            </button>
+            </a>
             <div class="nav-panel" id="cartPanel"
                  th:data-csrf-token="${_csrf.token}"
                  th:data-csrf-header="${_csrf.headerName}">
               <div class="nav-panel-head">
-                <span><i class="bi bi-cart3" style="margin-right:0.4rem;color:var(--primary-500);"></i>Sepetim</span>
+                <span style="color:var(--primary-600);font-weight:700;"><i class="bi bi-cart3" style="margin-right:0.4rem;color:var(--primary-500);"></i>Sepetim</span>
                 <span class="nav-panel-count"
                       th:text="${cartCount} + ' kurs'">0 kurs</span>
               </div>
-              <!-- Dolu sepet -->
               <div th:if="${cartCount > 0}">
                 <div class="nav-panel-body">
                   <div th:each="item : ${cartItems}" class="nav-cart-item"
                        th:data-course-id="${item.courseId}">
                     <div class="nav-cart-thumb"><i class="bi bi-play-circle"></i></div>
                     <div class="nav-cart-info">
-                      <div class="nav-cart-title" th:text="${item.courseTitle}">Kurs</div>
+                      <a th:href="@{/egitimler/{id}(id=${item.courseId})}" class="nav-cart-title" style="text-decoration:none; display:block;" th:text="${item.courseTitle}">Kurs</a>
                       <div class="nav-cart-price"
                            th:text="${item.price != null and item.price.signum() > 0} ? '₺' + ${#numbers.formatDecimal(item.price, 1, 'POINT', 0, 'COMMA')} : 'Ücretsiz'">
                         ₺0
                       </div>
                     </div>
                     <button class="nav-cart-remove" title="Kaldır"
-                            th:onclick="'removeCartItem(' + ${item.courseId} + ', this)'">
+                            onclick="event.preventDefault(); event.stopPropagation(); removeCartItem(this.getAttribute('data-id'), this)" th:data-id="${item.courseId}">
                       <i class="bi bi-x-lg"></i>
                     </button>
                   </div>
@@ -95,12 +93,16 @@
                             th:text="'₺' + ${#numbers.formatDecimal(cartTotal, 1, 'POINT', 0, 'COMMA')}">₺0</strong>
                   </span>
                   <a th:href="@{/kayitlarim}" class="btn btn-primary"
-                     style="padding:0.4rem 1rem;font-size:0.82rem;border-radius:8px;">
+                     style="padding:0.4rem 1rem;font-size:0.82rem;border-radius:8px; display:block; text-align:center; margin-bottom: 0.5rem;">
                     Ödemeye Geç
                   </a>
+                  <form th:action="@{/sepet/checkout}" method="post" style="margin:0;">
+                    <button type="submit" class="btn btn-primary" style="padding:0.4rem 1rem;font-size:0.82rem;border-radius:8px; display:block; width:100%; text-align:center; background:#0f172a; border-color:#0f172a;">
+                       <i class="bi bi-robot"></i> (Test) Kayıt Ol
+                    </button>
+                  </form>
                 </div>
               </div>
-              <!-- Boş sepet -->
               <div th:if="${cartCount == 0}"
                    style="padding:2rem;text-align:center;color:var(--text-muted);">
                 <i class="bi bi-cart3" style="font-size:2rem;display:block;margin-bottom:0.5rem;color:var(--gray-300);"></i>
@@ -112,6 +114,25 @@
               </div>
             </div>
           </div>
+
+          <style>
+            #cartWrap::after {
+              content: '';
+              position: absolute;
+              left: 0; right: 0; top: 100%;
+              height: 15px; /* bridges the 0.5rem margin gap */
+              background: transparent;
+              z-index: 1000;
+            }
+            #cartWrap:hover #cartPanel, #cartPanel:hover {
+              display: block !important;
+              opacity: 1;
+              visibility: visible;
+              transform: translateY(0);
+              pointer-events: auto;
+              z-index: 1001;
+            }
+          </style>
 
           <!-- Bildirimler (giriş yapmış) -->
           <div class="nav-panel-wrap" id="notifWrap" sec:authorize="isAuthenticated()">
@@ -245,7 +266,7 @@
       if (event) event.stopPropagation();
       var wrap = document.getElementById(wrapId);
       var isOpen = wrap.classList.toggle('open');
-      ['cartWrap', 'notifWrap'].forEach(function(id) {
+      ['notifWrap'].forEach(function(id) {
         if (id !== wrapId) {
           var el = document.getElementById(id);
           if (el) el.classList.remove('open');
@@ -254,7 +275,7 @@
     }
 
     document.addEventListener('click', function(e) {
-      ['cartWrap', 'notifWrap'].forEach(function(id) {
+      ['notifWrap'].forEach(function(id) {
         var wrap = document.getElementById(id);
         if (wrap && !wrap.contains(e.target)) {
           wrap.classList.remove('open');
@@ -272,19 +293,22 @@
         headers: { [header]: csrf }
       }).then(function(res) { return res.json(); })
         .then(function(data) {
-          // Satırı kaldır
           var row = btn.closest('.nav-cart-item');
           if (row) row.remove();
-          // Badge güncelle
           var badge = document.getElementById('cartBadge');
           if (badge) {
             badge.textContent = data.count;
             badge.style.display = data.count > 0 ? '' : 'none';
           }
-          // Panel count güncelle
           var countEl = panel.querySelector('.nav-panel-count');
           if (countEl) countEl.textContent = data.count + ' kurs';
-          // Sepet boşaldıysa boş mesajı göster
+          
+          if (data.total !== undefined) {
+             var totalStr = '₺' + data.total.toLocaleString('tr-TR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
+             var totalEl = panel.querySelector('.nav-panel-footer strong');
+             if (totalEl) totalEl.textContent = totalStr;
+          }
+
           if (data.count === 0) {
             var body = panel.querySelector('.nav-panel-body');
             var footer = panel.querySelector('.nav-panel-footer');

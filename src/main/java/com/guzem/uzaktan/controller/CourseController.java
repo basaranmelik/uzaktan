@@ -38,6 +38,7 @@ public class CourseController {
     private final CourseVideoService courseVideoService;
     private final CourseReviewService courseReviewService;
     private final com.guzem.uzaktan.service.CartService cartService;
+    private final com.guzem.uzaktan.repository.InstructorRepository instructorRepository;
 
     @GetMapping
     public String listCourses(
@@ -75,6 +76,12 @@ public class CourseController {
                                @AuthenticationPrincipal UserDetails principal,
                                Model model) {
         CourseResponse course = courseService.findById(id);
+        
+        if (course.getInstructorName() != null) {
+            instructorRepository.findByName(course.getInstructorName())
+                .ifPresent(ins -> course.setInstructorImage(ins.getPhotoUrl()));
+        }
+        
         model.addAttribute("course", course);
         // Video başlıklarını göstermek için (kilitli preview olarak)
         model.addAttribute("videos", courseVideoService.findByCourse(id));

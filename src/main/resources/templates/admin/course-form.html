@@ -38,11 +38,17 @@
 
 <section class="section">
   <div class="container" style="max-width:740px;">
-    <form th:action="@{/admin/kurslar}" th:object="${courseCreateRequest}" method="post">
+    <form th:action="@{/admin/kurslar}" th:object="${courseCreateRequest}" method="post" enctype="multipart/form-data">
 
       <!-- Temel Bilgiler -->
       <div class="form-section">
         <div class="form-section-title"><i class="bi bi-card-text"></i> Temel Bilgiler</div>
+
+        <div class="form-group">
+          <label>Kurs Fotoğrafı <span style="color:var(--text-muted);font-weight:400;">(isteğe bağlı, maks. 5 MB)</span></label>
+          <input type="file" name="image" class="form-control" accept="image/jpeg,image/png,image/webp">
+          <small style="color:var(--text-muted);">Yüklenmezse varsayılan logo kullanılır.</small>
+        </div>
 
         <div class="form-group">
           <label>Kurs Başlığı *</label>
@@ -53,9 +59,9 @@
         </div>
 
         <div class="form-group">
-          <label>Açıklama</label>
+          <label>Açıklama *</label>
           <textarea th:field="*{description}" class="form-control" rows="4"
-                    placeholder="Kursun içeriği, hedef kitlesi, kazanımlar..." maxlength="5000"></textarea>
+                    placeholder="Kursun içeriği, hedef kitlesi, kazanımlar..." maxlength="5000" required></textarea>
         </div>
 
         <div class="form-row">
@@ -101,8 +107,8 @@
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Süre (Saat)</label>
-            <input type="number" th:field="*{hours}" class="form-control" min="1" placeholder="40">
+            <label>Süre (Saat) *</label>
+            <input type="number" th:field="*{hours}" class="form-control" min="1" placeholder="40" required>
           </div>
           <div class="form-group">
             <label>Modül Sayısı *</label>
@@ -129,8 +135,8 @@
         <div class="form-section-title"><i class="bi bi-person-workspace"></i> Eğitmen Bilgisi</div>
         <div class="form-row">
           <div class="form-group">
-            <label>Eğitmen Adı <span style="color:var(--text-muted);font-weight:400;">(görüntülenen)</span></label>
-            <select th:field="*{instructorName}" class="form-control">
+            <label>Eğitmen Adı * <span style="color:var(--text-muted);font-weight:400;">(görüntülenen)</span></label>
+            <select th:field="*{instructorName}" class="form-control" required>
               <option value="">— Seçiniz —</option>
               <option th:each="ins : ${instructors}"
                       th:value="${ins.name}"
@@ -138,8 +144,8 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Sistem Kullanıcısı (Öğretmen) <span style="color:var(--text-muted);font-weight:400;">(isteğe bağlı)</span></label>
-            <select th:field="*{instructorId}" class="form-control">
+            <label>Sistem Kullanıcısı (Öğretmen) *</label>
+            <select th:field="*{instructorId}" class="form-control" required>
               <option value="">— Seçilmedi —</option>
               <option th:each="t : ${teachers}"
                       th:value="${t.id}"

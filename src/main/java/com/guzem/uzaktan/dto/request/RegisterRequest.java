@@ -37,7 +37,7 @@ public class RegisterRequest {
     private String lastName;
 
     @jakarta.validation.constraints.Pattern(
-            regexp = "^\\+90 \\d{3} \\d{3} \\d{2} \\d{2}$",
+            regexp = "(^\\+90 \\d{3} \\d{3} \\d{2} \\d{2}$)|(^\\+90 $)|(^$)",
             message = "Lütfen telefon numaranızı +90 5XX XXX XX XX formatında giriniz."
     )
     private String phoneNumber;

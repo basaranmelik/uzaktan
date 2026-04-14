@@ -18,6 +18,7 @@ public class CourseSummaryResponse {
     private CourseCategory category;
     private String categoryDisplayName;
     private CourseStatus status;
+    private String imagePath;
     private String instructorName;
     private LocalDate startDate;
     private LocalDate endDate;

@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sepetim | Gazi Üniversitesi GUZEM</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .cart-header {
+      background: var(--gradient-hero);
+      padding: calc(var(--nav-height) + 3rem) 0 3rem;
+      text-align: center;
+      color: #fff;
+    }
+    .cart-header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+    }
+    .cart-header p {
+      color: rgba(255,255,255,0.7);
+      font-size: 1.05rem;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .cart-container {
+      padding: 4rem 0;
+      background: var(--bg-alt);
+      min-height: 50vh;
+    }
+    .cart-grid {
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 2.5rem;
+      align-items: start;
+    }
+    @media (max-width: 900px) {
+      .cart-grid { grid-template-columns: 1fr; }
+    }
+    
+    /* Cart Items */
+    .cart-items {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+    .cart-item {
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+      box-shadow: var(--shadow-sm);
+      position: relative;
+    }
+    .cart-item-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: var(--radius-sm);
+      background: var(--primary-50);
+      color: var(--primary-600);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+    .cart-item-details { flex: 1; }
+    .cart-item-category {
+      font-size: 0.75rem;
+      color: var(--primary-500);
+      font-weight: 700;
+      text-transform: uppercase;
+      margin-bottom: 0.3rem;
+    }
+    .cart-item-title {
+      font-family: var(--font-heading);
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.3rem;
+      text-decoration: none;
+    }
+    .cart-item-title:hover { color: var(--primary-600); text-decoration: underline; }
+    
+    .cart-item-price {
+      font-family: var(--font-heading);
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .cart-item-remove {
+      padding: 0.5rem;
+      color: var(--gray-400);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: color var(--transition-fast);
+      font-size: 1.2rem;
+    }
+    .cart-item-remove:hover { color: #dc2626; }
+    
+    /* Order Summary Sidebar */
+    .cart-summary {
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-sm);
+      position: sticky;
+      top: 100px;
+    }
+    .cart-summary h3 {
+      font-family: var(--font-heading);
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin-top: 0;
+      margin-bottom: 1.25rem;
+      color: var(--text);
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+    .summary-row.total {
+      border-top: 1px solid var(--border);
+      padding-top: 1.25rem;
+      margin-top: 0.5rem;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--text);
+    }
+    .btn-checkout {
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 1rem;
+      background: var(--primary-600);
+      color: #fff;
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      transition: all var(--transition-fast);
+      margin-top: 1.5rem;
+    }
+    .btn-checkout:hover {
+      background: var(--primary-700);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    
+    /* Empty State */
+    .empty-cart {
+      text-align: center;
+      padding: 4rem 2rem;
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      border: 1px dashed var(--gray-300);
+    }
+    .empty-cart i {
+      font-size: 4rem;
+      color: var(--gray-300);
+      margin-bottom: 1rem;
+    }
+    .empty-cart h3 {
+      font-family: var(--font-heading);
+      color: var(--text);
+      font-size: 1.4rem;
+      margin-bottom: 0.5rem;
+    }
+    .empty-cart p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+    .btn-browse {
+      display: inline-block;
+      padding: 0.8rem 1.5rem;
+      background: var(--primary-50);
+      color: var(--primary-600);
+      font-weight: 700;
+      border-radius: var(--radius-sm);
+      text-decoration: none;
+      transition: background var(--transition-fast);
+    }
+    .btn-browse:hover {
+      background: var(--primary-100);
+    }
+  </style>
+</head>
+<body>
+
+  <div th:replace="~{fragments/navbar :: navbar}" th:with="activeMenu='cart'"></div>
+
+  <section class="cart-header">
+    <div class="container" style="position: relative;">
+      <a th:href="@{/egitimler}" style="position: absolute; top: -1.5rem; left: 1rem; color:rgba(255,255,255,0.85); text-decoration:none; font-weight:600; font-size:0.9rem; transition:color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,0.85)'"><i class="bi bi-arrow-left"></i> Eğitimlere Geri Dön</a>
+      <h1 style="color: #ffffff;"><i class="bi bi-cart3"></i> Sepetim</h1>
+      <p>Siparişlerinizi ve sepetinizdeki eğitimleri buradan görüntüleyebilirsiniz.</p>
+    </div>
+  </section>
+
+  <section class="cart-container">
+    <div class="container">
+      
+      <!-- Flash Messages -->
+      <div th:if="${successMessage}" style="background:var(--primary-50);border:1px solid var(--primary-200);color:var(--primary-600);padding:1rem;border-radius:var(--radius-sm);margin-bottom:1.5rem;display:flex;align-items:center;gap:0.5rem;">
+        <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
+      </div>
+      
+      <!-- Empty Cart -->
+      <div th:if="${cartCount == 0}" class="empty-cart">
+        <i class="bi bi-bag-x"></i>
+        <h3>Sepetiniz şu anda boş</h3>
+        <p>Görünüşe göre sepetinize henüz bir eğitim eklememişsiniz. Hemen eğitimleri inceleyin!</p>
+        <a th:href="@{/egitimler}" class="btn-browse">Eğitimlere Göz At</a>
+      </div>
+
+      <!-- Full Cart Layout -->
+      <div th:if="${cartCount > 0}" class="cart-grid">
+        
+        <div class="cart-items">
+          <div th:each="item : ${cartItems}" class="cart-item">
+            <div class="cart-item-icon">
+              <i class="bi bi-play-btn"></i>
+            </div>
+            
+            <div class="cart-item-details">
+              <div class="cart-item-category" th:text="${item.categoryDisplayName}">Kategori</div>
+              <a th:href="@{/egitimler/{id}(id=${item.courseId})}" class="cart-item-title" th:text="${item.courseTitle}">Kurs Başlığı</a>
+            </div>
+            
+            <div class="cart-item-price" 
+                 th:text="${item.price != null and item.price.signum() > 0} ? '₺' + ${#numbers.formatDecimal(item.price, 1, 'POINT', 0, 'COMMA')} : 'Ücretsiz'">
+               ₺0
+            </div>
+            
+            <form th:action="@{/sepet/kaldir}" method="post" style="margin:0;">
+              <input type="hidden" name="courseId" th:value="${item.courseId}" />
+              <input type="hidden" name="fromCart" value="true" />
+              <button class="cart-item-remove" title="Sepetten Kaldır"><i class="bi bi-trash3"></i></button>
+            </form>
+          </div>
+        </div>
+
+        <div class="cart-summary">
+          <h3>Sipariş Özeti</h3>
+          <div class="summary-row">
+            <span>Seçilen Eğitimler</span>
+            <span th:text="${cartCount} + ' Adet'">0 Adet</span>
+          </div>
+          <div class="summary-row">
+            <span>İndirim</span>
+            <span>₺0</span>
+          </div>
+          <div class="summary-row total">
+            <span>Toplam</span>
+            <span th:text="'₺' + ${#numbers.formatDecimal(cartTotal, 1, 'POINT', 0, 'COMMA')}">₺0</span>
+          </div>
+          
+          <a th:href="@{/kayitlarim}" class="btn-checkout">
+            <i class="bi bi-credit-card-fill" style="margin-right:0.4rem;"></i> Ödemeye Geç
+          </a>
+          <form th:action="@{/sepet/checkout}" method="post" style="margin:0;">
+            <button type="submit" class="btn-checkout" style="background:#0f172a; margin-top:0.75rem;">
+              <i class="bi bi-robot" style="margin-right:0.4rem;"></i> (Test) Hepsine Kayıt Ol
+            </button>
+          </form>
+          <p style="text-align:center;font-size:0.75rem;color:var(--text-muted);margin-top:1rem;">
+            Tüm alışverişler 256-bit SSL sertifikası ile korunmaktadır.
+          </p>
+        </div>
+
+      </div>
+      
+    </div>
+  </section>
+
+</body>
+</html>

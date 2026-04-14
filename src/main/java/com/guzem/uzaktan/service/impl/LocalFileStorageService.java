@@ -59,6 +59,13 @@ public class LocalFileStorageService implements FileStorageService {
     }
 
     @Override
+    public String storeCourseImage(MultipartFile file, Long courseId) throws IOException {
+        String extension = extractExtension(file.getOriginalFilename(), ".jpg");
+        String storedName = generateFileName("kurs", extension);
+        return storeFile(file, "images/kurslar/" + courseId + "/" + storedName);
+    }
+
+    @Override
     public Path resolve(String relativePath) {
         return baseDir.resolve(relativePath).normalize();
     }

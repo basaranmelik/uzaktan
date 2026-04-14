@@ -23,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.net.MalformedURLException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/videolar")
@@ -44,6 +45,10 @@ public class VideoController {
         if (!enrollmentService.isActiveEnrollment(userId, video.getCourseId())) {
             throw new UnauthorizedActionException(
                     "Bu videoya erişmek için kursa kayıtlı olmanız ve kaydınızın onaylanmış (aktif) olması gerekiyor.");
+        }
+
+        if (!courseVideoService.canAccessVideo(id, userId)) {
+            return "redirect:/egitimler/" + video.getCourseId();
         }
 
         List<CourseVideoResponse> allVideos = courseVideoService.findByCourseForStudent(video.getCourseId(), userId);
@@ -77,6 +82,10 @@ public class VideoController {
             return ResponseEntity.status(403).build();
         }
 
+        if (!courseVideoService.canAccessVideo(id, userId)) {
+            return ResponseEntity.status(403).build();
+        }
+
         Path filePath = fileStorageService.resolve(video.getFilePath());
         try {
             Resource resource = new UrlResource(filePath.toUri());
@@ -93,18 +102,20 @@ public class VideoController {
     }
 
     @PostMapping("/{id}/izlendi")
-    public String markWatched(@PathVariable Long id,
-                              @AuthenticationPrincipal UserDetails principal,
-                              RedirectAttributes redirectAttributes) {
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> markWatched(@PathVariable Long id,
+                                                            @AuthenticationPrincipal UserDetails principal) {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         CourseVideoResponse video = courseVideoService.findById(id);
         if (!enrollmentService.isActiveEnrollment(userId, video.getCourseId())) {
-            throw new UnauthorizedActionException("Bu kursa kaydınız aktif değil.");
+            return ResponseEntity.status(403).body(Map.of("success", false));
+        }
+        if (!courseVideoService.canAccessVideo(id, userId)) {
+            return ResponseEntity.status(403).body(Map.of("success", false));
         }
 
         courseVideoService.markWatched(id, userId);
-        redirectAttributes.addFlashAttribute("successMessage", "Video tamamlandı olarak işaretlendi.");
-        return "redirect:/videolar/" + id;
+        return ResponseEntity.ok(Map.of("success", true));
     }
 
     private String detectContentType(String fileName) {

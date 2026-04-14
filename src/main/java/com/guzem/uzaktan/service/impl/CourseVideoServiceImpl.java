@@ -20,6 +20,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -67,7 +68,7 @@ public class CourseVideoServiceImpl implements CourseVideoService {
 
         CourseVideo saved = courseVideoRepository.save(video);
 
-        return courseVideoMapper.toResponse(saved, false);
+        return courseVideoMapper.toResponse(saved, false, false);
     }
 
     @Override
@@ -133,7 +134,7 @@ public class CourseVideoServiceImpl implements CourseVideoService {
         }
         for (CourseVideo v : workingList) {
             if (v.getId() == null) {
-                results.add(courseVideoMapper.toResponse(courseVideoRepository.save(v), false));
+                results.add(courseVideoMapper.toResponse(courseVideoRepository.save(v), false, false));
             }
         }
 
@@ -145,7 +146,7 @@ public class CourseVideoServiceImpl implements CourseVideoService {
     public List<CourseVideoResponse> findByCourse(Long courseId) {
         return courseVideoRepository.findByCourseIdOrderByOrderIndex(courseId)
                 .stream()
-                .map(v -> courseVideoMapper.toResponse(v, false))
+                .map(v -> courseVideoMapper.toResponse(v, false, false))
                 .toList();
     }
 
@@ -153,17 +154,45 @@ public class CourseVideoServiceImpl implements CourseVideoService {
     @Transactional(readOnly = true)
     public List<CourseVideoResponse> findByCourseForStudent(Long courseId, Long userId) {
         Set<Long> watchedIds = videoWatchRepository.findWatchedVideoIdsByUserAndCourse(userId, courseId);
-        return courseVideoRepository.findByCourseIdOrderByOrderIndex(courseId)
-                .stream()
-                .map(v -> courseVideoMapper.toResponse(v, watchedIds.contains(v.getId())))
-                .toList();
+        List<CourseVideo> videos = courseVideoRepository.findByCourseIdOrderByOrderIndex(courseId);
+
+        boolean allPreviousWatched = true;
+        List<CourseVideoResponse> result = new ArrayList<>();
+        for (CourseVideo v : videos) {
+            boolean watched = watchedIds.contains(v.getId());
+            boolean locked = !allPreviousWatched;
+            result.add(courseVideoMapper.toResponse(v, watched, locked));
+            if (!watched) {
+                allPreviousWatched = false;
+            }
+        }
+        return result;
     }
 
     @Override
     @Transactional(readOnly = true)
     public CourseVideoResponse findById(Long videoId) {
         CourseVideo video = loadVideo(videoId);
-        return courseVideoMapper.toResponse(video, false);
+        return courseVideoMapper.toResponse(video, false, false);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean canAccessVideo(Long videoId, Long userId) {
+        CourseVideo video = loadVideo(videoId);
+        Long courseId = video.getCourse().getId();
+        List<CourseVideo> allVideos = courseVideoRepository.findByCourseIdOrderByOrderIndex(courseId);
+        Set<Long> watchedIds = videoWatchRepository.findWatchedVideoIdsByUserAndCourse(userId, courseId);
+
+        for (CourseVideo v : allVideos) {
+            if (v.getId().equals(videoId)) {
+                return true;
+            }
+            if (!watchedIds.contains(v.getId())) {
+                return false;
+            }
+        }
+        return false;
     }
 
     @Override

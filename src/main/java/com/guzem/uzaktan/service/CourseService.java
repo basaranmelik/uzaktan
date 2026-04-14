@@ -8,6 +8,8 @@ import com.guzem.uzaktan.model.CourseCategory;
 import com.guzem.uzaktan.model.CourseStatus;
 import org.springframework.data.domain.Page;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 import java.util.Map;
 
@@ -23,9 +25,9 @@ public interface CourseService {
 
     CourseResponse findById(Long id);
 
-    CourseResponse create(CourseCreateRequest request);
+    CourseResponse create(CourseCreateRequest request, MultipartFile image);
 
-    CourseResponse update(Long id, CourseUpdateRequest request);
+    CourseResponse update(Long id, CourseUpdateRequest request, MultipartFile image);
 
     void delete(Long id);
 

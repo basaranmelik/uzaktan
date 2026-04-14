@@ -26,8 +26,11 @@ public class CourseResponse {
     private CourseCategory category;
     private String categoryDisplayName;
     private CourseStatus status;
+    private String imagePath;
     private String instructorName;
     private Long instructorId;
+    @lombok.Setter
+    private String instructorImage;
     private Double averageRating;
     private Integer reviewCount;
     private LocalDateTime createdAt;

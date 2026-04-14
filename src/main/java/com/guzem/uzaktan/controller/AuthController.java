@@ -38,24 +38,26 @@ public class AuthController {
     public String register(@Valid @ModelAttribute("registerRequest") RegisterRequest request,
                            BindingResult bindingResult,
                            Model model) {
-        if (bindingResult.hasErrors()) {
-            return "auth/register";
+        if (request.getPassword() != null && request.getConfirmPassword() != null && !request.getPassword().equals(request.getConfirmPassword())) {
+            bindingResult.rejectValue("confirmPassword", "mismatch", "Şifreler eşleşmiyor.");
         }
 
-        if (userService.existsByEmail(request.getEmail())) {
+        if (request.getEmail() != null && userService.existsByEmail(request.getEmail())) {
             bindingResult.rejectValue("email", "duplicate", "Bu e-posta adresi zaten kullanımda.");
-            return "auth/register";
         }
         
         if (request.getPhoneNumber() != null && !request.getPhoneNumber().trim().isEmpty() && !request.getPhoneNumber().equals("+90 ")) {
             if (userService.existsByPhoneNumber(request.getPhoneNumber())) {
                 bindingResult.rejectValue("phoneNumber", "duplicate", "Bu telefon numarası zaten kullanımda.");
-                return "auth/register";
             }
         }
-        if (!request.getPassword().equals(request.getConfirmPassword())) {
-            bindingResult.rejectValue("confirmPassword", "mismatch", "Şifreler eşleşmiyor.");
+
+        if (bindingResult.hasErrors()) {
             return "auth/register";
+        }
+
+        if (request.getPhoneNumber() != null && (request.getPhoneNumber().trim().isEmpty() || request.getPhoneNumber().equals("+90 "))) {
+            request.setPhoneNumber(null);
         }
 
         userService.register(request);

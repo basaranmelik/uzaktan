@@ -100,11 +100,21 @@
     </div>
 
     <form th:action="@{/admin/kurslar/{id}(id=${course.id})}"
-          th:object="${courseUpdateRequest}" method="post">
+          th:object="${courseUpdateRequest}" method="post" enctype="multipart/form-data">
 
       <!-- Temel Bilgiler -->
       <div class="form-section">
         <div class="form-section-title"><i class="bi bi-card-text"></i> Temel Bilgiler</div>
+
+        <div class="form-group">
+          <label>Kurs Fotoğrafı <span style="color:var(--text-muted);font-weight:400;">(maks. 5 MB)</span></label>
+          <div th:if="${course.imagePath != null}" style="margin-bottom:0.5rem;">
+            <img th:src="@{'/uploads/' + ${course.imagePath}}" alt="Mevcut fotoğraf"
+                 style="max-width:200px;max-height:120px;border-radius:8px;object-fit:cover;">
+          </div>
+          <input type="file" name="image" class="form-control" accept="image/jpeg,image/png,image/webp">
+          <small style="color:var(--text-muted);">Yeni fotoğraf yüklerseniz mevcut değiştirilir.</small>
+        </div>
 
         <div class="form-group">
           <label>Kurs Başlığı</label>

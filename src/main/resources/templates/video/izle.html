@@ -98,11 +98,6 @@
 <section class="section" style="padding-top:1.5rem;">
   <div class="container">
 
-    <div th:if="${successMessage}"
-         style="background:#d3f9d8;border:1px solid #69db7c;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1.25rem;color:#2b8a3e;font-weight:600;font-size:0.9rem;">
-      <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
-    </div>
-
     <div class="video-layout">
 
       <!-- Sol: Player + Bilgi -->
@@ -121,19 +116,19 @@
              th:if="${video.description != null and !#strings.isEmpty(video.description)}"
              th:text="${video.description}">Açıklama</p>
 
-          <!-- Tamamla butonu -->
+          <!-- Otomatik tamamlama göstergesi -->
           <div style="margin-top:1rem;">
-            <span th:if="${alreadyWatched}"
+            <span id="watch-status"
+                  th:if="${alreadyWatched}"
                   class="complete-btn done">
               <i class="bi bi-check-circle-fill"></i> Tamamlandı
             </span>
-            <form th:if="${!alreadyWatched}"
-                  th:action="@{/videolar/{id}/izlendi(id=${video.id})}" method="post"
-                  style="display:inline;">
-              <button type="submit" class="complete-btn">
-                <i class="bi bi-check-lg"></i> Videoyu Tamamladım
-              </button>
-            </form>
+            <span id="watch-progress"
+                  th:if="${!alreadyWatched}"
+                  class="complete-btn"
+                  style="background:var(--gray-100);color:var(--text-muted);cursor:default;">
+              <i class="bi bi-play-circle"></i> İzleniyor...
+            </span>
           </div>
 
           <!-- Önceki / Sonraki -->
@@ -143,11 +138,20 @@
                class="btn btn-secondary">
               <i class="bi bi-arrow-left"></i> Önceki Video
             </a>
-            <a th:if="${nextVideo != null}"
+            <a id="next-video-btn"
+               th:if="${nextVideo != null and !nextVideo.locked}"
                th:href="@{/videolar/{id}(id=${nextVideo.id})}"
+               th:data-id="${nextVideo.id}"
                class="btn btn-primary">
               Sonraki Video <i class="bi bi-arrow-right"></i>
             </a>
+            <span id="next-video-locked"
+                  th:if="${nextVideo != null and nextVideo.locked}"
+                  th:data-id="${nextVideo.id}"
+                  class="btn btn-primary"
+                  style="opacity:0.5;cursor:not-allowed;pointer-events:none;">
+              Sonraki Video <i class="bi bi-lock-fill"></i>
+            </span>
           </div>
         </div>
       </div>
@@ -157,14 +161,25 @@
         <div class="playlist-header">
           <i class="bi bi-collection-play"></i> Kurs İçeriği
         </div>
-        <a th:each="v : ${allVideos}"
-           th:href="@{/videolar/{id}(id=${v.id})}"
-           th:classappend="${v.id == video.id} ? ' active'"
-           class="playlist-item">
-          <div class="playlist-num" th:text="${v.orderIndex}">1</div>
-          <span class="playlist-item-title" th:text="${v.title}">Video</span>
-          <i th:if="${v.watched}" class="bi bi-check-circle-fill watch-check"></i>
-        </a>
+        <th:block th:each="v : ${allVideos}">
+          <a th:if="${!v.locked}"
+             th:href="@{/videolar/{id}(id=${v.id})}"
+             th:classappend="${v.id == video.id} ? ' active'"
+             th:data-video-id="${v.id}"
+             class="playlist-item">
+            <div class="playlist-num" th:text="${v.orderIndex}">1</div>
+            <span class="playlist-item-title" th:text="${v.title}">Video</span>
+            <i th:if="${v.watched}" class="bi bi-check-circle-fill watch-check"></i>
+          </a>
+          <div th:if="${v.locked}"
+               th:data-video-id="${v.id}"
+               class="playlist-item playlist-locked"
+               style="opacity:0.5;cursor:not-allowed;">
+            <div class="playlist-num" th:text="${v.orderIndex}">1</div>
+            <span class="playlist-item-title" th:text="${v.title}">Video</span>
+            <i class="bi bi-lock-fill" style="color:var(--text-muted);flex-shrink:0;"></i>
+          </div>
+        </th:block>
       </div>
 
     </div>
@@ -173,5 +188,81 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
+<script th:inline="javascript">
+(function() {
+    var videoEl = document.querySelector('.video-player-wrap video');
+    if (!videoEl) return;
+
+    var videoId = /*[[${video.id}]]*/ 0;
+    var alreadyWatched = /*[[${alreadyWatched}]]*/ false;
+    var marked = alreadyWatched;
+    var csrfMeta = document.querySelector('meta[name="_csrf"]');
+    var csrfPanel = document.querySelector('[data-csrf-token]');
+    var csrfToken = csrfMeta ? csrfMeta.getAttribute('content')
+                 : csrfPanel ? csrfPanel.getAttribute('data-csrf-token')
+                 : '';
+    var csrfHeader = csrfPanel ? csrfPanel.getAttribute('data-csrf-header') : 'X-CSRF-TOKEN';
+
+    videoEl.addEventListener('timeupdate', function() {
+        if (marked) return;
+        if (videoEl.duration > 0 && videoEl.currentTime / videoEl.duration >= 0.8) {
+            marked = true;
+            fetch('/videolar/' + videoId + '/izlendi', {
+                method: 'POST',
+                headers: {
+                    [csrfHeader]: csrfToken,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    // Tamamlandı badge'ini göster
+                    var progress = document.getElementById('watch-progress');
+                    if (progress) {
+                        progress.className = 'complete-btn done';
+                        progress.style = '';
+                        progress.innerHTML = '<i class="bi bi-check-circle-fill"></i> Tamamlandı';
+                        progress.id = 'watch-status';
+                    }
+                    // Playlist'te checkmark ekle
+                    var playlistItem = document.querySelector('.playlist-item.active');
+                    if (playlistItem && !playlistItem.querySelector('.watch-check')) {
+                        var check = document.createElement('i');
+                        check.className = 'bi bi-check-circle-fill watch-check';
+                        playlistItem.appendChild(check);
+                    }
+                    // Sonraki video kilidini aç
+                    var lockedBtn = document.getElementById('next-video-locked');
+                    if (lockedBtn) {
+                        var nextId = lockedBtn.getAttribute('data-id');
+                        var link = document.createElement('a');
+                        link.href = '/videolar/' + nextId;
+                        link.className = 'btn btn-primary';
+                        link.id = 'next-video-btn';
+                        link.innerHTML = 'Sonraki Video <i class="bi bi-arrow-right"></i>';
+                        lockedBtn.parentNode.replaceChild(link, lockedBtn);
+                    }
+                    // Playlist'te sonraki videonun kilidini aç
+                    var lockedItems = document.querySelectorAll('.playlist-locked');
+                    if (lockedItems.length > 0) {
+                        var first = lockedItems[0];
+                        var nextVideoId = first.getAttribute('data-video-id');
+                        var link = document.createElement('a');
+                        link.href = '/videolar/' + nextVideoId;
+                        link.className = 'playlist-item';
+                        link.setAttribute('data-video-id', nextVideoId);
+                        link.innerHTML = first.innerHTML;
+                        // Kilit ikonunu kaldır
+                        var lockIcon = link.querySelector('.bi-lock-fill');
+                        if (lockIcon) lockIcon.remove();
+                        first.parentNode.replaceChild(link, first);
+                    }
+                }
+            });
+        }
+    });
+})();
+</script>
 </body>
 </html>

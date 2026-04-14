@@ -446,6 +446,7 @@
       <!-- Sol: Bilgiler -->
       <div>
         <nav class="cd-breadcrumb">
+          <a href="javascript:history.back()" style="margin-right:1rem; font-weight:600; color:var(--primary-200); border-right:1px solid rgba(255,255,255,0.2); padding-right:1rem; text-decoration:none;"><i class="bi bi-arrow-left"></i> Geri Dön</a>
           <a th:href="@{/}"><i class="bi bi-house-fill"></i> Ana Sayfa</a>
           <span class="sep">/</span>
           <a th:href="@{/egitimler}">Eğitimler</a>
@@ -480,33 +481,73 @@
           </span>
         </div>
 
-        <!-- Meta pills -->
-        <div class="cd-meta">
-          <div class="cd-meta-pill" th:if="${course.instructorName != null}">
-            <i class="bi bi-person-workspace"></i>
-            <span th:text="${course.instructorName}">Eğitmen</span>
+        <!-- Info Strip Kartlari -->
+        <div class="cd-info-strip">
+          <div class="cd-info-card" th:if="${course.hours != null}">
+            <i class="bi bi-clock-history"></i>
+            <div class="cd-ic-value" th:text="${course.hours} + ' Saat'">0 Saat</div>
+            <div class="cd-ic-label">Toplam Süre</div>
           </div>
-          <div class="cd-meta-pill" th:if="${course.hours != null}">
-            <i class="bi bi-clock-fill"></i>
-            <span th:text="${course.hours} + ' Saat'">0 Saat</span>
-          </div>
-          <div class="cd-meta-pill" th:if="${course.module != null}">
+          <div class="cd-info-card" th:if="${course.module != null}">
             <i class="bi bi-collection-play-fill"></i>
-            <span th:text="${course.module} + ' Modül'">0 Modül</span>
+            <div class="cd-ic-value" th:text="${course.module} + ' Modül'">0 Modül</div>
+            <div class="cd-ic-label">Video İçerik</div>
           </div>
-          <div class="cd-meta-pill">
+          <div class="cd-info-card">
             <i class="bi bi-people-fill"></i>
-            <span th:text="${course.enrolledCount} + ' Öğrenci'">0 Öğrenci</span>
+            <div class="cd-ic-value" th:text="${course.enrolledCount}">0</div>
+            <div class="cd-ic-label">Kayıtlı Öğrenci</div>
           </div>
-          <div class="cd-meta-pill">
+          <div class="cd-info-card">
             <i class="bi bi-award-fill"></i>
-            <span>Sertifikalı</span>
+            <div class="cd-ic-value">Evet</div>
+            <div class="cd-ic-label">Sertifika</div>
+          </div>
+          <div class="cd-info-card" th:if="${course.averageRating != null and course.reviewCount > 0}">
+            <i class="bi bi-star-fill" style="color: var(--warm-500);"></i>
+            <div class="cd-ic-value" th:text="${course.averageRating} + ' / 5'">0</div>
+            <div class="cd-ic-label" th:text="${course.reviewCount} + ' Değerlendirme'">Değerlendirme</div>
+          </div>
+        </div>
+
+        <!-- Eğitmen Kartı -->
+        <div th:if="${course.instructorName != null and !#strings.isEmpty(course.instructorName)}" class="cd-instructor-card" style="margin-bottom: 0;">
+          <div th:if="${course.instructorImage != null}" class="cd-instructor-avatar" style="padding:0; overflow:hidden; background:var(--bg);">
+             <img th:src="@{${course.instructorImage}}" alt="" style="width:100%;height:100%;object-fit:cover;">
+          </div>
+          <div th:if="${course.instructorImage == null}" class="cd-instructor-avatar" th:text="${#strings.substring(course.instructorName, 0, 1)}">E</div>
+          <div class="cd-instructor-info">
+            <div class="cd-instructor-label">Eğitmen</div>
+            <div class="cd-instructor-name" th:text="${course.instructorName}">Ad Soyad</div>
+            <div class="cd-instructor-stats">
+              <span th:if="${instructorCourseCount != null}">
+                <i class="bi bi-journal-bookmark-fill"></i>
+                <span th:text="${instructorCourseCount}">0</span> Aktif Kurs
+              </span>
+              <span th:if="${instructorStudentCount != null}">
+                <i class="bi bi-people-fill"></i>
+                <span th:text="${instructorStudentCount}">0</span> Öğrenci
+              </span>
+              <a th:if="${course.instructorId != null}"
+                 th:href="@{/egitmenler/{id}(id=${course.instructorId})}"
+                 class="cd-instructor-link">
+                <i class="bi bi-box-arrow-up-right"></i> Profile Git
+              </a>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- Sag: Sidebar -->
       <div class="cd-sidebar">
+        <div style="aspect-ratio:16/9;overflow:hidden;">
+          <img th:if="${course.imagePath != null}"
+               th:src="@{'/uploads/' + ${course.imagePath}}"
+               alt="" style="width:100%;height:100%;object-fit:cover;">
+          <img th:if="${course.imagePath == null}"
+               th:src="@{/images/gazi-logo.png}"
+               alt="" style="width:100%;height:100%;object-fit:contain;background:#f8f9fa;padding:1.5rem;">
+        </div>
         <div class="cd-sidebar-head">
           <h3><i class="bi bi-play-circle" style="margin-right:0.4rem; color: var(--primary-500);"></i> Eğitim Önizleme</h3>
         </div>
@@ -517,14 +558,6 @@
           </div>
 
           <ul class="cd-feature-list">
-            <li th:if="${course.hours != null}">
-              <span class="fl-label"><i class="bi bi-clock"></i> Toplam Süre</span>
-              <span class="fl-value" th:text="${course.hours} + ' Saat'">0 Saat</span>
-            </li>
-            <li th:if="${course.module != null}">
-              <span class="fl-label"><i class="bi bi-camera-video"></i> Modül</span>
-              <span class="fl-value" th:text="${course.module} + ' Video'">0 Video</span>
-            </li>
             <li>
               <span class="fl-label"><i class="bi bi-calendar-event"></i> Başlangıç</span>
               <span class="fl-value" th:text="${#temporals.format(course.startDate,'dd.MM.yyyy')}">Tarih</span>
@@ -537,10 +570,6 @@
               <span class="fl-label"><i class="bi bi-people"></i> Kontenjan</span>
               <span class="fl-value"
                     th:text="${course.quota - course.enrolledCount} + ' Kalan / ' + ${course.quota}">Kalan</span>
-            </li>
-            <li>
-              <span class="fl-label"><i class="bi bi-patch-check"></i> Sertifika</span>
-              <span class="fl-value" style="color: #16a34a;">Evet</span>
             </li>
           </ul>
         </div>
@@ -583,31 +612,12 @@
                     <i class="bi bi-cart-plus"></i> Sepete Ekle
                   </button>
                 </form>
-                <form th:action="@{/kayitlarim}" method="post" style="margin-top:0.5rem;">
-                  <input type="hidden" name="courseId" th:value="${course.id}"/>
-                  <button type="submit" class="cd-cta-btn outline">
-                    <i class="bi bi-lightning-fill"></i> Hemen Satın Al
-                  </button>
-                </form>
               </div>
               <!-- Sepette -->
               <div th:if="${isInCart}">
-                <div class="cd-enrolled-badge" style="background:#f0fdf4;color:#15803d;border-color:#86efac;">
-                  <i class="bi bi-cart-check-fill"></i> Sepetinizde
-                </div>
-                <form th:action="@{/kayitlarim}" method="post">
-                  <input type="hidden" name="courseId" th:value="${course.id}"/>
-                  <button type="submit" class="cd-cta-btn primary">
-                    <i class="bi bi-bag-check"></i> Satın Al
-                  </button>
-                </form>
-                <form th:action="@{/sepet/kaldir}" method="post" style="margin-top:0.5rem;">
-                  <input type="hidden" name="courseId" th:value="${course.id}"/>
-                  <button type="submit" class="cd-cta-btn outline"
-                          style="color:#c92a2a;border-color:#fca5a5;">
-                    <i class="bi bi-cart-x"></i> Sepetten Kaldır
-                  </button>
-                </form>
+                <a th:href="@{/sepet}" class="cd-cta-btn primary" style="background:#15803d;color:#fff;">
+                  <i class="bi bi-cart-check-fill"></i> Sepete Git
+                </a>
               </div>
             </div>
             <div sec:authorize="hasRole('INSTRUCTOR') or hasRole('ADMIN')">
@@ -633,62 +643,9 @@
 <div class="cd-body">
   <div class="container" style="padding-top:3rem;">
 
-    <!-- Info Strip Kartlari -->
-    <div class="cd-info-strip">
-      <div class="cd-info-card" th:if="${course.hours != null}">
-        <i class="bi bi-clock-history"></i>
-        <div class="cd-ic-value" th:text="${course.hours} + ' Saat'">0 Saat</div>
-        <div class="cd-ic-label">Toplam Süre</div>
-      </div>
-      <div class="cd-info-card" th:if="${course.module != null}">
-        <i class="bi bi-collection-play-fill"></i>
-        <div class="cd-ic-value" th:text="${course.module} + ' Modül'">0 Modül</div>
-        <div class="cd-ic-label">Video İçerik</div>
-      </div>
-      <div class="cd-info-card">
-        <i class="bi bi-people-fill"></i>
-        <div class="cd-ic-value" th:text="${course.enrolledCount}">0</div>
-        <div class="cd-ic-label">Kayıtlı Öğrenci</div>
-      </div>
-      <div class="cd-info-card">
-        <i class="bi bi-award-fill"></i>
-        <div class="cd-ic-value">Evet</div>
-        <div class="cd-ic-label">Sertifika</div>
-      </div>
-      <div class="cd-info-card" th:if="${course.averageRating != null and course.reviewCount > 0}">
-        <i class="bi bi-star-fill" style="color: var(--warm-500);"></i>
-        <div class="cd-ic-value" th:text="${course.averageRating} + ' / 5'">0</div>
-        <div class="cd-ic-label" th:text="${course.reviewCount} + ' Değerlendirme'">Değerlendirme</div>
-      </div>
-    </div>
-
     <!-- Flash -->
     <div th:if="${successMessage}" class="cd-flash">
       <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
-    </div>
-
-    <!-- Eğitmen Kartı -->
-    <div th:if="${course.instructorName != null}" class="cd-instructor-card">
-      <div class="cd-instructor-avatar" th:text="${#strings.substring(course.instructorName, 0, 1)}">E</div>
-      <div class="cd-instructor-info">
-        <div class="cd-instructor-label">Eğitmen</div>
-        <div class="cd-instructor-name" th:text="${course.instructorName}">Ad Soyad</div>
-        <div class="cd-instructor-stats">
-          <span th:if="${instructorCourseCount != null}">
-            <i class="bi bi-journal-bookmark-fill"></i>
-            <span th:text="${instructorCourseCount}">0</span> Aktif Kurs
-          </span>
-          <span th:if="${instructorStudentCount != null}">
-            <i class="bi bi-people-fill"></i>
-            <span th:text="${instructorStudentCount}">0</span> Öğrenci
-          </span>
-          <a th:if="${course.instructorId != null}"
-             th:href="@{/egitmenler/{id}(id=${course.instructorId})}"
-             class="cd-instructor-link">
-            <i class="bi bi-box-arrow-up-right"></i> Profile Git
-          </a>
-        </div>
-      </div>
     </div>
 
     <!-- Kurs Icerigi -->

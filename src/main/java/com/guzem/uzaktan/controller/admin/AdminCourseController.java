@@ -16,6 +16,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
@@ -49,6 +50,7 @@ public class AdminCourseController {
     @PostMapping
     public String createCourse(@Valid @ModelAttribute("courseCreateRequest") CourseCreateRequest request,
                                BindingResult bindingResult,
+                               @RequestParam(value = "image", required = false) MultipartFile image,
                                Model model,
                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
@@ -56,7 +58,7 @@ public class AdminCourseController {
             model.addAttribute("teachers", userService.findUsersByRole(Role.TEACHER));
             return "admin/course-form";
         }
-        courseService.create(request);
+        courseService.create(request, image);
         redirectAttributes.addFlashAttribute("successMessage", "Kurs başarıyla oluşturuldu.");
         return "redirect:/admin/kurslar";
     }
@@ -90,6 +92,7 @@ public class AdminCourseController {
     public String updateCourse(@PathVariable Long id,
                                @Valid @ModelAttribute("courseUpdateRequest") CourseUpdateRequest request,
                                BindingResult bindingResult,
+                               @RequestParam(value = "image", required = false) MultipartFile image,
                                Model model,
                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
@@ -99,7 +102,7 @@ public class AdminCourseController {
             model.addAttribute("teachers", userService.findUsersByRole(Role.TEACHER));
             return "admin/course-edit";
         }
-        courseService.update(id, request);
+        courseService.update(id, request, image);
         redirectAttributes.addFlashAttribute("successMessage", "Kurs güncellendi.");
         return "redirect:/admin/kurslar";
     }

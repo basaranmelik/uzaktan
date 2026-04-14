@@ -25,4 +25,6 @@ public interface CourseVideoService {
     void updateOrder(Long courseId, List<Long> orderedIds);
 
     void update(Long videoId, String title, String description);
+
+    boolean canAccessVideo(Long videoId, Long userId);
 }

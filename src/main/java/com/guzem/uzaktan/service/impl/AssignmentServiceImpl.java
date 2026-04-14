@@ -191,10 +191,9 @@ public class AssignmentServiceImpl implements AssignmentService {
                 .findByAssignmentIdAndUserId(assignmentId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Teslim", "assignmentId", assignmentId));
 
-        boolean hasText = request.getTextAnswer() != null && !request.getTextAnswer().isBlank();
         boolean hasFile = file != null && !file.isEmpty();
-        if (!hasText && !hasFile && submission.getFilePath() == null && submission.getTextAnswer() == null) {
-            throw new UnauthorizedActionException("Metin cevabı veya dosya yüklemelisiniz.");
+        if (!hasFile && submission.getFilePath() == null) {
+            throw new UnauthorizedActionException("Dosya yüklemeniz zorunludur.");
         }
 
         if (hasFile) {
@@ -316,10 +315,9 @@ public class AssignmentServiceImpl implements AssignmentService {
             throw new DuplicateSubmissionException(assignmentId, userId);
         }
 
-        boolean hasText = request.getTextAnswer() != null && !request.getTextAnswer().isBlank();
         boolean hasFile = file != null && !file.isEmpty();
-        if (!hasText && !hasFile) {
-            throw new UnauthorizedActionException("Metin cevabı veya dosya yüklemelisiniz.");
+        if (!hasFile) {
+            throw new UnauthorizedActionException("Dosya yüklemeniz zorunludur.");
         }
     }
 

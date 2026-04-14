@@ -70,6 +70,9 @@ public class Course {
     @Column(name = "review_count")
     private Integer reviewCount = 0;
 
+    @Column(name = "image_path", length = 500)
+    private String imagePath;
+
     @Nationalized
     @Column(name = "instructor_name", length = 150)
     private String instructorName;

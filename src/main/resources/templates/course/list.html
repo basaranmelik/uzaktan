@@ -208,6 +208,14 @@
              th:attr="data-title=${course.title},
                       data-price=${course.price != null ? course.price : 0},
                       data-category=${course.categoryDisplayName}">
+            <div style="aspect-ratio:16/9;overflow:hidden;border-radius:var(--radius-md) var(--radius-md) 0 0;">
+              <img th:if="${course.imagePath != null}"
+                   th:src="@{'/uploads/' + ${course.imagePath}}"
+                   alt="" style="width:100%;height:100%;object-fit:cover;">
+              <img th:if="${course.imagePath == null}"
+                   th:src="@{/images/gazi-logo.png}"
+                   alt="" style="width:100%;height:100%;object-fit:contain;background:#f8f9fa;padding:1rem;">
+            </div>
             <div class="card-body">
               <span class="card-category" th:text="${course.categoryDisplayName}">Kategori</span>
               <h4 class="card-title" th:text="${course.title}">Kurs Başlığı</h4>
