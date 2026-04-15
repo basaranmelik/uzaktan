@@ -33,14 +33,6 @@ public class EnrollmentController {
         return "redirect:/egitimler/" + courseId;
     }
 
-    @PostMapping("/{id}/birak")
-    public String drop(@PathVariable Long id,
-                       @AuthenticationPrincipal UserDetails principal,
-                       RedirectAttributes redirectAttributes) {
-        UserResponse user = userService.findByEmail(principal.getUsername());
-        enrollmentService.drop(id, user.getId());
-        redirectAttributes.addFlashAttribute("successMessage", "Kurs kaydınız iptal edildi.");
-        return "redirect:/panom";
-    }
+
     
 }

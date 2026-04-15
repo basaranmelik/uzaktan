@@ -3,10 +3,8 @@ package com.guzem.uzaktan.controller;
 import com.guzem.uzaktan.dto.request.CourseReviewRequest;
 import com.guzem.uzaktan.dto.response.CourseResponse;
 import com.guzem.uzaktan.dto.response.CourseSummaryResponse;
-import com.guzem.uzaktan.dto.response.CourseVideoResponse;
 import com.guzem.uzaktan.dto.response.EnrollmentResponse;
 import com.guzem.uzaktan.dto.response.UserResponse;
-import com.guzem.uzaktan.exception.UnauthorizedActionException;
 import com.guzem.uzaktan.model.CourseCategory;
 import com.guzem.uzaktan.model.EnrollmentStatus;
 import com.guzem.uzaktan.service.CourseReviewService;
@@ -43,7 +41,7 @@ public class CourseController {
     @GetMapping
     public String listCourses(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "100") int size,
             @RequestParam(required = false) CourseCategory category,
             @RequestParam(required = false) String keyword,
             @AuthenticationPrincipal UserDetails principal,
@@ -127,34 +125,34 @@ public class CourseController {
     @PreAuthorize("isAuthenticated()")
     public String myCoursePlayer(@PathVariable Long id,
                                  @AuthenticationPrincipal UserDetails principal,
-                                 Model model) {
+                                 Model model,
+                                 RedirectAttributes redirectAttributes) {
         UserResponse user = userService.findByEmail(principal.getUsername());
         CourseResponse course = courseService.findById(id);
 
         Optional<EnrollmentResponse> enrollmentOpt =
                 enrollmentService.findByUserAndCourse(user.getId(), id);
         boolean isActive = enrollmentOpt
-                .map(e -> e.getStatus() == EnrollmentStatus.ACTIVE).orElse(false);
+                .map(e -> e.getStatus() == EnrollmentStatus.ACTIVE || e.getStatus() == EnrollmentStatus.COMPLETED).orElse(false);
 
         if (!isActive) {
-            throw new UnauthorizedActionException(
-                    "Bu kursa erişmek için kaydınızın aktif olması gerekmektedir.");
+            redirectAttributes.addFlashAttribute("errorMessage", "Bu eğitime ait içeriklere erişmek için öncelikle kayıt olmanız gerekmektedir.");
+            return "redirect:/egitimler/" + id;
         }
 
         var videos = courseVideoService.findByCourseForStudent(id, user.getId());
 
+        if (videos.isEmpty()) {
+            redirectAttributes.addFlashAttribute("infoMessage", "Bu eğitime henüz video eklenmemiştir.");
+            return "redirect:/egitimler/" + id;
+        }
+
         var firstUnwatched = videos.stream()
                 .filter(v -> !v.isWatched())
                 .findFirst()
-                .orElse(null);
-        boolean allWatched = !videos.isEmpty() && videos.stream().allMatch(CourseVideoResponse::isWatched);
+                .orElse(videos.get(0)); // Hepsi izlendiyse ilkine git
 
-        model.addAttribute("course", course);
-        model.addAttribute("videos", videos);
-        model.addAttribute("enrollment", enrollmentOpt.get());
-        model.addAttribute("firstUnwatched", firstUnwatched);
-        model.addAttribute("allWatched", allWatched);
-        return "course/izle";
+        return "redirect:/videolar/" + firstUnwatched.getId();
     }
 
     @PostMapping("/{id}/yorum")

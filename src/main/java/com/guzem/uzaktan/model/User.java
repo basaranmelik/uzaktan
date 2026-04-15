@@ -24,6 +24,10 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(name = "version")
+    private Integer version;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "role")
     private Role role;
@@ -59,6 +63,13 @@ public class User {
     @Builder.Default
     @Column(name = "is_locked", nullable = false)
     private boolean isLocked = false;
+
+    @Builder.Default
+    @Column(name = "failed_login_attempts", nullable = false, columnDefinition = "int DEFAULT 0")
+    private int failedLoginAttempts = 0;
+
+    @Column(name = "lock_until")
+    private java.time.LocalDateTime lockUntil;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

@@ -5,11 +5,15 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
 
     List<Assignment> findByCourseIdOrderByDueDateAsc(Long courseId);
+
+    @Query("SELECT a FROM Assignment a JOIN FETCH a.course WHERE a.dueDate >= :from AND a.dueDate < :to")
+    List<Assignment> findDueBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
 
     @Query("""
             SELECT a FROM Assignment a JOIN FETCH a.course c

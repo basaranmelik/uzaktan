@@ -14,7 +14,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -25,7 +24,6 @@ public class CartController {
 
     private final CartService cartService;
     private final UserService userService;
-    private final com.guzem.uzaktan.service.EnrollmentService enrollmentService;
 
     @GetMapping
     public String viewCart() {
@@ -74,14 +72,8 @@ public class CartController {
     @PostMapping("/checkout")
     public String checkoutCart(@AuthenticationPrincipal UserDetails principal, RedirectAttributes ra) {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
-        List<com.guzem.uzaktan.dto.response.CartItemResponse> items = cartService.getCartItems(userId);
-        
-        for (com.guzem.uzaktan.dto.response.CartItemResponse item : items) {
-            enrollmentService.enroll(userId, item.getCourseId());
-            cartService.removeFromCart(userId, item.getCourseId());
-        }
-        
-        ra.addFlashAttribute("successMessage", "Test: Sepetteki eğitimlere kayıt talebi oluşturuldu. Yönetici onayı bekleniyor.");
+        cartService.checkout(userId);
+        ra.addFlashAttribute("successMessage", "Sepetteki eğitimlere kayıt talebi oluşturuldu. Yönetici onayı bekleniyor.");
         return "redirect:/panom";
     }
 }

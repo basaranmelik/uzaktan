@@ -22,4 +22,6 @@ public interface CartService {
     BigDecimal getCartTotal(List<CartItemResponse> items);
 
     BigDecimal getCartTotalByUser(Long userId);
+
+    void checkout(Long userId);
 }

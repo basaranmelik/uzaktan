@@ -14,6 +14,7 @@ public class EnrollmentMapper {
                 .courseId(enrollment.getCourse().getId())
                 .courseTitle(enrollment.getCourse().getTitle())
                 .instructorName(enrollment.getCourse().getInstructorName())
+                .imagePath(enrollment.getCourse().getImagePath())
                 .status(enrollment.getStatus())
                 .progressPercentage(enrollment.getProgressPercentage())
                 .enrollmentDate(enrollment.getEnrollmentDate())

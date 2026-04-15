@@ -12,6 +12,7 @@ import com.guzem.uzaktan.repository.CourseReviewRepository;
 import com.guzem.uzaktan.repository.UserRepository;
 import com.guzem.uzaktan.service.CourseReviewService;
 import com.guzem.uzaktan.service.CourseService;
+import com.guzem.uzaktan.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -29,17 +30,20 @@ public class CourseReviewServiceImpl implements CourseReviewService {
     private final UserRepository userRepository;
     private final CourseReviewMapper courseReviewMapper;
     private final CourseService courseService;
+    private final NotificationService notificationService;
 
     public CourseReviewServiceImpl(CourseReviewRepository courseReviewRepository,
                                    CourseRepository courseRepository,
                                    UserRepository userRepository,
                                    CourseReviewMapper courseReviewMapper,
-                                   @Lazy CourseService courseService) {
+                                   @Lazy CourseService courseService,
+                                   NotificationService notificationService) {
         this.courseReviewRepository = courseReviewRepository;
         this.courseRepository = courseRepository;
         this.userRepository = userRepository;
         this.courseReviewMapper = courseReviewMapper;
         this.courseService = courseService;
+        this.notificationService = notificationService;
     }
 
     @Override
@@ -92,6 +96,10 @@ public class CourseReviewServiceImpl implements CourseReviewService {
             review.setApproved(true);
             courseReviewRepository.save(review);
             courseService.updateCourseRating(review.getCourse().getId());
+            notificationService.create(review.getUser(), com.guzem.uzaktan.model.NotificationType.REVIEW_APPROVED,
+                    "Yorumunuz Yayınlandı",
+                    "\"" + review.getCourse().getTitle() + "\" kursuna yazdığınız yorum onaylanarak yayına alındı.",
+                    "/egitimler/" + review.getCourse().getId());
         }
     }
 

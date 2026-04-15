@@ -12,11 +12,21 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
 @Slf4j
 public class LocalFileStorageService implements FileStorageService {
+
+    private static final Set<String> ALLOWED_VIDEO_EXTENSIONS =
+            Set.of(".mp4", ".webm", ".avi", ".mkv", ".mov");
+
+    private static final Set<String> ALLOWED_DOCUMENT_EXTENSIONS =
+            Set.of(".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt", ".zip");
+
+    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS =
+            Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
 
     private final Path baseDir;
 
@@ -31,43 +41,71 @@ public class LocalFileStorageService implements FileStorageService {
     }
 
     @Override
-    public String store(MultipartFile file, Long assignmentId) throws IOException {
+    public String store(MultipartFile file, Long assignmentId, String courseTitle) throws IOException {
         String extension = extractExtension(file.getOriginalFilename(), "");
-        String storedName = generateFileName("submission", extension);
-        return storeFile(file, "odevler/" + assignmentId + "/" + storedName);
+        validateExtension(extension, ALLOWED_DOCUMENT_EXTENSIONS, "ödev");
+        String storedName = generateFileName("sub", extension);
+        String courseSlug = sanitizeFileName(courseTitle);
+        return storeFile(file, "odevler/" + courseSlug + "_" + assignmentId + "/" + storedName);
     }
 
     @Override
-    public String storeWithName(MultipartFile file, Long assignmentId, String baseName) throws IOException {
+    public String storeWithName(MultipartFile file, Long assignmentId, String courseTitle, String baseName) throws IOException {
         String extension = extractExtension(file.getOriginalFilename(), "");
-        String storedName = sanitizeFileName(baseName) + extension;
-        return storeFile(file, "odevler/" + assignmentId + "/" + storedName);
+        validateExtension(extension, ALLOWED_DOCUMENT_EXTENSIONS, "ödev");
+        String storedName = sanitizeFileName(baseName) + "_" + (System.currentTimeMillis() % 100000) + extension;
+        String courseSlug = sanitizeFileName(courseTitle);
+        return storeFile(file, "odevler/" + courseSlug + "_" + assignmentId + "/" + storedName);
     }
 
     @Override
     public String storeVideo(MultipartFile file, Long courseId) throws IOException {
+        return storeVideo(file, courseId, "course", "video");
+    }
+
+    @Override
+    public String storeVideo(MultipartFile file, Long courseId, String courseTitle, String videoTitle) throws IOException {
         String extension = extractExtension(file.getOriginalFilename(), ".mp4");
-        String storedName = generateFileName("video", extension);
-        return storeFile(file, "videolar/" + courseId + "/" + storedName);
+        validateExtension(extension, ALLOWED_VIDEO_EXTENSIONS, "video");
+
+        String courseSlug = sanitizeFileName(courseTitle) + "_" + courseId;
+        String videoSlug = sanitizeFileName(videoTitle);
+        String finalFileName = videoSlug + "_" + (System.currentTimeMillis() % 100000) + extension;
+
+        return storeFile(file, "videolar/" + courseSlug + "/" + finalFileName);
     }
 
     @Override
     public String storeImage(MultipartFile file) throws IOException {
         String extension = extractExtension(file.getOriginalFilename(), ".jpg");
+        validateExtension(extension, ALLOWED_IMAGE_EXTENSIONS, "görsel");
         String storedName = generateFileName("img", extension);
         return storeFile(file, "images/egitmenler/" + storedName);
     }
 
     @Override
     public String storeCourseImage(MultipartFile file, Long courseId) throws IOException {
+        return storeCourseImage(file, courseId, "course");
+    }
+
+    @Override
+    public String storeCourseImage(MultipartFile file, Long courseId, String courseTitle) throws IOException {
         String extension = extractExtension(file.getOriginalFilename(), ".jpg");
-        String storedName = generateFileName("kurs", extension);
-        return storeFile(file, "images/kurslar/" + courseId + "/" + storedName);
+        validateExtension(extension, ALLOWED_IMAGE_EXTENSIONS, "görsel");
+
+        String courseSlug = sanitizeFileName(courseTitle) + "_" + courseId;
+        String finalFileName = "kapak_" + (System.currentTimeMillis() % 100000) + extension;
+
+        return storeFile(file, "images/kurslar/" + courseSlug + "/" + finalFileName);
     }
 
     @Override
     public Path resolve(String relativePath) {
-        return baseDir.resolve(relativePath).normalize();
+        Path resolved = baseDir.resolve(relativePath).normalize();
+        if (!resolved.startsWith(baseDir)) {
+            throw new SecurityException("Path traversal girişimi engellendi: " + relativePath);
+        }
+        return resolved;
     }
 
     @Override
@@ -80,7 +118,10 @@ public class LocalFileStorageService implements FileStorageService {
     }
 
     private String storeFile(MultipartFile file, String relativePath) throws IOException {
-        Path target = baseDir.resolve(relativePath);
+        Path target = baseDir.resolve(relativePath).normalize();
+        if (!target.startsWith(baseDir)) {
+            throw new SecurityException("Path traversal girişimi engellendi: " + relativePath);
+        }
         Files.createDirectories(target.getParent());
         Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
         return relativePath;
@@ -104,7 +145,14 @@ public class LocalFileStorageService implements FileStorageService {
     private String extractExtension(String originalFilename, String defaultExtension) {
         String clean = StringUtils.cleanPath(originalFilename != null ? originalFilename : "file");
         return clean.contains(".")
-                ? clean.substring(clean.lastIndexOf('.'))
+                ? clean.substring(clean.lastIndexOf('.')).toLowerCase()
                 : defaultExtension;
+    }
+
+    private void validateExtension(String extension, Set<String> allowed, String fileType) {
+        if (!allowed.contains(extension)) {
+            throw new IllegalArgumentException(
+                    "Geçersiz " + fileType + " formatı. İzin verilen formatlar: " + allowed);
+        }
     }
 }

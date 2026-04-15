@@ -50,7 +50,7 @@ public class CourseVideoServiceImpl implements CourseVideoService {
                     "Bu kursa en fazla " + moduleCount + " video eklenebilir. Mevcut: " + existingCount + ".");
         }
 
-        String filePath = fileStorageService.storeVideo(file, courseId);
+        String filePath = fileStorageService.storeVideo(file, courseId, course.getTitle(), title);
         String originalFileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "video";
 
         if (orderIndex == null) {
@@ -114,7 +114,7 @@ public class CourseVideoServiceImpl implements CourseVideoService {
         List<CourseVideoResponse> results = new java.util.ArrayList<>();
         int insertionOffset = 0;
         for (Pending p : pending) {
-            String filePath = fileStorageService.storeVideo(p.file(), courseId);
+            String filePath = fileStorageService.storeVideo(p.file(), courseId, course.getTitle(), p.title());
             String original = p.file().getOriginalFilename() != null ? p.file().getOriginalFilename() : "video";
             CourseVideo video = CourseVideo.builder()
                     .course(course)

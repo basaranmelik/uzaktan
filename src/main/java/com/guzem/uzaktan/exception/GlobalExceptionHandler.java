@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.ui.Model;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -65,6 +66,16 @@ public class GlobalExceptionHandler {
         model.addAttribute("message", ex.getMessage());
         model.addAttribute("status", 400);
         return "error/400";
+    }
+
+    @ResponseStatus(HttpStatus.CONFLICT)
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public String handleOptimisticLock(Model model) {
+        model.addAttribute("message",
+                "Bu kayıt siz görüntülerken başka bir yönetici tarafından değiştirildi. " +
+                "Lütfen sayfayı yenileyip tekrar deneyin.");
+        model.addAttribute("status", 409);
+        return "error/409";
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)

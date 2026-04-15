@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bildirimler — GUZEM</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .notif-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .notif-card {
+      display: flex; align-items: flex-start; gap: 1rem;
+      padding: 1rem 1.25rem; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--bg);
+      transition: background 0.15s;
+    }
+    .notif-card.unread { background: var(--primary-50); border-color: var(--primary-200); }
+    .notif-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; flex-shrink: 0;
+    }
+    .notif-icon.blue  { background: #dbeafe; color: #1d4ed8; }
+    .notif-icon.green { background: #dcfce7; color: #15803d; }
+    .notif-icon.amber { background: #fef9c3; color: #a16207; }
+    .notif-icon.purple{ background: #f3e8ff; color: #7e22ce; }
+    .notif-body { flex: 1; min-width: 0; }
+    .notif-title { font-weight: 700; font-size: 0.92rem; color: var(--text); }
+    .notif-msg { font-size: 0.85rem; color: var(--text-alt); margin-top: 0.15rem; }
+    .notif-meta {
+      display: flex; align-items: center; gap: 1rem;
+      margin-top: 0.4rem; font-size: 0.78rem; color: var(--text-muted);
+    }
+    .notif-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--primary-500); flex-shrink: 0; margin-top: 6px;
+    }
+    .notif-link {
+      font-size: 0.8rem; color: var(--primary-600); font-weight: 600;
+      text-decoration: none;
+    }
+    .notif-link:hover { text-decoration: underline; }
+    .empty-state {
+      text-align: center; padding: 4rem 2rem; color: var(--text-muted);
+    }
+    .empty-state i { font-size: 3rem; display: block; margin-bottom: 1rem; color: var(--gray-300); }
+    .empty-state p { font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/panom}">Panom</a>
+      <span class="separator">›</span>
+      <span class="current">Bildirimler</span>
+    </div>
+    <h1><i class="bi bi-bell-fill"></i> Bildirimler</h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width: 760px;">
+
+    <div th:if="${notifications.totalElements > 0}" class="notif-list">
+      <div th:each="n : ${notifications.content}"
+           th:classappend="${!n.read} ? ' unread'" class="notif-card">
+
+        <!-- İkon -->
+        <div th:class="'notif-icon ' + ${n.type.name() == 'CERTIFICATE_ISSUED' ? 'green' : (n.type.name() == 'ASSIGNMENT_GRADED' ? 'amber' : (n.type.name() == 'REVIEW_APPROVED' ? 'purple' : 'blue'))}">
+          <i th:class="'bi ' + ${n.type.name() == 'CERTIFICATE_ISSUED' ? 'bi-award-fill' : (n.type.name() == 'ENROLLMENT_ACTIVE' ? 'bi-patch-check-fill' : (n.type.name() == 'ASSIGNMENT_GRADED' ? 'bi-pencil-fill' : 'bi-chat-dots-fill'))}"></i>
+        </div>
+
+        <!-- İçerik -->
+        <div class="notif-body">
+          <div class="notif-title" th:text="${n.title}"></div>
+          <div class="notif-msg" th:text="${n.message}"></div>
+          <div class="notif-meta">
+            <span><i class="bi bi-clock"></i> <span th:text="${n.timeAgo}"></span></span>
+            <span th:text="${n.typeDisplayName}"
+                  style="background:var(--gray-100);padding:1px 8px;border-radius:20px;"></span>
+            <a th:if="${n.link != null}" th:href="${n.link}" class="notif-link">
+              Görüntüle <i class="bi bi-arrow-right-short"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Okunmamış noktası -->
+        <div th:if="${!n.read}" class="notif-dot"></div>
+      </div>
+    </div>
+
+    <!-- Boş durum -->
+    <div th:if="${notifications.totalElements == 0}" class="empty-state">
+      <i class="bi bi-bell-slash"></i>
+      <p>Henüz hiç bildiriminiz yok.</p>
+    </div>
+
+    <!-- Sayfalama -->
+    <div th:if="${notifications.totalPages > 1}"
+         style="display:flex;justify-content:center;gap:0.5rem;margin-top:2rem;">
+      <a th:if="${!notifications.first}"
+         th:href="@{/bildirimler(page=${notifications.number - 1})}"
+         class="btn btn-secondary">
+        <i class="bi bi-chevron-left"></i> Önceki
+      </a>
+      <span style="padding:0.5rem 1rem;color:var(--text-muted);font-size:0.85rem;">
+        Sayfa <span th:text="${notifications.number + 1}"></span> /
+        <span th:text="${notifications.totalPages}"></span>
+      </span>
+      <a th:if="${!notifications.last}"
+         th:href="@{/bildirimler(page=${notifications.number + 1})}"
+         class="btn btn-secondary">
+        Sonraki <i class="bi bi-chevron-right"></i>
+      </a>
+    </div>
+
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

@@ -27,6 +27,10 @@ public class Course {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(name = "version")
+    private Integer version;
+
     @Nationalized
     @Column(name = "title", nullable = false, length = 150)
     private String title;
@@ -38,13 +42,13 @@ public class Course {
     @Column(name = "price", nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @Column(name = "quota", nullable = false)
+    @Column(name = "quota")
     private Integer quota;
 
-    @Column(name = "start_date", nullable = false)
+    @Column(name = "start_date")
     private LocalDate startDate;
 
-    @Column(name = "end_date", nullable = false)
+    @Column(name = "end_date")
     private LocalDate endDate;
 
     @Column(name = "hours")
@@ -59,8 +63,28 @@ public class Course {
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
+    @Column(name = "course_type", nullable = false, length = 30)
+    private CourseType courseType = CourseType.ONLINE;
+
+    @Nationalized
+    @Column(name = "location", length = 300)
+    private String location;
+
+    @Nationalized
+    @Column(name = "course_schedule", length = 300)
+    private String courseSchedule;
+
+    @Column(name = "certificate_deadline")
+    private LocalDate certificateDeadline;
+
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
     @Column(name = "status", nullable = false, length = 30)
     private CourseStatus status = CourseStatus.DRAFT;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "level", length = 20)
+    private CourseLevel level;
 
     @Builder.Default
     @Column(name = "average_rating")

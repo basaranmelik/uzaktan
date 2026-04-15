@@ -4,7 +4,7 @@
    ============================================ */
 
 /* ---------- Google Font ---------- */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
 
 /* ---------- CSS Custom Properties ---------- */
 :root {
@@ -67,8 +67,8 @@
   --gradient-card:    linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 100%);
 
   /* Typography */
-  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-heading: 'Outfit', 'Inter', sans-serif;
+  --font-body:    'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-heading: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
 
   /* Spacing */
   --space-xs:  0.25rem;
@@ -103,8 +103,8 @@
   /* Layout */
   --container-max: 1200px;
   --topbar-height: 36px;
-  --main-nav-height: 82px;
-  --nav-height: 118px; /* topbar + main nav */
+  --main-nav-height: 96px;
+  --nav-height: 132px; /* topbar + main nav */
 }
 
 /* ---------- Reset ---------- */
@@ -165,10 +165,10 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text);
 }
 
-h1 { font-size: clamp(2rem, 5vw, 3.5rem); }
-h2 { font-size: clamp(1.5rem, 3.5vw, 2.5rem); }
-h3 { font-size: clamp(1.2rem, 2.5vw, 1.75rem); }
-h4 { font-size: 1.25rem; }
+h1 { font-size: clamp(2.2rem, 5vw, 4rem); }
+h2 { font-size: clamp(1.65rem, 3.5vw, 2.8rem); }
+h3 { font-size: clamp(1.3rem, 2.5vw, 2rem); }
+h4 { font-size: 1.4rem; }
 
 p {
   color: var(--text-alt);
@@ -307,8 +307,8 @@ p {
 }
 
 .nav-logo .gazi-logo {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   object-fit: contain;
   display: block;
   filter: drop-shadow(0 1px 4px rgba(0,0,0,0.14));
@@ -316,7 +316,7 @@ p {
 
 .nav-logo-divider {
   width: 1px;
-  height: 38px;
+  height: 50px;
   background: var(--gray-200);
   margin: 0 0.35rem;
 }
@@ -330,13 +330,13 @@ p {
 .nav-logo-title {
   font-family: var(--font-heading);
   font-weight: 800;
-  font-size: 1.35rem;
+  font-size: 1.55rem;
   color: var(--primary-700);
   letter-spacing: 0.5px;
 }
 
 .nav-logo-subtitle {
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: var(--text-muted);
   font-weight: 500;
   letter-spacing: 0.2px;
@@ -1488,7 +1488,7 @@ p {
 /* ---------- Page Header (sub-pages) ---------- */
 .page-header {
   background: var(--gradient-hero);
-  padding: calc(var(--nav-height) + var(--space-3xl)) 0 var(--space-3xl);
+  padding: calc(var(--nav-height) + var(--space-xl)) 0 var(--space-xl);
   text-align: center;
   position: relative;
   overflow: hidden;
@@ -3144,3 +3144,300 @@ textarea.form-control {
   border-color: var(--primary-400);
   box-shadow: 0 0 0 3px rgba(17,58,113,0.1);
 }
+
+/* ---------- Toast System ---------- */
+#toast-container {
+  position: fixed;
+  top: 100px;
+  right: 20px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.toast {
+  background: #fff;
+  border-left: 4px solid var(--primary-500);
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 300px;
+  transform: translateX(120%);
+  transition: transform 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+}
+.toast-success { border-left-color: #2b8a3e; }
+.toast-error   { border-left-color: #c92a2a; }
+.toast-info    { border-left-color: var(--primary-500); }
+.toast-warning { border-left-color: #e8590c; }
+.toast.show    { transform: translateX(0); }
+
+/* ---------- Locked Video Styles ---------- */
+.izle-video-item.locked, .playlist-item.locked {
+  opacity: 0.6;
+  background: #f8fafc !important;
+  cursor: pointer !important; /* Make it clickable for the toast warning */
+  position: relative;
+}
+.izle-video-item.locked:hover, .playlist-item.locked:hover {
+  background: #f1f5f9 !important;
+}
+.izle-video-item.locked .izle-video-title, 
+.playlist-item.locked .playlist-item-title {
+  color: #94a3b8;
+}
+.lock-icon-overlay {
+  color: #94a3b8;
+  font-size: 1rem;
+  margin-left: auto;
+}
+
+/* ---- Course Type Badges ---- */
+.course-type-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0.2rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-size: 0.72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.course-type-badge.ONLINE        { background: #d0ebff; color: #1864ab; }
+.course-type-badge.FACE_TO_FACE  { background: #d3f9d8; color: #2b8a3e; }
+.course-type-badge.REMOTE_FORMAL { background: #f3d9fa; color: #862e9c; }
+
+/* ============================================================
+   EXTENDED RESPONSIVE DESIGN
+   xs (≤319) / sm (320-479) / md (480-767)
+   tablet (768-1023) / desktop (1024-1439)
+   2K (1440-2559) / QHD (2560-3839) / 4K (≥3840) / ultrawide
+   ============================================================ */
+
+/* ---- Large Desktop 1440px+ ---- */
+@media (min-width: 1440px) {
+  :root { --container-max: 1360px; }
+}
+
+/* ---- 2K / QHD 2560px+ ---- */
+@media (min-width: 2560px) {
+  :root {
+    --container-max: 2100px;
+    --topbar-height: 44px;
+    --main-nav-height: 120px;
+    --nav-height: 164px;
+    --space-4xl: 8rem;
+  }
+
+  html { font-size: 18px; }
+
+  .nav-logo .gazi-logo      { width: 100px; height: 100px; }
+  .nav-logo-title           { font-size: 2rem; }
+  .nav-logo-subtitle        { font-size: 0.9rem; }
+  .nav-logo-divider         { height: 64px; }
+  .nav-links                { gap: 3rem; }
+  .nav-links a              { font-size: 1.1rem; }
+  .nav-search-input         { width: 260px; }
+  .nav-search-input:focus   { width: 360px; }
+
+  .courses-grid             { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+  .instructors-grid         { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+  .features-grid            { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+  .testimonials-grid        { grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); }
+  .stats-grid               { gap: 2.5rem; }
+  .stat-card .stat-number   { font-size: 3.5rem; }
+
+  .course-card .course-thumb { height: 220px; }
+  .section                  { padding: 8rem 0; }
+  .section-header           { margin-bottom: 5rem; }
+  .footer-grid              { gap: 5rem; }
+
+  .auth-card-wrap           { max-width: 1100px; }
+  .auth-brand               { padding: 4rem 3rem; }
+  .auth-form-panel,
+  .auth-form-panel--wide    { padding: 4rem 3.5rem; }
+
+  #toast-container          { top: 120px; right: 30px; }
+  .toast                    { min-width: 360px; }
+}
+
+/* ---- 4K / UHD 3840px+ ---- */
+@media (min-width: 3840px) {
+  :root {
+    --container-max: 3400px;
+    --topbar-height: 56px;
+    --main-nav-height: 150px;
+    --nav-height: 206px;
+  }
+
+  html { font-size: 24px; }
+
+  .nav-logo .gazi-logo      { width: 130px; height: 130px; }
+  .nav-logo-title           { font-size: 2.6rem; }
+  .nav-logo-divider         { height: 80px; }
+  .nav-links                { gap: 4rem; }
+  .nav-links a              { font-size: 1.25rem; }
+  .nav-search-input         { width: 320px; }
+  .nav-search-input:focus   { width: 460px; }
+
+  .features-grid            { grid-template-columns: repeat(6, 1fr); }
+  .stats-grid               { gap: 3.5rem; }
+  .stat-card .stat-number   { font-size: 4.5rem; }
+  .stat-card .stat-icon     { width: 80px; height: 80px; font-size: 2rem; }
+
+  .course-card .course-thumb { height: 280px; }
+  .section                  { padding: 11rem 0; }
+
+  .auth-card-wrap           { max-width: 1500px; }
+
+  #toast-container          { top: 150px; right: 50px; }
+  .toast                    { min-width: 480px; font-size: 1.1rem; }
+}
+
+/* ---- Ultrawide (≥3440px wide, ≤1440px tall — curved monitors) ---- */
+@media (min-width: 3440px) and (max-height: 1440px) {
+  :root              { --container-max: 2900px; }
+  .hero-section      { min-height: 80vh; }
+  .courses-layout    { grid-template-columns: 380px 1fr; }
+  .hero-grid         { gap: 5rem; }
+}
+
+/* ---- Tablet (768px–1023px) ---- */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --main-nav-height: 80px;
+    --nav-height: 116px;
+  }
+
+  .nav-container      { gap: 0.75rem; }
+  /* Keep nav actions visible but compact */
+  .nav-actions        { display: flex; gap: 0.2rem; }
+  .nav-action-btn     { padding: 0.3rem 0.4rem; font-size: 0.8rem; }
+  /* Hide text labels inside action buttons — show only icons */
+  .nav-action-btn > span:not(.nav-badge) { display: none; }
+  .nav-search-input   { width: 110px; }
+  .nav-search-input:focus { width: 170px; }
+
+  .courses-grid       { grid-template-columns: repeat(2, 1fr); }
+  .features-grid      { grid-template-columns: repeat(3, 1fr); }
+  .stats-grid         { grid-template-columns: repeat(2, 1fr); }
+  .hero-stats         { gap: 1.5rem; }
+  .footer-grid        { grid-template-columns: 1fr 1fr; }
+
+  .course-detail-grid { grid-template-columns: 1fr; }
+  .course-sidebar     { order: -1; position: static; }
+}
+
+/* ---- Small tablet / large phone (480px–767px) ---- */
+@media (min-width: 480px) and (max-width: 767px) {
+  .courses-grid       { grid-template-columns: repeat(2, 1fr); }
+  .features-grid      { grid-template-columns: repeat(2, 1fr); }
+  .footer-grid        { grid-template-columns: 1fr 1fr; }
+  .testimonials-grid  { grid-template-columns: 1fr; }
+}
+
+/* ---- Mobile additions (≤480px — complements existing rules) ---- */
+@media (max-width: 480px) {
+  .container          { padding: 0 var(--space-md); }
+  .section            { padding: var(--space-3xl) 0; }
+
+  /* Hero CTA buttons stack */
+  .hero-actions       { flex-direction: column; align-items: stretch; }
+  .hero-actions .btn  { width: 100%; justify-content: center; }
+
+  .features-grid      { grid-template-columns: 1fr; }
+  .testimonials-grid  { grid-template-columns: 1fr; }
+
+  /* Admin tables horizontal scroll */
+  .admin-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--radius-md);
+  }
+  .admin-table        { min-width: 600px; }
+  .admin-search-bar   { flex-direction: column; align-items: stretch; }
+  .admin-search-bar input[type="text"] { min-width: unset; width: 100%; }
+
+  /* Toast full-width */
+  #toast-container    { right: 0.75rem; left: 0.75rem; }
+  .toast              { min-width: unset; width: 100%; box-sizing: border-box; }
+
+  /* Hide auth brand panel on very small screens */
+  .auth-brand         { display: none; }
+  .auth-card-wrap     { grid-template-columns: 1fr; max-width: 100%; }
+}
+
+/* ---- Admin panel table scroll on all phones ---- */
+@media (max-width: 768px) {
+  .admin-table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .admin-table        { min-width: 580px; }
+  .page-header .container {
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+  }
+}
+
+/* ---- Video player responsive (global overrides — fine detail in izle.html) ---- */
+@media (max-width: 900px) {
+  .video-layout       { grid-template-columns: 1fr !important; }
+}
+@media (max-width: 480px) {
+  .playlist-card      { max-height: 280px; overflow-y: auto; }
+}
+
+/* ---- Small phones (≤360px) ---- */
+@media (max-width: 360px) {
+  :root {
+    --main-nav-height: 72px;
+    --topbar-height: 32px;
+    --nav-height: 104px;
+  }
+
+  .nav-logo .gazi-logo  { width: 52px; height: 52px; }
+  .nav-logo-title       { font-size: 1.2rem; }
+  .nav-logo-subtitle    { display: none; }
+  .nav-logo-divider     { height: 36px; }
+
+  .hero-content h1      { font-size: 1.6rem; }
+  .hero-content p       { font-size: 0.9rem; }
+  .stats-grid           { grid-template-columns: 1fr; }
+
+  .btn                  { padding: 10px 20px; font-size: 0.88rem; }
+  .btn-lg               { padding: 12px 24px; font-size: 0.92rem; }
+
+  .section              { padding: 2rem 0; }
+  .section-header       { margin-bottom: 1.5rem; }
+
+  .auth-card-wrap       { border-radius: 12px; }
+}
+
+/* ---- Extra-small (≤320px) ---- */
+@media (max-width: 320px) {
+  .nav-logo-title       { font-size: 1.05rem; }
+  .nav-logo .gazi-logo  { width: 44px; height: 44px; }
+  .hero-content h1      { font-size: 1.4rem; }
+  .container            { padding: 0 0.75rem; }
+  .stat-card            { padding: 1rem; }
+  .stat-card .stat-number { font-size: 1.8rem; }
+}
+
+/* ---- Print ---- */
+@media print {
+  .topbar,
+  .navbar,
+  footer,
+  .nav-hamburger,
+  .sidebar-filters      { display: none !important; }
+  body                  { padding-top: 0 !important; }
+  .container            { max-width: 100%; }
+  .course-detail-grid   { grid-template-columns: 1fr; }
+}
+

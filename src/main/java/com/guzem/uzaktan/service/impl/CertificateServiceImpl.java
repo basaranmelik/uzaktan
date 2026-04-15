@@ -10,6 +10,7 @@ import com.guzem.uzaktan.repository.CertificateRepository;
 import com.guzem.uzaktan.repository.CourseRepository;
 import com.guzem.uzaktan.repository.UserRepository;
 import com.guzem.uzaktan.service.CertificateService;
+import com.guzem.uzaktan.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class CertificateServiceImpl implements CertificateService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final CertificateMapper certificateMapper;
+    private final NotificationService notificationService;
 
     @Override
     public CertificateResponse issueCertificate(Long userId, Long courseId) {
@@ -47,7 +49,12 @@ public class CertificateServiceImpl implements CertificateService {
                             .course(course)
                             .build();
 
-                    return certificateMapper.toResponse(certificateRepository.save(certificate));
+                    CertificateResponse saved = certificateMapper.toResponse(certificateRepository.save(certificate));
+                    notificationService.create(user, com.guzem.uzaktan.model.NotificationType.CERTIFICATE_ISSUED,
+                            "Sertifikanız Hazır",
+                            "\"" + course.getTitle() + "\" kursuna ait sertifikanız oluşturuldu.",
+                            "/sertifikalarim");
+                    return saved;
                 });
     }
 

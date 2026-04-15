@@ -1,7 +1,8 @@
 package com.guzem.uzaktan.controller;
 
 import com.guzem.uzaktan.dto.response.CourseVideoResponse;
-import com.guzem.uzaktan.exception.UnauthorizedActionException;
+import com.guzem.uzaktan.exception.ResourceNotFoundException;
+import com.guzem.uzaktan.service.CourseService;
 import com.guzem.uzaktan.service.CourseVideoService;
 import com.guzem.uzaktan.service.EnrollmentService;
 import com.guzem.uzaktan.service.FileStorageService;
@@ -18,7 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.net.MalformedURLException;
 import java.nio.file.Path;
@@ -35,16 +36,17 @@ public class VideoController {
     private final EnrollmentService enrollmentService;
     private final FileStorageService fileStorageService;
     private final UserService userService;
+    private final CourseService courseService;
 
     @GetMapping("/{id}")
     public String watchVideo(@PathVariable Long id,
                              @AuthenticationPrincipal UserDetails principal,
+                             HttpServletRequest request,
                              Model model) {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         CourseVideoResponse video = courseVideoService.findById(id);
         if (!enrollmentService.isActiveEnrollment(userId, video.getCourseId())) {
-            throw new UnauthorizedActionException(
-                    "Bu videoya erişmek için kursa kayıtlı olmanız ve kaydınızın onaylanmış (aktif) olması gerekiyor.");
+            throw new ResourceNotFoundException("Video", "id", id);
         }
 
         if (!courseVideoService.canAccessVideo(id, userId)) {
@@ -64,10 +66,16 @@ public class VideoController {
         }
 
         model.addAttribute("video", currentVideo);
+        model.addAttribute("course", courseService.findById(video.getCourseId()));
+        model.addAttribute("enrollment", enrollmentService.findByUserAndCourse(userId, video.getCourseId()).orElse(null));
         model.addAttribute("allVideos", allVideos);
         model.addAttribute("prevVideo", currentIndex > 0 ? allVideos.get(currentIndex - 1) : null);
         model.addAttribute("nextVideo", currentIndex < allVideos.size() - 1 ? allVideos.get(currentIndex + 1) : null);
         model.addAttribute("alreadyWatched", currentVideo.isWatched());
+        
+        // Gerçek TCP bağlantı adresi — kullanıcı tarafından manipüle edilemez
+        model.addAttribute("clientIp", request.getRemoteAddr());
+        
         return "video/izle";
     }
 
@@ -79,11 +87,11 @@ public class VideoController {
         CourseVideoResponse video = courseVideoService.findById(id);
 
         if (!enrollmentService.isActiveEnrollment(userId, video.getCourseId())) {
-            return ResponseEntity.status(403).build();
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
         }
 
         if (!courseVideoService.canAccessVideo(id, userId)) {
-            return ResponseEntity.status(403).build();
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
         }
 
         Path filePath = fileStorageService.resolve(video.getFilePath());
@@ -108,10 +116,10 @@ public class VideoController {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         CourseVideoResponse video = courseVideoService.findById(id);
         if (!enrollmentService.isActiveEnrollment(userId, video.getCourseId())) {
-            return ResponseEntity.status(403).body(Map.of("success", false));
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("success", false));
         }
         if (!courseVideoService.canAccessVideo(id, userId)) {
-            return ResponseEntity.status(403).body(Map.of("success", false));
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("success", false));
         }
 
         courseVideoService.markWatched(id, userId);

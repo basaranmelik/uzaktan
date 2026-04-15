@@ -21,9 +21,5 @@ public class InstructorController {
         return "egitmenler/liste";
     }
 
-    @GetMapping("/{id}")
-    public String detail(@PathVariable Long id, Model model) {
-        model.addAttribute("instructor", instructorService.findById(id));
-        return "egitmenler/detay";
-    }
+
 }

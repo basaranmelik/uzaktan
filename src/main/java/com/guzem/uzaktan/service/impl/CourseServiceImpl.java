@@ -9,6 +9,7 @@ import com.guzem.uzaktan.mapper.CourseMapper;
 import com.guzem.uzaktan.model.Course;
 import com.guzem.uzaktan.model.CourseCategory;
 import com.guzem.uzaktan.model.CourseStatus;
+import com.guzem.uzaktan.model.CourseType;
 import com.guzem.uzaktan.model.User;
 import com.guzem.uzaktan.model.CourseReview;
 import com.guzem.uzaktan.repository.CourseRepository;
@@ -95,6 +96,8 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     public CourseResponse create(CourseCreateRequest request, MultipartFile image) {
+        validateCourseTypeFields(request.getCourseType(), request.getQuota(),
+                request.getStartDate(), request.getEndDate(), request.getLocation());
         Course course = courseMapper.toEntity(request);
         if (request.getInstructorId() != null) {
             User instructor = userRepository.findById(request.getInstructorId())
@@ -110,6 +113,13 @@ public class CourseServiceImpl implements CourseService {
     @Override
     public CourseResponse update(Long id, CourseUpdateRequest request, MultipartFile image) {
         Course course = loadCourse(id);
+        // Tip değişiyorsa yeni tipe göre, değişmiyorsa mevcut tipe göre validate et
+        CourseType effectiveType = request.getCourseType() != null ? request.getCourseType() : course.getCourseType();
+        Integer effectiveQuota = request.getQuota() != null ? request.getQuota() : course.getQuota();
+        validateCourseTypeFields(effectiveType, effectiveQuota,
+                request.getStartDate() != null ? request.getStartDate() : course.getStartDate(),
+                request.getEndDate() != null ? request.getEndDate() : course.getEndDate(),
+                request.getLocation() != null ? request.getLocation() : course.getLocation());
         courseMapper.updateEntity(course, request);
         if (request.getInstructorId() != null) {
             User instructor = userRepository.findById(request.getInstructorId())
@@ -131,7 +141,7 @@ public class CourseServiceImpl implements CourseService {
             fileStorageService.delete(course.getImagePath());
         }
         try {
-            String path = fileStorageService.storeCourseImage(image, course.getId());
+            String path = fileStorageService.storeCourseImage(image, course.getId(), course.getTitle());
             course.setImagePath(path);
         } catch (IOException e) {
             throw new IllegalStateException("Fotoğraf yüklenirken hata oluştu.", e);
@@ -216,6 +226,18 @@ public class CourseServiceImpl implements CourseService {
         }
 
         courseRepository.save(course);
+    }
+
+    private void validateCourseTypeFields(CourseType type, Integer quota,
+            java.time.LocalDate startDate, java.time.LocalDate endDate, String location) {
+        if (type == null || type == CourseType.ONLINE) {
+            return; // Online: tarih/kontenjan/konum zorunlu değil
+        }
+        if (startDate == null)  throw new IllegalArgumentException("Başlangıç tarihi zorunludur.");
+        if (endDate == null)    throw new IllegalArgumentException("Bitiş tarihi zorunludur.");
+        if (quota == null || quota < 1) throw new IllegalArgumentException("Kontenjan zorunludur.");
+        if (type == CourseType.FACE_TO_FACE && (location == null || location.isBlank()))
+            throw new IllegalArgumentException("Yüzyüze eğitimler için konum bilgisi zorunludur.");
     }
 
     private Map<Long, Long> buildEnrollmentCountMap(List<Long> courseIds) {

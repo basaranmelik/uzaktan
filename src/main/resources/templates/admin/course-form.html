@@ -20,6 +20,22 @@
       display:flex; align-items:center; gap:6px;
     }
     .form-section-title i { font-size:0.9rem; }
+
+    /* Kurs Türü Seçici */
+    .type-selector { display:flex; gap:0.75rem; flex-wrap:wrap; }
+    .type-option {
+      display:flex; align-items:center; gap:0.5rem;
+      padding:0.6rem 1rem; border:2px solid var(--border);
+      border-radius:10px; cursor:pointer; font-weight:600;
+      font-size:0.9rem; color:var(--text-alt);
+      transition:all 0.15s;
+    }
+    .type-option:has(input:checked) {
+      border-color:var(--primary-500); background:var(--primary-50);
+      color:var(--primary-700);
+    }
+    .type-option input[type=radio] { display:none; }
+    .type-option i { font-size:1.1rem; }
   </style>
 </head>
 <body>
@@ -39,6 +55,27 @@
 <section class="section">
   <div class="container" style="max-width:740px;">
     <form th:action="@{/admin/kurslar}" th:object="${courseCreateRequest}" method="post" enctype="multipart/form-data">
+
+      <!-- Kurs Türü -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-ui-checks-grid"></i> Kurs Türü *</div>
+        <div class="type-selector">
+          <th:block th:each="t : ${courseTypes}">
+            <label class="type-option">
+              <input type="radio" name="courseType" th:value="${t.name()}"
+                     th:checked="${courseCreateRequest.courseType == t or (courseCreateRequest.courseType == null and t.name() == 'ONLINE')}">
+              <i th:class="${t.name() == 'ONLINE'} ? 'bi bi-play-circle' : (${t.name() == 'FACE_TO_FACE'} ? 'bi bi-people-fill' : 'bi bi-camera-video-fill')"></i>
+              <span th:text="${t.displayName}"></span>
+            </label>
+          </th:block>
+        </div>
+        <small style="color:var(--text-muted);margin-top:0.5rem;display:block;">
+          <i class="bi bi-info-circle"></i>
+          <b>Online:</b> Video tabanlı, kontenjan yok.
+          <b>Yüzyüze:</b> Belirli tarihler, konum ve kontenjan.
+          <b>Uzaktan Örgün:</b> Zoom üzerinden, tarih ve kontenjan.
+        </small>
+      </div>
 
       <!-- Temel Bilgiler -->
       <div class="form-section">
@@ -84,49 +121,99 @@
             <div class="invalid-feedback" th:errors="*{price}" th:if="${#fields.hasErrors('price')}"></div>
           </div>
         </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Seviye</label>
+            <select th:field="*{level}" class="form-control">
+              <option value="">— Seçiniz —</option>
+              <option th:each="lvl : ${levels}"
+                      th:value="${lvl.name()}"
+                      th:text="${lvl.displayName}"></option>
+            </select>
+          </div>
+          <div class="form-group"></div>
+        </div>
       </div>
 
-      <!-- Tarih & Süre -->
-      <div class="form-section">
+      <!-- Tarih & Süre (Yüzyüze + Uzaktan Örgün) -->
+      <div class="form-section" id="field-dates" data-show-for="FACE_TO_FACE,REMOTE_FORMAL" style="display:none;">
         <div class="form-section-title"><i class="bi bi-calendar3"></i> Tarih &amp; Süre</div>
         <div class="form-row">
           <div class="form-group">
             <label>Başlangıç Tarihi *</label>
             <input type="date" th:field="*{startDate}" class="form-control"
-                   th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
-                   th:classappend="${#fields.hasErrors('startDate')} ? ' is-invalid'" required>
-            <div class="invalid-feedback" th:errors="*{startDate}" th:if="${#fields.hasErrors('startDate')}"></div>
+                   th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
           </div>
           <div class="form-group">
             <label>Bitiş Tarihi *</label>
             <input type="date" th:field="*{endDate}" class="form-control"
-                   th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}"
-                   th:classappend="${#fields.hasErrors('endDate')} ? ' is-invalid'" required>
-            <div class="invalid-feedback" th:errors="*{endDate}" th:if="${#fields.hasErrors('endDate')}"></div>
+                   th:min="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd')}">
           </div>
         </div>
         <div class="form-row">
           <div class="form-group">
-            <label>Süre (Saat) *</label>
-            <input type="number" th:field="*{hours}" class="form-control" min="1" placeholder="40" required>
-          </div>
-          <div class="form-group">
-            <label>Modül Sayısı *</label>
-            <input type="number" th:field="*{module}" class="form-control"
-                   th:classappend="${#fields.hasErrors('module')} ? ' is-invalid'"
-                   min="1" placeholder="8" required>
-            <div class="invalid-feedback" th:errors="*{module}" th:if="${#fields.hasErrors('module')}"></div>
-            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">
-              <i class="bi bi-info-circle"></i> Bu kursa yüklenecek video sayısını belirler.
-            </div>
+            <label>Süre (Saat)</label>
+            <input type="number" th:field="*{hours}" class="form-control" min="1" placeholder="40">
           </div>
           <div class="form-group">
             <label>Kontenjan *</label>
             <input type="number" th:field="*{quota}" class="form-control"
                    th:classappend="${#fields.hasErrors('quota')} ? ' is-invalid'"
-                   min="1" placeholder="30" required>
+                   min="1" placeholder="30">
             <div class="invalid-feedback" th:errors="*{quota}" th:if="${#fields.hasErrors('quota')}"></div>
           </div>
+        </div>
+      </div>
+
+      <!-- Ders Programı (Yüzyüze + Uzaktan Örgün) -->
+      <div class="form-section" id="field-schedule" data-show-for="FACE_TO_FACE,REMOTE_FORMAL" style="display:none;">
+        <div class="form-section-title"><i class="bi bi-clock"></i> Ders Programı</div>
+        <div class="form-group">
+          <label>Ders Günleri &amp; Saatleri</label>
+          <input type="text" th:field="*{courseSchedule}" class="form-control"
+                 placeholder="Örn: Pazartesi-Çarşamba 14:00-16:00" maxlength="300">
+          <small style="color:var(--text-muted);">Öğrencilerin ders programını görebilmesi için doldurun.</small>
+        </div>
+      </div>
+
+      <!-- Konum (Sadece Yüzyüze) -->
+      <div class="form-section" id="field-location" data-show-for="FACE_TO_FACE" style="display:none;">
+        <div class="form-section-title"><i class="bi bi-geo-alt-fill"></i> Eğitim Yeri *</div>
+        <div class="form-group">
+          <label>Konum / Adres</label>
+          <input type="text" th:field="*{location}" class="form-control"
+                 placeholder="Örn: Gazi Üniversitesi, Teknikokullar Kampüsü, B Blok 201" maxlength="300">
+        </div>
+      </div>
+
+      <!-- Online Eğitime Özgü Alanlar -->
+      <div class="form-section" id="field-online" data-show-for="ONLINE">
+        <div class="form-section-title"><i class="bi bi-play-circle"></i> Online Eğitim Ayarları</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Modül Sayısı *</label>
+            <input type="number" th:field="*{module}" class="form-control"
+                   th:classappend="${#fields.hasErrors('module')} ? ' is-invalid'"
+                   min="1" placeholder="8">
+            <div class="invalid-feedback" th:errors="*{module}" th:if="${#fields.hasErrors('module')}"></div>
+            <small style="color:var(--text-muted);">Bu kursa yüklenecek maksimum video sayısını belirler.</small>
+          </div>
+          <div class="form-group">
+            <label>Sertifika Son Talep Tarihi</label>
+            <input type="date" th:field="*{certificateDeadline}" class="form-control">
+            <small style="color:var(--text-muted);">Bu tarihten sonra sertifika talep edilemez. Boş bırakılabilir.</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Uzaktan Örgün: Modül Sayısı -->
+      <div class="form-section" id="field-module-remote" data-show-for="REMOTE_FORMAL" style="display:none;">
+        <div class="form-section-title"><i class="bi bi-collection-play"></i> Video İçerik</div>
+        <div class="form-group">
+          <label>Modül Sayısı</label>
+          <input type="number" th:field="*{module}" class="form-control" min="1" placeholder="8">
+          <small style="color:var(--text-muted);">Ek kayıt videoları yüklenecekse bu alanı doldurun (opsiyonel).</small>
         </div>
       </div>
 
@@ -151,9 +238,9 @@
                       th:value="${t.id}"
                       th:text="${t.firstName + ' ' + t.lastName + ' (' + t.email + ')'}"></option>
             </select>
-            <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">
+            <small style="color:var(--text-muted);">
               <i class="bi bi-info-circle"></i> Seçilen öğretmen bu kursa erişebilir ve ödev ekleyebilir.
-            </div>
+            </small>
           </div>
         </div>
       </div>
@@ -171,5 +258,17 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
+<script>
+  function updateTypeFields() {
+    const selected = document.querySelector('input[name="courseType"]:checked')?.value || 'ONLINE';
+    document.querySelectorAll('[data-show-for]').forEach(el => {
+      const types = el.dataset.showFor.split(',');
+      el.style.display = types.includes(selected) ? '' : 'none';
+    });
+  }
+  document.querySelectorAll('input[name="courseType"]').forEach(r =>
+    r.addEventListener('change', updateTypeFields));
+  updateTypeFields();
+</script>
 </body>
 </html>

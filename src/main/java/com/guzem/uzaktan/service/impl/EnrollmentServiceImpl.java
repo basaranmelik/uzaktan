@@ -7,6 +7,7 @@ import com.guzem.uzaktan.exception.ResourceNotFoundException;
 import com.guzem.uzaktan.exception.UnauthorizedActionException;
 import com.guzem.uzaktan.mapper.EnrollmentMapper;
 import com.guzem.uzaktan.model.Course;
+import com.guzem.uzaktan.model.CourseType;
 import com.guzem.uzaktan.model.Enrollment;
 import com.guzem.uzaktan.model.EnrollmentStatus;
 import com.guzem.uzaktan.model.User;
@@ -17,6 +18,7 @@ import com.guzem.uzaktan.repository.UserRepository;
 import com.guzem.uzaktan.repository.VideoWatchRepository;
 
 import com.guzem.uzaktan.service.EnrollmentService;
+import com.guzem.uzaktan.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +41,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final CourseVideoRepository courseVideoRepository;
     private final VideoWatchRepository videoWatchRepository;
     private final EnrollmentMapper enrollmentMapper;
+    private final NotificationService notificationService;
 
     @Override
     public EnrollmentResponse enroll(Long userId, Long courseId) {
@@ -46,12 +49,14 @@ public class EnrollmentServiceImpl implements EnrollmentService {
             throw new DuplicateEnrollmentException(userId, courseId);
         }
 
-        Course course = courseRepository.findById(courseId)
+        Course course = courseRepository.findByIdForUpdate(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kurs", "id", courseId));
 
-        long activeEnrollments = enrollmentRepository.countByCourseId(courseId);
-        if (activeEnrollments >= course.getQuota()) {
-            throw new CourseFullException(courseId);
+        if (course.getCourseType() != CourseType.ONLINE) {
+            long activeEnrollments = enrollmentRepository.countByCourseId(courseId);
+            if (course.getQuota() != null && activeEnrollments >= course.getQuota()) {
+                throw new CourseFullException(courseId);
+            }
         }
 
         User user = userRepository.findById(userId)
@@ -59,7 +64,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
         if (user.getRole() != com.guzem.uzaktan.model.Role.USER) {
             throw new UnauthorizedActionException(
-                    "Sadece öğrenciler (Kullanıcı hesabına sahip olanlar) kurslara kayıt olabilir.");
+                    "Sadece öğrenciler kurslara kayıt olabilir.");
         }
 
         // Ücretsiz kurslarda direkt aktif, ücretli kurslarda ödeme bekleniyor
@@ -74,23 +79,19 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .progressPercentage(0)
                 .build();
 
-        return enrollmentMapper.toResponse(enrollmentRepository.save(enrollment));
-    }
+        EnrollmentResponse response = enrollmentMapper.toResponse(enrollmentRepository.save(enrollment));
 
-
-    //TODO Kurstan ayrılmayı kaldır
-    @Override
-    public void drop(Long enrollmentId, Long requestingUserId) {
-        Enrollment enrollment = loadEnrollment(enrollmentId);
-        verifyOwnership(enrollment, requestingUserId);
-
-        if (enrollment.getStatus() == EnrollmentStatus.COMPLETED) {
-            throw new UnauthorizedActionException("Tamamlanmış bir kurstan ayrılamazsınız.");
+        if (initialStatus == EnrollmentStatus.ACTIVE) {
+            notificationService.create(user, com.guzem.uzaktan.model.NotificationType.ENROLLMENT_ACTIVE,
+                    "Kursa Kayıt Olundu",
+                    "\"" + course.getTitle() + "\" kursuna başarıyla kayıt oldunuz.",
+                    "/panom");
         }
 
-        enrollment.setStatus(EnrollmentStatus.DROPPED);
-        enrollmentRepository.save(enrollment);
+        return response;
     }
+
+
 
     @Override
     @Transactional(readOnly = true)
@@ -127,7 +128,12 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     public EnrollmentResponse activateEnrollment(Long enrollmentId) {
         Enrollment enrollment = loadEnrollment(enrollmentId);
         enrollment.setStatus(EnrollmentStatus.ACTIVE);
-        return enrollmentMapper.toResponse(enrollmentRepository.save(enrollment));
+        EnrollmentResponse response = enrollmentMapper.toResponse(enrollmentRepository.save(enrollment));
+        notificationService.create(enrollment.getUser(), com.guzem.uzaktan.model.NotificationType.ENROLLMENT_ACTIVE,
+                "Kaydınız Onaylandı",
+                "\"" + enrollment.getCourse().getTitle() + "\" kursuna kaydınız aktifleştirildi.",
+                "/panom");
+        return response;
     }
 
     @Override
@@ -178,9 +184,16 @@ public class EnrollmentServiceImpl implements EnrollmentService {
                 .orElse(false);
     }
 
-    private void verifyOwnership(Enrollment enrollment, Long requestingUserId) {
-        if (!enrollment.getUser().getId().equals(requestingUserId)) {
-            throw new UnauthorizedActionException("Bu işlem için yetkiniz yok.");
-        }
+    @Override
+    @Transactional(readOnly = true)
+    public long countTotal() {
+        return enrollmentRepository.count();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByStatus(EnrollmentStatus status) {
+        return enrollmentRepository.countByStatus(status);
+    }
+
 }

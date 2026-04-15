@@ -121,13 +121,12 @@
         <!-- Kategoriler -->
         <div class="filter-bar" style="margin-bottom:20px;">
           <h3>Kategoriler</h3>
-          <a th:href="@{/egitimler}"
-             class="filter-btn"
-             th:classappend="${selectedCategory == null} ? ' active'">Tümü</a>
+          <a href="javascript:void(0)"
+             class="filter-btn category-btn active" data-category="">Tümü</a>
           <a th:each="cat : ${categories}"
-             th:href="@{/egitimler(category=${cat.name()})}"
-             class="filter-btn"
-             th:classappend="${selectedCategory != null and selectedCategory.name() == cat.name()} ? ' active'"
+             href="javascript:void(0)"
+             class="filter-btn category-btn"
+             th:attr="data-category=${cat.displayName}"
              th:text="${cat.displayName}">Kategori</a>
         </div>
 
@@ -217,7 +216,18 @@
                    alt="" style="width:100%;height:100%;object-fit:contain;background:#f8f9fa;padding:1rem;">
             </div>
             <div class="card-body">
-              <span class="card-category" th:text="${course.categoryDisplayName}">Kategori</span>
+              <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;margin-bottom:0.4rem;">
+                <span class="card-category" th:text="${course.categoryDisplayName}">Kategori</span>
+                <span th:if="${course.courseType != null}"
+                      th:text="${course.courseTypeDisplayName}"
+                      th:style="${course.courseType.name() == 'ONLINE'} ?
+                                  'background:#d0ebff;color:#1864ab;padding:0.15rem 0.55rem;border-radius:20px;font-size:0.72rem;font-weight:700;' :
+                                  (${course.courseType.name() == 'FACE_TO_FACE'} ?
+                                  'background:#d3f9d8;color:#2b8a3e;padding:0.15rem 0.55rem;border-radius:20px;font-size:0.72rem;font-weight:700;' :
+                                  'background:#f3d9fa;color:#862e9c;padding:0.15rem 0.55rem;border-radius:20px;font-size:0.72rem;font-weight:700;')">
+                  Tür
+                </span>
+              </div>
               <h4 class="card-title" th:text="${course.title}">Kurs Başlığı</h4>
               <div class="card-meta">
                 <div class="meta-item" th:if="${course.instructorName != null}">
@@ -261,23 +271,6 @@
           </a>
         </div>
 
-        <!-- Sayfalama -->
-        <div th:if="${totalPages > 1}"
-             style="display:flex;gap:0.5rem;justify-content:center;margin-top:2rem;">
-          <a th:if="${currentPage > 0}"
-             th:href="@{/egitimler(page=${currentPage - 1}, category=${selectedCategory?.name()}, keyword=${keyword})}"
-             class="btn btn-secondary">← Önceki</a>
-          <th:block th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
-            <a th:href="@{/egitimler(page=${i}, category=${selectedCategory?.name()}, keyword=${keyword})}"
-               class="btn"
-               th:classappend="${i == currentPage} ? ' btn-primary' : ' btn-secondary'"
-               th:text="${i + 1}">1</a>
-          </th:block>
-          <a th:if="${currentPage < totalPages - 1}"
-             th:href="@{/egitimler(page=${currentPage + 1}, category=${selectedCategory?.name()}, keyword=${keyword})}"
-             class="btn btn-secondary">Sonraki →</a>
-        </div>
-
       </div><!-- courses-main -->
 
     </div><!-- courses-layout -->
@@ -312,8 +305,19 @@
   let allCards = Array.from(grid.querySelectorAll('.course-card'));
   let originalOrder = allCards.slice();
   let activeSort  = 'default';
+  let activeCategory = '';
   let minPrice    = 0;
   let maxPrice    = 200000;
+
+  // --- Kategori Filtreleme ---
+  document.querySelectorAll('.category-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCategory = (btn.dataset.category || '').toLowerCase();
+      applyFilters();
+    });
+  });
 
   // --- Fiyat yardımcı ---
   function getPrice(card) {
@@ -367,7 +371,11 @@
 
   // --- Sıfırla ---
   document.getElementById('reset-filters').addEventListener('click', () => {
-    activeSort = 'default'; minPrice = 0; maxPrice = 200000;
+    activeSort = 'default'; minPrice = 0; maxPrice = 200000; activeCategory = '';
+    
+    document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.category-btn')[0].classList.add('active');
+    
     document.querySelectorAll('.sort-option')[0].click();
     document.querySelectorAll('.price-preset')[0].click();
     minEl.value = 0;  minLbl.textContent = '₺0';
@@ -388,8 +396,9 @@
       const title = (card.dataset.title || '').toLowerCase();
       const cat   = (card.dataset.category || '').toLowerCase();
       const matchPrice  = price >= minPrice && price <= maxPrice;
-      const matchSearch = !q || title.includes(q) || cat.includes(q);
-      return matchPrice && matchSearch;
+      const matchSearch = !q || title.includes(q);
+      const matchCategory = !activeCategory || cat === activeCategory;
+      return matchPrice && matchSearch && matchCategory;
     });
 
     // Sıralama

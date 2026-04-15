@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoom Toplantısı Oluştur | Gazi Üniversitesi</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/egitmen/panel}">Eğitmen Paneli</a>
+      <span class="separator">›</span>
+      <a th:href="@{/egitmen/zoom/kurslarim/{id}(id=${course.id})}" th:text="${course.title}">Kurs</a>
+      <span class="separator">›</span>
+      <span class="current">Yeni Toplantı</span>
+    </div>
+    <h1><i class="bi bi-camera-video-fill"></i> Zoom Toplantısı Oluştur</h1>
+    <p th:text="${course.title}">Kurs adı</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:640px;">
+    <div class="card" style="padding:2rem;">
+
+      <form th:action="@{/egitmen/zoom/kurslarim/{id}(id=${course.id})}"
+            th:object="${zoomMeetingCreateRequest}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+
+        <!-- Toplantı Konusu -->
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label class="form-label" style="font-weight:600;">Toplantı Konusu *</label>
+          <input type="text" th:field="*{topic}" class="form-control"
+                 placeholder="Örn: Haftalık Canlı Ders - Bölüm 3"
+                 th:classappend="${#fields.hasErrors('topic')} ? ' is-invalid' : ''">
+          <div th:if="${#fields.hasErrors('topic')}" class="form-error"
+               style="color:#e03131;font-size:0.83rem;margin-top:0.3rem;">
+            <span th:errors="*{topic}"></span>
+          </div>
+        </div>
+
+        <!-- Tarih ve Saat -->
+        <div class="form-group" style="margin-bottom:1.25rem;">
+          <label class="form-label" style="font-weight:600;">Tarih ve Saat *</label>
+          <input type="datetime-local" th:field="*{scheduledAt}" class="form-control"
+                 th:classappend="${#fields.hasErrors('scheduledAt')} ? ' is-invalid' : ''">
+          <div th:if="${#fields.hasErrors('scheduledAt')}" class="form-error"
+               style="color:#e03131;font-size:0.83rem;margin-top:0.3rem;">
+            <span th:errors="*{scheduledAt}"></span>
+          </div>
+        </div>
+
+        <!-- Süre -->
+        <div class="form-group" style="margin-bottom:1.75rem;">
+          <label class="form-label" style="font-weight:600;">Süre (dakika) *</label>
+          <input type="number" th:field="*{durationMinutes}" class="form-control"
+                 placeholder="60" min="15" max="480"
+                 th:classappend="${#fields.hasErrors('durationMinutes')} ? ' is-invalid' : ''">
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-top:0.3rem;">En az 15, en fazla 480 dakika.</div>
+          <div th:if="${#fields.hasErrors('durationMinutes')}" class="form-error"
+               style="color:#e03131;font-size:0.83rem;margin-top:0.3rem;">
+            <span th:errors="*{durationMinutes}"></span>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-camera-video-fill"></i> Toplantı Oluştur
+          </button>
+          <a th:href="@{/egitmen/zoom/kurslarim/{id}(id=${course.id})}" class="btn btn-secondary">
+            Vazgeç
+          </a>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

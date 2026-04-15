@@ -1,6 +1,8 @@
 package com.guzem.uzaktan.dto.request;
 
 import com.guzem.uzaktan.model.CourseCategory;
+import com.guzem.uzaktan.model.CourseLevel;
+import com.guzem.uzaktan.model.CourseType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -16,6 +18,9 @@ import java.time.LocalDate;
 @Setter
 public class CourseCreateRequest {
 
+    @NotNull(message = "Kurs türü boş olamaz.")
+    private CourseType courseType;
+
     @NotBlank(message = "Kurs başlığı boş olamaz.")
     @Size(min = 3, max = 150, message = "Başlık 3-150 karakter arası olmalıdır.")
     private String title;
@@ -27,30 +32,38 @@ public class CourseCreateRequest {
     @Positive(message = "Fiyat pozitif olmalıdır.")
     private BigDecimal price;
 
-    @NotNull(message = "Kontenjan boş olamaz.")
+    // Tür bazlı validasyon service katmanında yapılır
     @Positive(message = "Kontenjan pozitif olmalıdır.")
     private Integer quota;
 
-    @NotNull(message = "Başlangıç tarihi boş olamaz.")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate startDate;
 
-    @NotNull(message = "Bitiş tarihi boş olamaz.")
     @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
     private LocalDate endDate;
 
     @Positive(message = "Saat pozitif olmalıdır.")
     private Integer hours;
 
-    @NotNull(message = "Modül sayısı boş olamaz.")
     @Positive(message = "Modül sayısı pozitif olmalıdır.")
     private Integer module;
 
     @NotNull(message = "Kategori boş olamaz.")
     private CourseCategory category;
 
+    @Size(max = 300, message = "Konum en fazla 300 karakter olabilir.")
+    private String location;
+
+    @Size(max = 300, message = "Ders programı en fazla 300 karakter olabilir.")
+    private String courseSchedule;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate certificateDeadline;
+
     @Size(max = 150)
     private String instructorName;
 
     private Long instructorId;
+
+    private CourseLevel level;
 }

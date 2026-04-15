@@ -25,7 +25,9 @@
       </div>
     </div>
 
-    <nav class="navbar" id="navbar">
+    <nav class="navbar" id="navbar"
+         th:data-toast-success="${successMessage}"
+         th:data-toast-error="${errorMessage}">
       <div class="nav-container">
         <a th:href="@{/}" class="nav-logo">
           <img th:src="@{/images/gazi-logo.png}" alt="Gazi Logo" class="gazi-logo">
@@ -53,8 +55,8 @@
                    placeholder="Eğitim ara..." autocomplete="off">
           </form>
 
-          <!-- Sepet -->
-          <div class="nav-panel-wrap" id="cartWrap">
+          <!-- Sepet (Sadece Öğrenciler) -->
+          <div class="nav-panel-wrap" id="cartWrap" sec:authorize="hasRole('USER')">
             <a th:href="@{/sepet}" class="nav-icon-btn" title="Sepetim">
               <i class="bi bi-cart3"></i>
               <span class="nav-badge" id="cartBadge"
@@ -92,7 +94,7 @@
                     <strong style="color:var(--primary-600);"
                             th:text="'₺' + ${#numbers.formatDecimal(cartTotal, 1, 'POINT', 0, 'COMMA')}">₺0</strong>
                   </span>
-                  <a th:href="@{/kayitlarim}" class="btn btn-primary"
+                  <a th:href="@{/sepet}" class="btn btn-primary"
                      style="padding:0.4rem 1rem;font-size:0.82rem;border-radius:8px; display:block; text-align:center; margin-bottom: 0.5rem;">
                     Ödemeye Geç
                   </a>
@@ -139,40 +141,39 @@
             <button type="button" class="nav-icon-btn" title="Bildirimler"
                     onclick="toggleNavPanel('notifWrap', event)">
               <i class="bi bi-bell"></i>
-              <span class="nav-badge" id="notifBadge">3</span>
+              <span class="nav-badge" id="notifBadge"
+                    th:text="${unreadNotifCount}"
+                    th:style="${unreadNotifCount == 0} ? 'display:none' : ''">0</span>
             </button>
             <div class="nav-panel" id="notifPanel">
               <div class="nav-panel-head">
                 <span><i class="bi bi-bell" style="margin-right:0.4rem;color:var(--primary-500);"></i>Bildirimler</span>
-                <span class="nav-panel-count">3 yeni</span>
+                <span class="nav-panel-count" th:text="${unreadNotifCount} + ' yeni'">0 yeni</span>
               </div>
-              <div class="nav-panel-body">
-                <div class="nav-notif-item unread">
-                  <div class="nav-notif-icon blue"><i class="bi bi-patch-check-fill"></i></div>
-                  <div class="nav-notif-body">
-                    <div class="nav-notif-text"><strong>Kurs Onaylandı</strong><br>Python ile Veri Bilimi kaydınız aktive edildi.</div>
-                    <div class="nav-notif-time"><i class="bi bi-clock"></i> 5 dakika önce</div>
+              <!-- Bildirimler var -->
+              <div class="nav-panel-body" th:if="${not #lists.isEmpty(recentNotifications)}">
+                <div th:each="n : ${recentNotifications}"
+                     th:classappend="${!n.read} ? ' unread'" class="nav-notif-item">
+                  <div th:class="'nav-notif-icon ' + ${n.type.name() == 'CERTIFICATE_ISSUED' ? 'green' : (n.type.name() == 'ASSIGNMENT_GRADED' ? 'amber' : 'blue')}">
+                    <i th:class="'bi ' + ${n.type.name() == 'CERTIFICATE_ISSUED' ? 'bi-award-fill' : (n.type.name() == 'ENROLLMENT_ACTIVE' ? 'bi-patch-check-fill' : (n.type.name() == 'ASSIGNMENT_GRADED' ? 'bi-pencil-fill' : 'bi-chat-dots-fill'))}"></i>
                   </div>
-                  <div class="nav-notif-dot"></div>
-                </div>
-                <div class="nav-notif-item unread">
-                  <div class="nav-notif-icon amber"><i class="bi bi-exclamation-triangle-fill"></i></div>
                   <div class="nav-notif-body">
-                    <div class="nav-notif-text"><strong>Ödev Hatırlatma</strong><br>React Temelleri ödevinizin son günü yarın.</div>
-                    <div class="nav-notif-time"><i class="bi bi-clock"></i> 1 saat önce</div>
+                    <div class="nav-notif-text">
+                      <strong th:text="${n.title}"></strong><br>
+                      <span th:text="${n.message}"></span>
+                    </div>
+                    <div class="nav-notif-time"><i class="bi bi-clock"></i> <span th:text="${n.timeAgo}"></span></div>
                   </div>
-                  <div class="nav-notif-dot"></div>
-                </div>
-                <div class="nav-notif-item unread">
-                  <div class="nav-notif-icon green"><i class="bi bi-award-fill"></i></div>
-                  <div class="nav-notif-body">
-                    <div class="nav-notif-text"><strong>Sertifikanız Hazır</strong><br>Web Geliştirme sertifikanız oluşturuldu.</div>
-                    <div class="nav-notif-time"><i class="bi bi-clock"></i> 2 gün önce</div>
-                  </div>
-                  <div class="nav-notif-dot"></div>
+                  <div th:if="${!n.read}" class="nav-notif-dot"></div>
                 </div>
               </div>
-              <a th:href="@{/panom}" class="nav-panel-see-all">Tüm Bildirimleri Gör</a>
+              <!-- Bildirim yok -->
+              <div th:if="${#lists.isEmpty(recentNotifications)}"
+                   style="padding:2rem;text-align:center;color:var(--text-muted);">
+                <i class="bi bi-bell-slash" style="font-size:2rem;display:block;margin-bottom:0.5rem;color:var(--gray-300);"></i>
+                <div style="font-size:0.85rem;">Yeni bildirim yok</div>
+              </div>
+              <a th:href="@{/bildirimler}" class="nav-panel-see-all">Tüm Bildirimleri Gör</a>
             </div>
           </div>
 
@@ -299,6 +300,9 @@
           if (badge) {
             badge.textContent = data.count;
             badge.style.display = data.count > 0 ? '' : 'none';
+          }
+          if (typeof showToast === 'function') {
+            showToast('Eğitim sepetten kaldırıldı.', 'info');
           }
           var countEl = panel.querySelector('.nav-panel-count');
           if (countEl) countEl.textContent = data.count + ' kurs';

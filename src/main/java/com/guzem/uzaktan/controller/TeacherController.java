@@ -4,6 +4,8 @@ import com.guzem.uzaktan.dto.request.AssignmentCreateRequest;
 import com.guzem.uzaktan.dto.request.AssignmentUpdateRequest;
 import com.guzem.uzaktan.dto.request.GradeSubmissionRequest;
 import com.guzem.uzaktan.dto.response.AssignmentResponse;
+import com.guzem.uzaktan.dto.response.CourseResponse;
+import com.guzem.uzaktan.model.Role;
 import com.guzem.uzaktan.service.AssignmentService;
 import com.guzem.uzaktan.service.CourseService;
 import com.guzem.uzaktan.service.UserService;
@@ -54,15 +56,33 @@ public class TeacherController {
     // ---- Ödev Yönetimi ----
 
     @GetMapping("/kurslarim/{courseId}/odevler")
-    public String courseAssignments(@PathVariable Long courseId, Model model) {
-        model.addAttribute("course", courseService.findById(courseId));
+    public String courseAssignments(@PathVariable Long courseId,
+                                    @AuthenticationPrincipal UserDetails principal,
+                                    Model model,
+                                    RedirectAttributes redirectAttributes) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        CourseResponse course = courseService.findById(courseId);
+        if (!isCourseOwnerOrAdmin(course, userId, principal)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bu kursa erişim yetkiniz bulunmamaktadır.");
+            return "redirect:/egitmen/panel";
+        }
+        model.addAttribute("course", course);
         model.addAttribute("assignments", assignmentService.findByCourse(courseId));
         return "egitmen/kurs-odevleri";
     }
 
     @GetMapping("/kurslarim/{courseId}/odevler/yeni")
-    public String newAssignmentForm(@PathVariable Long courseId, Model model) {
-        model.addAttribute("course", courseService.findById(courseId));
+    public String newAssignmentForm(@PathVariable Long courseId,
+                                    @AuthenticationPrincipal UserDetails principal,
+                                    Model model,
+                                    RedirectAttributes redirectAttributes) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        CourseResponse course = courseService.findById(courseId);
+        if (!isCourseOwnerOrAdmin(course, userId, principal)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Bu kursa erişim yetkiniz bulunmamaktadır.");
+            return "redirect:/egitmen/panel";
+        }
+        model.addAttribute("course", course);
         model.addAttribute("assignmentCreateRequest", new AssignmentCreateRequest());
         return "egitmen/odev-form";
     }
@@ -84,8 +104,11 @@ public class TeacherController {
     }
 
     @GetMapping("/odevler/{id}/duzenle")
-    public String editAssignmentForm(@PathVariable Long id, Model model) {
-        var assignment = assignmentService.findById(id);
+    public String editAssignmentForm(@PathVariable Long id, 
+                                     @AuthenticationPrincipal UserDetails principal,
+                                     Model model) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        var assignment = assignmentService.findById(id, userId);
         model.addAttribute("assignment", assignment);
         AssignmentUpdateRequest dto = new AssignmentUpdateRequest();
         dto.setTitle(assignment.getTitle());
@@ -104,7 +127,8 @@ public class TeacherController {
                                    Model model,
                                    RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("assignment", assignmentService.findById(id));
+            Long userId = userService.findUserIdByEmail(principal.getUsername());
+            model.addAttribute("assignment", assignmentService.findById(id, userId));
             return "egitmen/odev-duzenle";
         }
         AssignmentResponse updated = assignmentService.updateAssignment(id, request, userService.findUserIdByEmail(principal.getUsername()));
@@ -116,7 +140,8 @@ public class TeacherController {
     public String deleteAssignment(@PathVariable Long id,
                                    @AuthenticationPrincipal UserDetails principal,
                                    RedirectAttributes redirectAttributes) {
-        AssignmentResponse assignment = assignmentService.findById(id);
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        AssignmentResponse assignment = assignmentService.findById(id, userId);
         Long courseId = assignment.getCourseId();
         assignmentService.deleteAssignment(id, userService.findUserIdByEmail(principal.getUsername()));
         redirectAttributes.addFlashAttribute("successMessage", "Ödev silindi.");
@@ -129,8 +154,9 @@ public class TeacherController {
     public String submissions(@PathVariable Long id,
                               @AuthenticationPrincipal UserDetails principal,
                               Model model) {
-        model.addAttribute("assignment", assignmentService.findById(id));
-        model.addAttribute("submissions", assignmentService.findSubmissionsByAssignment(id, userService.findUserIdByEmail(principal.getUsername())));
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        model.addAttribute("assignment", assignmentService.findById(id, userId));
+        model.addAttribute("submissions", assignmentService.findSubmissionsByAssignment(id, userId));
         return "egitmen/teslimler";
     }
 
@@ -139,7 +165,7 @@ public class TeacherController {
                                                          @AuthenticationPrincipal UserDetails principal) throws java.io.IOException {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         byte[] zip = assignmentService.downloadSubmissionsZip(id, userId);
-        var assignment = assignmentService.findById(id);
+        var assignment = assignmentService.findById(id, userId);
         String filename = com.guzem.uzaktan.service.impl.LocalFileStorageService.sanitizeFileName(assignment.getTitle()) + "_teslimler.zip";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("application/zip"));
@@ -148,8 +174,11 @@ public class TeacherController {
     }
 
     @GetMapping("/teslimler/{submissionId}/notlandir")
-    public String gradeForm(@PathVariable Long submissionId, Model model) {
-        var submission = assignmentService.findSubmissionById(submissionId);
+    public String gradeForm(@PathVariable Long submissionId, 
+                            @AuthenticationPrincipal UserDetails principal,
+                            Model model) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        var submission = assignmentService.findSubmissionById(submissionId, userId);
         model.addAttribute("submission", submission);
         GradeSubmissionRequest dto = new GradeSubmissionRequest();
         if (submission.getScore() != null) dto.setScore(submission.getScore());
@@ -166,11 +195,18 @@ public class TeacherController {
                                   Model model,
                                   RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("submission", assignmentService.findSubmissionById(submissionId));
+            Long userId = userService.findUserIdByEmail(principal.getUsername());
+            model.addAttribute("submission", assignmentService.findSubmissionById(submissionId, userId));
             return "egitmen/notlandir";
         }
         var graded = assignmentService.gradeSubmission(submissionId, request, userService.findUserIdByEmail(principal.getUsername()));
         redirectAttributes.addFlashAttribute("successMessage", "Not kaydedildi.");
         return "redirect:/egitmen/odevler/" + graded.getAssignmentId() + "/teslimler";
+    }
+
+    private boolean isCourseOwnerOrAdmin(CourseResponse course, Long userId, UserDetails principal) {
+        boolean isAdmin = principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(Role.ADMIN.getAuthority()));
+        return isAdmin || (course.getInstructorId() != null && course.getInstructorId().equals(userId));
     }
 }

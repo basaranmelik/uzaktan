@@ -11,7 +11,7 @@ public interface EnrollmentService {
 
     EnrollmentResponse enroll(Long userId, Long courseId);
 
-    void drop(Long enrollmentId, Long requestingUserId);
+
 
     List<EnrollmentResponse> findByUser(Long userId);
 
@@ -30,4 +30,8 @@ public interface EnrollmentService {
     long countByUserAndStatus(Long userId, EnrollmentStatus status);
 
     boolean isActiveEnrollment(Long userId, Long courseId);
+
+    long countTotal();
+
+    long countByStatus(EnrollmentStatus status);
 }

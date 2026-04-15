@@ -1,5 +1,6 @@
 package com.guzem.uzaktan.service.impl;
 
+import com.guzem.uzaktan.config.SecurityProperties;
 import com.guzem.uzaktan.dto.request.ProfileUpdateRequest;
 import com.guzem.uzaktan.dto.request.RegisterRequest;
 import com.guzem.uzaktan.dto.response.UserResponse;
@@ -16,6 +17,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -26,6 +28,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
+    private final SecurityProperties securityProperties;
 
     @Override
     public UserResponse register(RegisterRequest request) {
@@ -88,7 +91,7 @@ public class UserServiceImpl implements UserService {
     public void changePassword(Long userId, String oldPassword, String newPassword) {
         User user = loadUser(userId);
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new UnauthorizedActionException("Mevcut şifre yanlış.");
+            throw new IllegalArgumentException("Mevcut şifre yanlış.");
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
@@ -151,6 +154,30 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "email", email));
         return user.getId();
+    }
+
+    @Override
+    public void recordLoginFailure(String email) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            int attempts = user.getFailedLoginAttempts() + 1;
+            user.setFailedLoginAttempts(attempts);
+            if (attempts >= securityProperties.getMaxLoginAttempts()) {
+                user.setLockUntil(LocalDateTime.now().plusMinutes(securityProperties.getLockoutMinutes()));
+                user.setFailedLoginAttempts(0);
+            }
+            userRepository.save(user);
+        });
+    }
+
+    @Override
+    public void recordLoginSuccess(String email) {
+        userRepository.findByEmail(email).ifPresent(user -> {
+            if (user.getFailedLoginAttempts() > 0 || user.getLockUntil() != null) {
+                user.setFailedLoginAttempts(0);
+                user.setLockUntil(null);
+                userRepository.save(user);
+            }
+        });
     }
 
     private User loadUser(Long id) {

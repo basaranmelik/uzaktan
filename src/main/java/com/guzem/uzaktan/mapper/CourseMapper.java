@@ -6,6 +6,7 @@ import com.guzem.uzaktan.dto.response.CourseResponse;
 import com.guzem.uzaktan.dto.response.CourseSummaryResponse;
 import com.guzem.uzaktan.model.Course;
 import com.guzem.uzaktan.model.CourseStatus;
+import com.guzem.uzaktan.model.CourseType;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,6 +27,13 @@ public class CourseMapper {
                 .category(course.getCategory())
                 .categoryDisplayName(course.getCategory().getDisplayName())
                 .status(course.getStatus())
+                .level(course.getLevel())
+                .levelDisplayName(course.getLevel() != null ? course.getLevel().getDisplayName() : null)
+                .courseType(course.getCourseType())
+                .courseTypeDisplayName(course.getCourseType() != null ? course.getCourseType().getDisplayName() : null)
+                .location(course.getLocation())
+                .courseSchedule(course.getCourseSchedule())
+                .certificateDeadline(course.getCertificateDeadline())
                 .imagePath(course.getImagePath())
                 .instructorName(course.getInstructorName())
                 .instructorId(course.getInstructor() != null ? course.getInstructor().getId() : null)
@@ -43,6 +51,8 @@ public class CourseMapper {
                 .category(course.getCategory())
                 .categoryDisplayName(course.getCategory().getDisplayName())
                 .status(course.getStatus())
+                .courseType(course.getCourseType())
+                .courseTypeDisplayName(course.getCourseType() != null ? course.getCourseType().getDisplayName() : null)
                 .imagePath(course.getImagePath())
                 .instructorName(course.getInstructorName())
                 .startDate(course.getStartDate())
@@ -54,6 +64,7 @@ public class CourseMapper {
 
     public Course toEntity(CourseCreateRequest request) {
         return Course.builder()
+                .courseType(request.getCourseType() != null ? request.getCourseType() : CourseType.ONLINE)
                 .title(request.getTitle())
                 .description(request.getDescription())
                 .price(request.getPrice())
@@ -63,22 +74,31 @@ public class CourseMapper {
                 .hours(request.getHours())
                 .module(request.getModule())
                 .category(request.getCategory())
+                .level(request.getLevel())
+                .location(request.getLocation())
+                .courseSchedule(request.getCourseSchedule())
+                .certificateDeadline(request.getCertificateDeadline())
                 .instructorName(request.getInstructorName())
                 .status(CourseStatus.DRAFT)
                 .build();
     }
 
     public void updateEntity(Course course, CourseUpdateRequest request) {
-        if (request.getTitle() != null) course.setTitle(request.getTitle());
-        if (request.getDescription() != null) course.setDescription(request.getDescription());
-        if (request.getPrice() != null) course.setPrice(request.getPrice());
-        if (request.getQuota() != null) course.setQuota(request.getQuota());
-        if (request.getStartDate() != null) course.setStartDate(request.getStartDate());
-        if (request.getEndDate() != null) course.setEndDate(request.getEndDate());
-        if (request.getHours() != null) course.setHours(request.getHours());
-        if (request.getModule() != null) course.setModule(request.getModule());
-        if (request.getCategory() != null) course.setCategory(request.getCategory());
-        if (request.getStatus() != null) course.setStatus(request.getStatus());
-        if (request.getInstructorName() != null) course.setInstructorName(request.getInstructorName());
+        if (request.getCourseType() != null)          course.setCourseType(request.getCourseType());
+        if (request.getTitle() != null)               course.setTitle(request.getTitle());
+        if (request.getDescription() != null)         course.setDescription(request.getDescription());
+        if (request.getPrice() != null)               course.setPrice(request.getPrice());
+        if (request.getQuota() != null)               course.setQuota(request.getQuota());
+        if (request.getStartDate() != null)           course.setStartDate(request.getStartDate());
+        if (request.getEndDate() != null)             course.setEndDate(request.getEndDate());
+        if (request.getHours() != null)               course.setHours(request.getHours());
+        if (request.getModule() != null)              course.setModule(request.getModule());
+        if (request.getCategory() != null)            course.setCategory(request.getCategory());
+        if (request.getStatus() != null)              course.setStatus(request.getStatus());
+        if (request.getLevel() != null)               course.setLevel(request.getLevel());
+        if (request.getLocation() != null)            course.setLocation(request.getLocation());
+        if (request.getCourseSchedule() != null)      course.setCourseSchedule(request.getCourseSchedule());
+        if (request.getCertificateDeadline() != null) course.setCertificateDeadline(request.getCertificateDeadline());
+        if (request.getInstructorName() != null)      course.setInstructorName(request.getInstructorName());
     }
 }

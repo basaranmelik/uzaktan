@@ -20,7 +20,10 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import org.springframework.http.ContentDisposition;
+
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,21 +43,22 @@ public class FileDownloadController {
             @PathVariable Long submissionId,
             @AuthenticationPrincipal UserDetails principal) {
 
-        SubmissionResponse submission = assignmentService.findSubmissionById(submissionId);
+        Long currentUserId = userService.findUserIdByEmail(principal.getUsername());
+        SubmissionResponse submission = assignmentService.findSubmissionById(submissionId, currentUserId);
 
         if (!submission.isHasFile()) {
             throw new ResourceNotFoundException("Dosya", "submissionId", submissionId);
         }
 
-        // Yetki kontrolü: Admin veya kursun öğretmeni veya teslimi yapan öğrenci
-        Long currentUserId = userService.findUserIdByEmail(principal.getUsername());
+        // Yetki kontrolü servis katmanında da yapılmaktadır, burada ek bir kontrol katmanı olarak kalabilir.
         boolean isOwner = submission.getUserId().equals(currentUserId);
-        boolean isAdminOrTeacher = principal.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals(Role.ADMIN.getAuthority())
-                        || a.getAuthority().equals(Role.TEACHER.getAuthority()));
+        boolean isAdmin = principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(Role.ADMIN.getAuthority()));
+        boolean isCourseInstructor = submission.getInstructorId() != null
+                && submission.getInstructorId().equals(currentUserId);
 
-        if (!isOwner && !isAdminOrTeacher) {
-            throw new UnauthorizedActionException("Bu dosyayı indirme yetkiniz yok.");
+        if (!isOwner && !isAdmin && !isCourseInstructor) {
+            throw new UnauthorizedActionException("Bu dosyaya erişim yetkiniz bulunmamaktadır.");
         }
 
         Path filePath = fileStorageService.resolve(submission.getFilePath());
@@ -69,7 +73,9 @@ public class FileDownloadController {
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
                     .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + fileName + "\"")
+                            ContentDisposition.attachment()
+                                    .filename(fileName, StandardCharsets.UTF_8)
+                                    .build().toString())
                     .body(resource);
         } catch (MalformedURLException e) {
             throw new ResourceNotFoundException("Dosya", "path", submission.getFilePath());

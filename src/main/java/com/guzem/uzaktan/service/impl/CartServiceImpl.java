@@ -10,6 +10,7 @@ import com.guzem.uzaktan.repository.CourseRepository;
 import com.guzem.uzaktan.repository.EnrollmentRepository;
 import com.guzem.uzaktan.repository.UserRepository;
 import com.guzem.uzaktan.service.CartService;
+import com.guzem.uzaktan.service.EnrollmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,7 @@ public class CartServiceImpl implements CartService {
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final EnrollmentService enrollmentService;
 
     @Override
     public void addToCart(Long userId, Long courseId) {
@@ -84,6 +86,16 @@ public class CartServiceImpl implements CartService {
     @Transactional(readOnly = true)
     public BigDecimal getCartTotalByUser(Long userId) {
         return getCartTotal(getCartItems(userId));
+    }
+
+    @Override
+    @Transactional
+    public void checkout(Long userId) {
+        List<CartItemResponse> items = getCartItems(userId);
+        for (CartItemResponse item : items) {
+            enrollmentService.enroll(userId, item.getCourseId());
+        }
+        clearCart(userId);
     }
 
     private CartItemResponse toResponse(CartItem item) {

@@ -4,7 +4,9 @@ import com.guzem.uzaktan.dto.request.CourseCreateRequest;
 import com.guzem.uzaktan.dto.request.CourseUpdateRequest;
 import com.guzem.uzaktan.dto.response.CourseResponse;
 import com.guzem.uzaktan.model.CourseCategory;
+import com.guzem.uzaktan.model.CourseLevel;
 import com.guzem.uzaktan.model.CourseStatus;
+import com.guzem.uzaktan.model.CourseType;
 import com.guzem.uzaktan.model.Role;
 import com.guzem.uzaktan.service.CourseService;
 import com.guzem.uzaktan.service.InstructorService;
@@ -42,6 +44,8 @@ public class AdminCourseController {
     public String newCourseForm(Model model) {
         model.addAttribute("courseCreateRequest", new CourseCreateRequest());
         model.addAttribute("categories", CourseCategory.values());
+        model.addAttribute("levels", CourseLevel.values());
+        model.addAttribute("courseTypes", CourseType.values());
         model.addAttribute("teachers", userService.findUsersByRole(Role.TEACHER));
         model.addAttribute("instructors", instructorService.findAll());
         return "admin/course-form";
@@ -55,7 +59,10 @@ public class AdminCourseController {
                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("categories", CourseCategory.values());
+            model.addAttribute("levels", CourseLevel.values());
+            model.addAttribute("courseTypes", CourseType.values());
             model.addAttribute("teachers", userService.findUsersByRole(Role.TEACHER));
+            model.addAttribute("instructors", instructorService.findAll());
             return "admin/course-form";
         }
         courseService.create(request, image);
@@ -78,11 +85,18 @@ public class AdminCourseController {
         dto.setModule(course.getModule());
         dto.setCategory(course.getCategory());
         dto.setStatus(course.getStatus());
+        dto.setLevel(course.getLevel());
         dto.setInstructorName(course.getInstructorName());
         dto.setInstructorId(course.getInstructorId());
+        dto.setCourseType(course.getCourseType());
+        dto.setLocation(course.getLocation());
+        dto.setCourseSchedule(course.getCourseSchedule());
+        dto.setCertificateDeadline(course.getCertificateDeadline());
         model.addAttribute("courseUpdateRequest", dto);
         model.addAttribute("categories", CourseCategory.values());
+        model.addAttribute("levels", CourseLevel.values());
         model.addAttribute("statuses", CourseStatus.values());
+        model.addAttribute("courseTypes", CourseType.values());
         model.addAttribute("teachers", userService.findUsersByRole(Role.TEACHER));
         model.addAttribute("instructors", instructorService.findAll());
         return "admin/course-edit";
@@ -98,8 +112,11 @@ public class AdminCourseController {
         if (bindingResult.hasErrors()) {
             model.addAttribute("course", courseService.findById(id));
             model.addAttribute("categories", CourseCategory.values());
+            model.addAttribute("levels", CourseLevel.values());
             model.addAttribute("statuses", CourseStatus.values());
+            model.addAttribute("courseTypes", CourseType.values());
             model.addAttribute("teachers", userService.findUsersByRole(Role.TEACHER));
+            model.addAttribute("instructors", instructorService.findAll());
             return "admin/course-edit";
         }
         courseService.update(id, request, image);

@@ -19,14 +19,16 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException(
-                        "Kullanıcı bulunamadı: " + email));
+                .orElseThrow(() -> new UsernameNotFoundException("Geçersiz kimlik bilgileri."));
+
+        boolean temporarilyLocked = user.getLockUntil() != null
+                && user.getLockUntil().isAfter(java.time.LocalDateTime.now());
 
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getEmail())
                 .password(user.getPassword())
                 .authorities(user.getRole().getAuthority())
-                .accountLocked(user.isLocked())
+                .accountLocked(user.isLocked() || temporarilyLocked)
                 .disabled(!user.isEnabled())
                 .build();
     }

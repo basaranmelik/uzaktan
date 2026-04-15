@@ -30,54 +30,62 @@
       <a th:href="@{/egitimler}" class="btn btn-primary" style="margin-top:1rem;">Eğitimleri Keşfet →</a>
     </div>
 
-    <div th:if="${!#lists.isEmpty(assignments)}"
-         style="display:flex;flex-direction:column;gap:1rem;">
+    <div th:if="${!#maps.isEmpty(assignmentsByCourse)}"
+         style="display:flex;flex-direction:column;gap:2rem;">
 
-      <div th:each="a : ${assignments}" class="card fade-in" style="padding:1.25rem 1.5rem;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.75rem;">
-          <div>
-            <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.25rem;"
-                 th:text="${a.courseTitle}">Kurs Adı</div>
-            <h4 style="margin:0 0 0.25rem;" th:text="${a.title}">Ödev Başlığı</h4>
-            <div style="font-size:0.85rem;color:var(--text-muted);">
-              Son tarih:
-              <span th:text="${#temporals.format(a.dueDate, 'dd.MM.yyyy HH:mm')}"
-                    th:style="${a.dueDate.isBefore(#temporals.createNow())} ? 'color:#e03131;font-weight:600;' : 'color:var(--text-muted);'">
-                Tarih
-              </span>
-              &nbsp;·&nbsp; Maks. <span th:text="${a.maxScore}">100</span> puan
+      <!-- Kurs Bazlı Kartlama -->
+      <div th:each="courseEntry : ${assignmentsByCourse}" class="card fade-in" style="padding:0; border:1px solid #ced4da; overflow:hidden; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.03);">
+        
+        <!-- Kurs Üst Mavi Bar -->
+        <div style="background:linear-gradient(90deg, #f8f9fa 0%, #ffffff 100%); padding:1.25rem 1.5rem; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; gap:0.75rem;">
+           <div style="width:40px; height:40px; border-radius:50%; background:var(--primary-100); color:var(--primary-600); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">
+             <i class="bi bi-journal-bookmark-fill"></i>
+           </div>
+           <div>
+             <div style="font-size:0.75rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.5px; font-weight:600;">Eğitim</div>
+             <h3 style="margin:0; font-size:1.2rem; color:var(--primary-900); font-weight:700;" th:text="${courseEntry.key}">Kurs Adı</h3>
+           </div>
+        </div>
+
+        <!-- O Kurs İçindeki Alt Ödev Kartları -->
+        <div style="padding:1.5rem; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; background:#ffffff;">
+
+          <div th:each="a : ${courseEntry.value}" style="border:1px solid #ced4da; border-radius:12px; padding:1.25rem; transition:transform 0.2s, box-shadow 0.2s; background:#fdfdfd; display:flex; flex-direction:column;" class="task-card" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 15px rgba(0,0,0,0.04)'; this.style.borderColor='var(--primary-300)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none'; this.style.borderColor='#ced4da';">
+            
+            <h4 style="margin:0 0 0.5rem; font-size:1.1rem; color:var(--text); flex:1;" th:text="${a.title}">Ödev Başlığı</h4>
+            <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:1rem; display:flex; align-items:center; gap:0.4rem; padding-bottom:0.5rem; border-bottom: 1px dashed rgba(0,0,0,0.1);" th:style="${a.dueDate.isBefore(#temporals.createNow())} ? 'color:#e03131;font-weight:600;' : 'color:var(--text-muted);'">
+              <i class="bi bi-clock-history"></i> Teslim: <span th:text="${#temporals.format(a.dueDate, 'dd.MM.yyyy HH:mm')}">Tarih</span>
             </div>
-          </div>
 
-          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.5rem;">
-
-            <!-- Teslim durumu rozeti -->
-            <span th:with="sub=${submissionByAssignment[a.id]}">
+            <!-- Teslim Durumu Rozetleri -->
+            <div style="margin-bottom:1.25rem; font-size:0.8rem;" th:with="sub=${submissionByAssignment[a.id]}">
               <span th:if="${sub == null and a.dueDate.isBefore(#temporals.createNow())}"
-                    style="padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:600;background:#fff5f5;color:#e03131;">
-                <i class="bi bi-x-circle-fill"></i> Teslim Edilmedi
+                    style="padding:0.3rem 0.8rem; border-radius:20px; font-weight:600; background:#fff5f5; color:#e03131;">
+                <i class="bi bi-x-circle-fill"></i> Süre Doldu
               </span>
               <span th:if="${sub == null and !a.dueDate.isBefore(#temporals.createNow())}"
-                    style="padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:600;background:#fff9db;color:#e67700;">
-                <i class="bi bi-hourglass-split"></i> Bekliyor
+                    style="padding:0.3rem 0.8rem; border-radius:20px; font-weight:600; background:#fff9db; color:#e67700;">
+                <i class="bi bi-hourglass-split"></i> Teslim Bekleniyor
               </span>
               <span th:if="${sub != null and sub.status.name() == 'SUBMITTED'}"
-                    style="padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:600;background:#fff4e6;color:#e8590c;">
-                <i class="bi bi-send-check-fill"></i> Teslim Edildi
+                    style="padding:0.3rem 0.8rem; border-radius:20px; font-weight:600; background:#fff4e6; color:#e8590c;">
+                <i class="bi bi-send-check-fill"></i> İnceleniyor
               </span>
               <span th:if="${sub != null and sub.status.name() == 'GRADED'}"
-                    style="padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:600;background:#d3f9d8;color:#2b8a3e;">
-                <i class="bi bi-trophy-fill"></i>
-                Notlandı: <span th:text="${sub.score}">0</span> / <span th:text="${sub.assignmentMaxScore}">100</span>
+                    style="padding:0.3rem 0.8rem; border-radius:20px; font-weight:700; background:#d3f9d8; color:#2b8a3e;">
+                <i class="bi bi-award-fill"></i> Puan: <span th:text="${sub.score}">0</span>/<span th:text="${sub.assignmentMaxScore}">100</span>
               </span>
-            </span>
+            </div>
 
-            <a th:href="@{/odevlerim/{id}(id=${a.id})}"
-               class="btn btn-primary" style="padding:0.4rem 1rem;font-size:0.85rem;">
-              <i class="bi bi-arrow-right-circle"></i> Görüntüle
+            <!-- Git Butonu (Hover'da tüm alanı tıklanabilir yapsak da pratiklik için görünür buton) -->
+            <a th:href="@{/odevlerim/{id}(id=${a.id})}" class="btn btn-primary" style="width:100%; display:flex; justify-content:center; align-items:center; border-radius:8px; font-size:0.85rem; padding:0.4rem;">
+               Ödeve Git <i class="bi bi-arrow-right-short" style="font-size:1.2rem; margin-left:0.2rem;"></i>
             </a>
+
           </div>
+
         </div>
+
       </div>
 
     </div>

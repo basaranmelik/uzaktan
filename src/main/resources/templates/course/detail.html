@@ -13,7 +13,7 @@
     /* ── Hero ── */
     .cd-hero {
       background: var(--gradient-hero);
-      padding: calc(var(--nav-height) + 3rem) 0 0;
+      padding: calc(var(--nav-height) + 1.5rem) 0 0;
       position: relative;
       overflow: hidden;
     }
@@ -37,7 +37,7 @@
       display: grid;
       grid-template-columns: 1fr 380px;
       gap: 3rem;
-      align-items: end;
+      align-items: stretch;
       position: relative;
       z-index: 2;
       padding-bottom: 3.5rem;
@@ -115,11 +115,15 @@
       background: var(--bg);
       border-radius: var(--radius-lg);
       border: 1px solid var(--border);
+      border-top: none;
       overflow: hidden;
       box-shadow: var(--shadow-xl);
       position: relative;
       z-index: 3;
-      margin-top: -1rem;
+      margin-top: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
     }
     .cd-sidebar-head {
       background: var(--bg-alt);
@@ -133,25 +137,24 @@
       color: var(--text);
       margin: 0;
     }
-    .cd-sidebar-body { padding: 1.5rem; }
+    .cd-sidebar-body { padding: 1rem 1.5rem; }
 
     .cd-price-section {
-      background: var(--bg-alt);
-      padding: 1.5rem;
+      background: var(--bg);
+      padding: 1rem 1.5rem;
       text-align: center;
-      border-top: 1px solid var(--border);
     }
     .cd-price {
       font-family: var(--font-heading);
-      font-size: 2.2rem;
+      font-size: 2.4rem;
       font-weight: 800;
-      color: var(--text);
+      color: var(--primary-600);
       line-height: 1;
     }
     .cd-price-label {
       font-size: 0.78rem;
       color: var(--text-muted);
-      margin-top: 0.25rem;
+      margin-top: 0.3rem;
     }
 
     /* enrolled badges */
@@ -292,16 +295,18 @@
       align-items: center; gap: 0.85rem;
       padding: 1rem 1.5rem;
       border-bottom: 1px solid var(--gray-100);
-      transition: background var(--transition-fast);
+      border-left: 3px solid transparent;
+      transition: background var(--transition-fast), border-color var(--transition-fast);
     }
     .cd-curriculum-row:last-child { border-bottom: none; }
-    .cd-curriculum-row:hover { background: var(--primary-50); }
+    .cd-curriculum-row:hover { background: var(--primary-50); border-left-color: var(--primary-600); }
     .cd-num {
-      width: 36px; height: 36px; border-radius: var(--radius-sm);
-      background: var(--bg-alt); color: var(--text-alt);
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--primary-50); color: var(--primary-600);
       font-size: 0.78rem; font-weight: 700;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
+      border: 1px solid var(--primary-200);
     }
     .cd-vtitle { font-weight: 600; font-size: 0.92rem; color: var(--text); }
     .cd-vdesc {
@@ -340,10 +345,11 @@
     .cd-rev-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
     .cd-rev-user { display: flex; align-items: center; gap: 0.75rem; }
     .cd-rev-avatar {
-      width: 42px; height: 42px; border-radius: var(--radius-sm);
-      background: var(--primary-50); color: var(--primary-600);
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--gradient-primary); color: #fff;
       display: flex; align-items: center; justify-content: center;
       font-weight: 700; font-size: 1rem;
+      flex-shrink: 0;
     }
     .cd-rev-name { font-weight: 600; color: var(--text); font-size: 0.95rem; }
     .cd-rev-date { font-size: 0.75rem; color: var(--text-muted); }
@@ -363,75 +369,79 @@
     .star-rating label:hover,
     .star-rating label:hover ~ label { color: var(--warm-500); }
 
-    /* ── Course detail info cards (below hero) ── */
+    /* ── Course detail info cards (inside hero — glassmorphism) ── */
     .cd-info-strip {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
       margin-bottom: 2.5rem;
     }
     .cd-info-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.13);
       border-radius: var(--radius-md);
-      padding: 1.25rem;
+      padding: 1.1rem 1rem;
       text-align: center;
-      box-shadow: var(--shadow-sm);
-      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: transform var(--transition-fast), background var(--transition-fast);
     }
-    .cd-info-card:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
+    .cd-info-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.12); }
     .cd-info-card i {
-      font-size: 1.5rem; color: var(--primary-500);
-      margin-bottom: 0.5rem; display: block;
+      font-size: 1.4rem; color: var(--accent-500);
+      margin-bottom: 0.45rem; display: block;
     }
     .cd-info-card .cd-ic-value {
-      font-family: var(--font-heading);
-      font-size: 1.1rem; font-weight: 700; color: var(--text);
+      font-size: 1.05rem; font-weight: 700; color: #fff;
     }
     .cd-info-card .cd-ic-label {
-      font-size: 0.76rem; color: var(--text-muted); margin-top: 0.1rem;
+      font-size: 0.73rem; color: rgba(255,255,255,0.5); margin-top: 0.15rem;
     }
 
     /* ── Eğitmen kartı ── */
     .cd-instructor-card {
-      display: flex; align-items: center; gap: 1.25rem;
-      background: var(--bg);
-      border: 1px solid var(--border);
+      display: flex; align-items: center; gap: 1.5rem;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.15);
       border-radius: var(--radius-md);
-      padding: 1.5rem 1.75rem;
-      margin-bottom: 2.5rem;
-      box-shadow: var(--shadow-sm);
+      padding: 1rem 1.25rem;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: box-shadow var(--transition-fast), transform var(--transition-fast);
+      margin-top: auto;
     }
+    .cd-instructor-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.1); }
     .cd-instructor-avatar {
-      width: 64px; height: 64px; border-radius: var(--radius-md);
-      background: var(--gradient-primary);
-      color: #fff; font-family: var(--font-heading);
+      width: 60px; height: 60px; border-radius: 50%;
+      background: #ffffff;
+      color: var(--primary-600); font-family: var(--font-heading);
       font-size: 1.6rem; font-weight: 800;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0;
       text-transform: uppercase;
+      box-shadow: var(--shadow-sm);
     }
     .cd-instructor-label {
       font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .06em; color: var(--primary-500); margin-bottom: 0.2rem;
+      letter-spacing: .06em; color: rgba(255,255,255,0.6); margin-bottom: 0.2rem;
     }
     .cd-instructor-name {
       font-family: var(--font-heading);
-      font-size: 1.1rem; font-weight: 700; color: var(--text);
-      margin-bottom: 0.5rem;
+      font-size: 1.05rem; font-weight: 700; color: #ffffff;
+      margin-bottom: 0.4rem;
     }
     .cd-instructor-stats {
       display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;
-      font-size: 0.82rem; color: var(--text-muted);
+      font-size: 0.82rem; color: rgba(255,255,255,0.8);
     }
-    .cd-instructor-stats i { color: var(--primary-400); margin-right: 0.2rem; }
+    .cd-instructor-stats i { color: var(--accent-500); margin-right: 0.2rem; }
     .cd-instructor-link {
       display: inline-flex; align-items: center; gap: 0.3rem;
-      font-size: 0.82rem; font-weight: 600;
-      color: var(--primary-600); text-decoration: none;
+      font-size: 0.8rem; font-weight: 600;
+      color: var(--accent-300); text-decoration: none;
       transition: color var(--transition-fast);
     }
-    .cd-instructor-link:hover { color: var(--primary-700); }
+    .cd-instructor-link:hover { color: #fff; }
   </style>
 </head>
 <body>
@@ -444,7 +454,7 @@
     <div class="cd-hero-inner">
 
       <!-- Sol: Bilgiler -->
-      <div>
+      <div style="align-self: stretch; display: flex; flex-direction: column;">
         <nav class="cd-breadcrumb">
           <a href="javascript:history.back()" style="margin-right:1rem; font-weight:600; color:var(--primary-200); border-right:1px solid rgba(255,255,255,0.2); padding-right:1rem; text-decoration:none;"><i class="bi bi-arrow-left"></i> Geri Dön</a>
           <a th:href="@{/}"><i class="bi bi-house-fill"></i> Ana Sayfa</a>
@@ -511,9 +521,9 @@
         </div>
 
         <!-- Eğitmen Kartı -->
-        <div th:if="${course.instructorName != null and !#strings.isEmpty(course.instructorName)}" class="cd-instructor-card" style="margin-bottom: 0;">
-          <div th:if="${course.instructorImage != null}" class="cd-instructor-avatar" style="padding:0; overflow:hidden; background:var(--bg);">
-             <img th:src="@{${course.instructorImage}}" alt="" style="width:100%;height:100%;object-fit:cover;">
+        <div th:if="${course.instructorName != null and !#strings.isEmpty(course.instructorName)}" class="cd-instructor-card">
+          <div th:if="${course.instructorImage != null}" class="cd-instructor-avatar" style="padding:0; overflow:hidden; background:#fff;">
+            <img th:src="@{${course.instructorImage}}" alt="" style="width:100%;height:100%;object-fit:cover;">
           </div>
           <div th:if="${course.instructorImage == null}" class="cd-instructor-avatar" th:text="${#strings.substring(course.instructorName, 0, 1)}">E</div>
           <div class="cd-instructor-info">
@@ -528,18 +538,15 @@
                 <i class="bi bi-people-fill"></i>
                 <span th:text="${instructorStudentCount}">0</span> Öğrenci
               </span>
-              <a th:if="${course.instructorId != null}"
-                 th:href="@{/egitmenler/{id}(id=${course.instructorId})}"
-                 class="cd-instructor-link">
-                <i class="bi bi-box-arrow-up-right"></i> Profile Git
-              </a>
             </div>
           </div>
         </div>
+
       </div>
 
       <!-- Sag: Sidebar -->
       <div class="cd-sidebar">
+        <div style="height:4px;background:var(--gradient-primary);"></div>
         <div style="aspect-ratio:16/9;overflow:hidden;">
           <img th:if="${course.imagePath != null}"
                th:src="@{'/uploads/' + ${course.imagePath}}"
@@ -548,30 +555,80 @@
                th:src="@{/images/gazi-logo.png}"
                alt="" style="width:100%;height:100%;object-fit:contain;background:#f8f9fa;padding:1.5rem;">
         </div>
-        <div class="cd-sidebar-head">
-          <h3><i class="bi bi-play-circle" style="margin-right:0.4rem; color: var(--primary-500);"></i> Eğitim Önizleme</h3>
-        </div>
+
 
         <div class="cd-sidebar-body">
-          <div th:if="${successMessage}" class="cd-flash" style="margin-bottom:1.5rem;">
-            <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
+
+          <!-- Kurs türü badge -->
+          <div style="margin-bottom:1rem;">
+            <span th:text="${course.courseTypeDisplayName}"
+                  th:style="${course.courseType != null and course.courseType.name() == 'ONLINE'} ?
+                              'background:#d0ebff;color:#1864ab;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:700;' :
+                              (${course.courseType != null and course.courseType.name() == 'FACE_TO_FACE'} ?
+                              'background:#d3f9d8;color:#2b8a3e;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:700;' :
+                              'background:#f3d9fa;color:#862e9c;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:700;')">
+              Online Eğitim
+            </span>
           </div>
 
-          <ul class="cd-feature-list">
-            <li>
+          <!-- Tarih + Kontenjan: Sadece Yüzyüze + Uzaktan Örgün -->
+          <ul class="cd-feature-list" th:if="${course.courseType == null or course.courseType.name() != 'ONLINE'}">
+            <li th:if="${course.startDate != null}">
               <span class="fl-label"><i class="bi bi-calendar-event"></i> Başlangıç</span>
               <span class="fl-value" th:text="${#temporals.format(course.startDate,'dd.MM.yyyy')}">Tarih</span>
             </li>
-            <li>
+            <li th:if="${course.endDate != null}">
               <span class="fl-label"><i class="bi bi-calendar-check"></i> Bitiş</span>
               <span class="fl-value" th:text="${#temporals.format(course.endDate,'dd.MM.yyyy')}">Tarih</span>
             </li>
-            <li>
+            <li th:if="${course.quota != null}">
               <span class="fl-label"><i class="bi bi-people"></i> Kontenjan</span>
               <span class="fl-value"
                     th:text="${course.quota - course.enrolledCount} + ' Kalan / ' + ${course.quota}">Kalan</span>
             </li>
+            <li th:if="${course.courseSchedule != null}">
+              <span class="fl-label"><i class="bi bi-clock"></i> Program</span>
+              <span class="fl-value" th:text="${course.courseSchedule}">—</span>
+            </li>
+            <li th:if="${course.courseType != null and course.courseType.name() == 'FACE_TO_FACE' and course.location != null}">
+              <span class="fl-label"><i class="bi bi-geo-alt-fill"></i> Konum</span>
+              <span class="fl-value" th:text="${course.location}">—</span>
+            </li>
           </ul>
+
+          <!-- Özellikler Alanı -->
+          <div style="margin-top: 1.5rem;">
+            <h4 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: #1f2937;">Özellikler</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; border-top: 1px solid #f3f4f6;">
+              <li style="padding: 1rem 0; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 0.75rem; color: #6b7280; font-size: 0.95rem;">
+                <i class="bi bi-bar-chart-fill" style="color: #9ca3af; font-size: 1.1rem;"></i>
+                <span>Seviye : <strong style="color: #111827; font-weight: 600;"
+                      th:text="${course.levelDisplayName != null ? course.levelDisplayName : 'Belirtilmedi'}">Orta Seviye</strong></span>
+              </li>
+              <li style="padding: 1rem 0; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 0.75rem; color: #6b7280; font-size: 0.95rem;">
+                <i class="bi bi-person-plus" style="color: #3b82f6; font-size: 1.1rem;"></i>
+                <span><strong style="color: #111827; font-weight: 700;" th:text="${course.enrolledCount}">69</strong> Kayıtlı Kişi</span>
+              </li>
+              <li style="padding: 1rem 0; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 0.75rem; color: #6b7280; font-size: 0.95rem;">
+                <i class="bi bi-award" style="color: #3b82f6; font-size: 1.1rem;"></i>
+                <span>Belge Türü: <strong style="color: #111827; font-weight: 600;">Sertifika</strong></span>
+              </li>
+              <li th:if="${course.courseType == null or course.courseType.name() == 'ONLINE'}"
+                  style="padding: 1rem 0; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 0.75rem; color: #6b7280; font-size: 0.95rem;">
+                <i class="bi bi-star" style="color: #3b82f6; font-size: 1.1rem;"></i>
+                <span>Sertifika Son Talep Tarihi: <strong style="color: #111827; font-weight: 600;"
+                      th:text="${course.certificateDeadline != null ? #temporals.format(course.certificateDeadline, 'dd.MM.yyyy') : 'Belirtilmedi'}">Belirtilmedi</strong></span>
+              </li>
+              <li style="padding: 1rem 0; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 0.75rem; color: #6b7280; font-size: 0.95rem;">
+                <i class="bi bi-play-circle" style="color: #3b82f6; font-size: 1.1rem;"></i>
+                <span>Cihaz Desteği : <strong style="color: #111827; font-weight: 600;">Mobil & Masaüstü</strong></span>
+              </li>
+              <li style="padding: 1rem 0; display: flex; align-items: center; gap: 0.75rem; color: #6b7280; font-size: 0.95rem;">
+                <i class="bi bi-play-circle" style="color: #3b82f6; font-size: 1.1rem;"></i>
+                <span>Eğitim Dili : <strong style="color: #111827; font-weight: 600;">Türkçe</strong></span>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <!-- Fiyat ve CTA -->
@@ -620,11 +677,7 @@
                 </a>
               </div>
             </div>
-            <div sec:authorize="hasRole('INSTRUCTOR') or hasRole('ADMIN')">
-              <div class="cd-cta-btn disabled-info">
-                <i class="bi bi-info-circle"></i> Sadece öğrenciler kayıt olabilir
-              </div>
-            </div>
+            <!-- Eğitmen/Admin için alan gizlendi -->
             <div sec:authorize="isAnonymous()">
               <a th:href="@{/giris(sonra=|/egitimler/| + ${course.id})}"
                  class="cd-cta-btn primary">
@@ -644,9 +697,7 @@
   <div class="container" style="padding-top:3rem;">
 
     <!-- Flash -->
-    <div th:if="${successMessage}" class="cd-flash">
-      <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
-    </div>
+
 
     <!-- Kurs Icerigi -->
     <div th:if="${videos != null and !#lists.isEmpty(videos)}">
@@ -739,7 +790,7 @@
             <input type="radio" id="star2" name="rating" value="2"/><label for="star2" title="2 Yıldız"><i class="bi bi-star-fill"></i></label>
             <input type="radio" id="star1" name="rating" value="1"/><label for="star1" title="1 Yıldız"><i class="bi bi-star-fill"></i></label>
           </div>
-          <textarea name="comment" rows="3" placeholder="Eğitim hakkındaki düşüncelerinizi paylaşın..." maxlength="2000" required
+          <textarea name="comment" rows="3" placeholder="Eğitim hakkındaki düşüncelerinizi paylaşın..." required
                     style="width:100%; border:1px solid var(--border); border-radius:var(--radius-sm); padding:0.85rem; margin-bottom:1rem; font-family:inherit; font-size:0.9rem; resize:vertical; transition: border-color var(--transition-fast); background: var(--bg-alt);"
                     onfocus="this.style.borderColor='var(--primary-400)'" onblur="this.style.borderColor='var(--border)'"></textarea>
           <button type="submit" class="cd-start-btn" style="cursor:pointer;">

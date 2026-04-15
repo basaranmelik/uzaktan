@@ -131,14 +131,7 @@
 <section class="section">
   <div class="container">
 
-    <div th:if="${successMessage}"
-         style="background:#d3f9d8;border:1px solid #69db7c;border-radius:8px;padding:1rem;margin-bottom:1.5rem;color:#2b8a3e;font-weight:600;">
-      <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
-    </div>
-    <div th:if="${errorMessage}"
-         style="background:#ffe3e3;border:1px solid #ffa8a8;border-radius:8px;padding:1rem;margin-bottom:1.5rem;color:#c92a2a;font-weight:600;">
-      <i class="bi bi-exclamation-circle-fill"></i> <span th:text="${errorMessage}"></span>
-    </div>
+
 
     <!-- Upload Form — modül sayısı dolduğunda gizle -->
     <div th:if="${course.module != null and videos.size() >= course.module}"
@@ -304,6 +297,15 @@
 <script th:src="@{/js/main.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
 <script th:inline="javascript">
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 function showPreview(input) {
   const preview = document.getElementById('filePreview');
   const list = document.getElementById('fileList');
@@ -343,16 +345,16 @@ function showPreview(input) {
       <div style="padding:0.75rem 1rem;${i < files.length - 1 ? 'border-bottom:1px solid var(--gray-100);' : ''}">
         <div style="display:flex;align-items:center;gap:0.75rem;font-size:0.875rem;margin-bottom:0.5rem;">
           <i class="bi bi-file-earmark-play" style="color:var(--primary-400);flex-shrink:0;"></i>
-          <span style="color:var(--text-muted);font-size:0.78rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name}</span>
-          <span style="color:var(--text-muted);font-size:0.78rem;flex-shrink:0;">${sizeMb} MB</span>
+          <span style="color:var(--text-muted);font-size:0.78rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(f.name)}</span>
+          <span style="color:var(--text-muted);font-size:0.78rem;flex-shrink:0;">${escapeHtml(sizeMb)} MB</span>
         </div>
         <div style="display:flex;gap:0.6rem;align-items:center;">
-          <input type="text" name="titles" value="${nameNoExt}" class="form-control"
+          <input type="text" name="titles" value="${escapeHtml(nameNoExt)}" class="form-control"
                  placeholder="Video başlığı girin" maxlength="200" required
                  style="font-size:0.85rem;padding:0.4rem 0.65rem;flex:1;">
           <div style="display:flex;align-items:center;gap:0.35rem;flex-shrink:0;">
             <label style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;margin:0;">Sıra:</label>
-            <input type="number" name="orderIndices" value="${defaultPos}" min="1" max="${maxPos}"
+            <input type="number" name="orderIndices" value="${escapeHtml(defaultPos)}" min="1" max="${escapeHtml(maxPos)}"
                    class="form-control"
                    style="font-size:0.85rem;padding:0.4rem 0.5rem;width:72px;text-align:center;">
           </div>

@@ -8,11 +8,66 @@
   <title>Eğitmen Paneli | Gazi Üniversitesi</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .instructor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1.5rem;
+    }
+    .instructor-card {
+      background: var(--bg);
+      border: 1px solid #ced4da;
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .instructor-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(17,58,113,0.1);
+    }
+    .card-banner {
+      height: 160px;
+      position: relative;
+      overflow: hidden;
+    }
+    .card-banner img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .card-banner .no-img {
+      width: 100%; height: 100%;
+      background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 2.5rem;
+    }
+    .card-status {
+      position: absolute; top: 0.75rem; right: 0.75rem;
+      padding: 0.3rem 0.75rem; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 700;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .card-content { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+    .card-title { font-size: 1.15rem; font-weight: 800; color: var(--primary-900); margin-bottom: 0.75rem; line-height: 1.3; }
+    .card-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: var(--text-muted); }
+    .card-meta i { color: var(--primary-600); }
+    .card-actions {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
+      padding: 1rem 1.25rem; border-top: 1px solid var(--border);
+      background: var(--bg-alt);
+    }
+    .status-badge-inline {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 4px;
+      margin-bottom: 0.5rem;
+    }
+  </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<section class="page-header">
+<section class="page-header" style="padding: calc(var(--nav-height) + var(--space-xl)) 0 var(--space-xl);">
   <div class="container">
     <div class="breadcrumb">
       <span class="current">Eğitmen Paneli</span>
@@ -25,10 +80,7 @@
 <section class="section">
   <div class="container">
 
-    <div th:if="${successMessage}"
-         style="background:#d3f9d8;border:1px solid #69db7c;border-radius:8px;padding:1rem;margin-bottom:1.5rem;color:#2b8a3e;font-weight:600;">
-      <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
-    </div>
+
 
     <!-- Özet Kartlar -->
     <div class="stats-grid" style="margin-bottom:2.5rem;">
@@ -70,53 +122,55 @@
       <p style="font-size:0.85rem;">Admin panelinden bir kurs size atandığında burada görünecektir.</p>
     </div>
 
-    <!-- Kurs Kartları -->
-    <div th:if="${!#lists.isEmpty(courses)}"
-         style="display:flex;flex-direction:column;gap:1rem;">
+    <!-- Kurs Kartları (Grid) -->
+    <div th:if="${!#lists.isEmpty(courses)}" class="instructor-grid">
 
-      <div th:each="course : ${courses}" class="card fade-in"
-           style="padding:1.5rem;display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
-
-        <div style="flex:1;min-width:0;">
-          <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-bottom:0.5rem;">
-            <h4 style="margin:0;" th:text="${course.title}">Kurs Adı</h4>
-            <span class="status-badge"
-                  th:text="${course.status.displayName}"
-                  th:classappend="${course.status.name() == 'PUBLISHED'}    ? ' sb-green'  :
-                                 (${course.status.name() == 'IN_PROGRESS'}  ? ' sb-teal'   :
-                                 (${course.status.name() == 'COMPLETED'}    ? ' sb-blue'   :
-                                 (${course.status.name() == 'DRAFT'}        ? ' sb-orange' : ' sb-gray')))">
-            </span>
+      <div th:each="course : ${courses}" class="instructor-card fade-in">
+        <!-- Banner / Image -->
+        <div class="card-banner">
+          <img th:if="${course.imagePath != null}" th:src="@{'/uploads/' + ${course.imagePath}}" alt="">
+          <div th:if="${course.imagePath == null}" class="no-img">
+            <i class="bi bi-laptop"></i>
           </div>
+          <span class="card-status"
+                th:text="${course.status.displayName}"
+                th:attr="style=${course.status.name() == 'PUBLISHED' ? 'background:rgba(43,138,62,0.9); color:#fff;' : 
+                               (course.status.name() == 'IN_PROGRESS' ? 'background:rgba(12,133,153,0.9); color:#fff;' : 
+                               (course.status.name() == 'DRAFT' ? 'background:rgba(232,89,12,0.9); color:#fff;' : 'background:rgba(134,142,150,0.9); color:#fff;'))}">
+          </span>
+        </div>
 
-          <div style="display:flex;gap:1.5rem;flex-wrap:wrap;font-size:0.85rem;color:var(--text-muted);">
-            <span th:if="${course.startDate != null}">
-              <i class="bi bi-calendar3"></i>
-              <span th:text="${#temporals.format(course.startDate,'dd.MM.yyyy')}"></span>
-              <span th:if="${course.endDate != null}">
-                — <span th:text="${#temporals.format(course.endDate,'dd.MM.yyyy')}"></span>
-              </span>
-            </span>
-            <span>
-              <i class="bi bi-people"></i>
+        <div class="card-content">
+          <h4 class="card-title" th:text="${course.title}">Kurs Başlığı</h4>
+          
+          <div class="card-meta">
+            <div title="Öğrenci Sayısı">
+              <i class="bi bi-people-fill"></i>
               <span th:text="${course.enrolledCount}">0</span>
-              <span th:if="${course.quota != null}"> / <span th:text="${course.quota}">0</span></span>
-              öğrenci
-            </span>
-            <span th:if="${course.hours != null}">
-              <i class="bi bi-clock"></i> <span th:text="${course.hours}">0</span> saat
-            </span>
+              <span th:if="${course.quota != null}">/<span th:text="${course.quota}">0</span></span>
+            </div>
+            <div th:if="${course.hours != null}" title="Süre">
+              <i class="bi bi-clock-fill"></i> <span th:text="${course.hours}">0</span> Saat
+            </div>
+            <div th:if="${course.startDate != null}" title="Başlangıç">
+              <i class="bi bi-calendar-event-fill"></i> <span th:text="${#temporals.format(course.startDate,'dd.MM.yyyy')}"></span>
+            </div>
           </div>
         </div>
 
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;flex-shrink:0;">
+        <!-- Aksiyonlar (Grid 2 sütun) -->
+        <div class="card-actions">
           <a th:href="@{/egitmen/kurslarim/{id}/odevler(id=${course.id})}"
-             class="btn btn-primary" style="font-size:0.85rem;padding:0.4rem 1rem;">
+             class="btn btn-primary" style="font-size:0.8rem; padding:0.5rem;">
             <i class="bi bi-journal-text"></i> Ödevler
           </a>
+          <a th:href="@{/egitmen/zoom/kurslarim/{id}(id=${course.id})}"
+             class="btn btn-secondary" style="font-size:0.8rem; padding:0.5rem;">
+            <i class="bi bi-camera-video"></i> Zoom
+          </a>
           <a th:href="@{/egitimler/{id}(id=${course.id})}"
-             class="btn btn-secondary" style="font-size:0.85rem;padding:0.4rem 1rem;" target="_blank">
-            <i class="bi bi-box-arrow-up-right"></i> Görüntüle
+             class="btn btn-secondary" style="grid-column: span 2; font-size:0.8rem; padding:0.5rem;" target="_blank">
+            <i class="bi bi-eye"></i> Sayfayı Görüntüle
           </a>
         </div>
       </div>

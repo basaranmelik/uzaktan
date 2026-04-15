@@ -1,7 +1,9 @@
 package com.guzem.uzaktan.dto.response;
 
 import com.guzem.uzaktan.model.CourseCategory;
+import com.guzem.uzaktan.model.CourseLevel;
 import com.guzem.uzaktan.model.CourseStatus;
+import com.guzem.uzaktan.model.CourseType;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -26,6 +28,13 @@ public class CourseResponse {
     private CourseCategory category;
     private String categoryDisplayName;
     private CourseStatus status;
+    private CourseLevel level;
+    private String levelDisplayName;
+    private CourseType courseType;
+    private String courseTypeDisplayName;
+    private String location;
+    private String courseSchedule;
+    private LocalDate certificateDeadline;
     private String imagePath;
     private String instructorName;
     private Long instructorId;

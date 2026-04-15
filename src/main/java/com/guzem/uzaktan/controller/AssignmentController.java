@@ -34,9 +34,19 @@ public class AssignmentController {
     public String list(@AuthenticationPrincipal UserDetails principal, Model model) {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         List<AssignmentResponse> assignments = assignmentService.findAssignmentsForStudent(userId);
+        
+        Map<String, List<AssignmentResponse>> assignmentsByCourse = assignments.stream()
+                .collect(Collectors.groupingBy(
+                        AssignmentResponse::getCourseTitle,
+                        java.util.LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
         List<SubmissionResponse> submissions = assignmentService.findAllSubmissionsForStudent(userId);
         Map<Long, SubmissionResponse> submissionByAssignment = submissions.stream()
                 .collect(Collectors.toMap(SubmissionResponse::getAssignmentId, s -> s));
+                
+        model.addAttribute("assignmentsByCourse", assignmentsByCourse);
         model.addAttribute("assignments", assignments);
         model.addAttribute("submissionByAssignment", submissionByAssignment);
         return "odev/liste";
@@ -47,7 +57,7 @@ public class AssignmentController {
                          @AuthenticationPrincipal UserDetails principal,
                          Model model) {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
-        model.addAttribute("assignment", assignmentService.findById(assignmentId));
+        model.addAttribute("assignment", assignmentService.findById(assignmentId, userId));
         Optional<SubmissionResponse> existingSubmission = assignmentService.findSubmission(assignmentId, userId);
         model.addAttribute("submission", existingSubmission.orElse(null));
         model.addAttribute("submissionCreateRequest", new SubmissionCreateRequest());

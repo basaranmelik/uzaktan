@@ -23,6 +23,10 @@ public class Enrollment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(name = "version")
+    private Integer version;
+
     @Builder.Default
     @Column(name = "progress_percentage", nullable = false)
     private Integer progressPercentage = 0;

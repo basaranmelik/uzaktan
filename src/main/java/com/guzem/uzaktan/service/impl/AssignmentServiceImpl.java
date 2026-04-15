@@ -14,6 +14,7 @@ import com.guzem.uzaktan.model.*;
 import com.guzem.uzaktan.repository.*;
 import com.guzem.uzaktan.service.AssignmentService;
 import com.guzem.uzaktan.service.FileStorageService;
+import com.guzem.uzaktan.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +46,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     private final UserRepository userRepository;
     private final AssignmentMapper assignmentMapper;
     private final FileStorageService fileStorageService;
+    private final NotificationService notificationService;
 
     // ----------------------------------------------------------------
     // Öğretmen / Admin işlemleri
@@ -95,8 +97,9 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional(readOnly = true)
-    public AssignmentResponse findById(Long assignmentId) {
+    public AssignmentResponse findById(Long assignmentId, Long requestingUserId) {
         Assignment a = loadAssignment(assignmentId);
+        checkAccess(a, requestingUserId);
         long subCount = submissionRepository.countByAssignmentId(assignmentId);
         long pending = submissionRepository.countByCourseIdAndStatus(
                 a.getCourse().getId(), SubmissionStatus.SUBMITTED);
@@ -119,14 +122,19 @@ public class AssignmentServiceImpl implements AssignmentService {
         AssignmentSubmission submission = loadSubmission(submissionId);
         checkTeacherOrAdmin(submission.getAssignment().getCourse(), requestingUserId);
         if (request.getScore() > submission.getAssignment().getMaxScore()) {
-            throw new UnauthorizedActionException(
+            throw new IllegalArgumentException(
                     "Puan maksimum puanı (" + submission.getAssignment().getMaxScore() + ") aşamaz.");
         }
         submission.setScore(request.getScore());
         submission.setFeedback(request.getFeedback());
         submission.setStatus(SubmissionStatus.GRADED);
         submission.setGradedAt(LocalDateTime.now());
-        return assignmentMapper.toSubmissionResponse(submissionRepository.save(submission));
+        SubmissionResponse response = assignmentMapper.toSubmissionResponse(submissionRepository.save(submission));
+        notificationService.create(submission.getUser(), com.guzem.uzaktan.model.NotificationType.ASSIGNMENT_GRADED,
+                "Ödeviniz Notlandırıldı",
+                "\"" + submission.getAssignment().getTitle() + "\" ödeviniz notlandırıldı: " + request.getScore() + " puan.",
+                "/panom");
+        return response;
     }
 
     // ----------------------------------------------------------------
@@ -158,11 +166,11 @@ public class AssignmentServiceImpl implements AssignmentService {
         String filePath = null;
         String originalFileName = null;
         if (hasFile) {
-            String baseName = user.getLastName() + "_" + user.getFirstName()
-                    + "_" + assignment.getCourse().getTitle()
-                    + "_" + assignment.getTitle();
-            filePath = storeSubmissionFile(file, assignmentId, baseName);
-            originalFileName = file.getOriginalFilename();
+            String baseName = assignment.getCourse().getTitle()
+                    + "_" + assignment.getTitle()
+                    + "_" + user.getFirstName() + "_" + user.getLastName();
+            filePath = storeSubmissionFile(file, assignmentId, assignment.getCourse().getTitle(), baseName);
+            originalFileName = java.nio.file.Paths.get(filePath).getFileName().toString();
         }
 
         AssignmentSubmission submission = AssignmentSubmission.builder()
@@ -184,7 +192,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         Assignment assignment = loadAssignment(assignmentId);
 
         if (LocalDateTime.now().isAfter(assignment.getDueDate())) {
-            throw new UnauthorizedActionException("Son teslim tarihi geçtiği için güncelleme yapılamaz.");
+            throw new IllegalArgumentException("Son teslim tarihi geçtiği için güncelleme yapılamaz.");
         }
 
         AssignmentSubmission submission = submissionRepository
@@ -193,7 +201,7 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         boolean hasFile = file != null && !file.isEmpty();
         if (!hasFile && submission.getFilePath() == null) {
-            throw new UnauthorizedActionException("Dosya yüklemeniz zorunludur.");
+            throw new IllegalArgumentException("Dosya yüklemeniz zorunludur.");
         }
 
         if (hasFile) {
@@ -202,11 +210,11 @@ public class AssignmentServiceImpl implements AssignmentService {
             }
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", userId));
-            String baseName = user.getLastName() + "_" + user.getFirstName()
-                    + "_" + assignment.getCourse().getTitle()
-                    + "_" + assignment.getTitle();
-            submission.setFilePath(storeSubmissionFile(file, assignmentId, baseName));
-            submission.setOriginalFileName(file.getOriginalFilename());
+            String baseName = assignment.getCourse().getTitle()
+                    + "_" + assignment.getTitle()
+                    + "_" + user.getFirstName() + "_" + user.getLastName();
+            submission.setFilePath(storeSubmissionFile(file, assignmentId, assignment.getCourse().getTitle(), baseName));
+            submission.setOriginalFileName(java.nio.file.Paths.get(submission.getFilePath()).getFileName().toString());
         }
 
         if (request.getTextAnswer() != null) {
@@ -230,8 +238,10 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional(readOnly = true)
-    public SubmissionResponse findSubmissionById(Long submissionId) {
-        return assignmentMapper.toSubmissionResponse(loadSubmission(submissionId));
+    public SubmissionResponse findSubmissionById(Long submissionId, Long requestingUserId) {
+        AssignmentSubmission submission = loadSubmission(submissionId);
+        checkSubmissionAccess(submission, requestingUserId);
+        return assignmentMapper.toSubmissionResponse(submission);
     }
 
     @Override
@@ -297,6 +307,43 @@ public class AssignmentServiceImpl implements AssignmentService {
     // Yardımcı metodlar
     // ----------------------------------------------------------------
 
+    private void checkAccess(Assignment assignment, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", userId));
+
+        // Admin her şeyi görür
+        if (user.getRole() == Role.ADMIN) return;
+
+        // Eğitmen kendi kursunun ödevini görür
+        if (user.getRole() == Role.TEACHER &&
+                assignment.getCourse().getInstructor() != null &&
+                assignment.getCourse().getInstructor().getId().equals(userId)) return;
+
+        // Öğrenci kayıtlı olduğu kursun ödevini görür
+        if (user.getRole() == Role.USER &&
+                enrollmentRepository.existsByUserIdAndCourseIdAndStatus(userId, assignment.getCourse().getId(), EnrollmentStatus.ACTIVE)) return;
+
+        throw new UnauthorizedActionException("Bu ödeve erişim yetkiniz bulunmamaktadır.");
+    }
+
+    private void checkSubmissionAccess(AssignmentSubmission submission, Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", userId));
+
+        // Admin her şeyi görür
+        if (user.getRole() == Role.ADMIN) return;
+
+        // Eğitmen kendi kursunun ödev teslimlerini görür
+        if (user.getRole() == Role.TEACHER &&
+                submission.getAssignment().getCourse().getInstructor() != null &&
+                submission.getAssignment().getCourse().getInstructor().getId().equals(userId)) return;
+
+        // Öğrenci kendi teslimini görür
+        if (user.getRole() == Role.USER && submission.getUser().getId().equals(userId)) return;
+
+        throw new UnauthorizedActionException("Bu ödev teslimine erişim yetkiniz bulunmamaktadır.");
+    }
+
     private void validateSubmission(Assignment assignment, Long assignmentId, Long userId,
                                      SubmissionCreateRequest request, MultipartFile file) {
         Long courseId = assignment.getCourse().getId();
@@ -304,11 +351,10 @@ public class AssignmentServiceImpl implements AssignmentService {
         enrollmentRepository.findByUserIdAndCourseId(userId, courseId)
                 .filter(e -> e.getStatus() == EnrollmentStatus.ACTIVE
                         || e.getStatus() == EnrollmentStatus.COMPLETED)
-                .orElseThrow(() -> new UnauthorizedActionException(
-                        "Bu kursa kayıtlı değilsiniz veya kaydınız aktif değil."));
+                .orElseThrow(() -> new UnauthorizedActionException("Bu ödeve erişmek için aktif kayıt olmanız gerekmektedir."));
 
         if (LocalDateTime.now().isAfter(assignment.getDueDate())) {
-            throw new UnauthorizedActionException("Ödev teslim tarihi geçmiştir.");
+            throw new IllegalArgumentException("Ödev teslim tarihi geçmiştir.");
         }
 
         if (submissionRepository.existsByAssignmentIdAndUserId(assignmentId, userId)) {
@@ -317,13 +363,13 @@ public class AssignmentServiceImpl implements AssignmentService {
 
         boolean hasFile = file != null && !file.isEmpty();
         if (!hasFile) {
-            throw new UnauthorizedActionException("Dosya yüklemeniz zorunludur.");
+            throw new IllegalArgumentException("Dosya yüklemeniz zorunludur.");
         }
     }
 
-    private String storeSubmissionFile(MultipartFile file, Long assignmentId, String baseName) {
+    private String storeSubmissionFile(MultipartFile file, Long assignmentId, String courseTitle, String baseName) {
         try {
-            return fileStorageService.storeWithName(file, assignmentId, baseName);
+            return fileStorageService.storeWithName(file, assignmentId, courseTitle, baseName);
         } catch (IOException e) {
             throw new RuntimeException("Dosya kaydedilemedi: " + e.getMessage(), e);
         }
@@ -336,7 +382,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         boolean isInstructor = course.getInstructor() != null
                 && course.getInstructor().getId().equals(requestingUserId);
         if (!isAdmin && !isInstructor) {
-            throw new UnauthorizedActionException("Bu kurs üzerinde işlem yapma yetkiniz yok.");
+            throw new UnauthorizedActionException("Bu işlem için yetkiniz bulunmamaktadır.");
         }
     }
 

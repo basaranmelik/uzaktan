@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zoom Toplantısına Katıl | Gazi Üniversitesi</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <h1><i class="bi bi-camera-video-fill"></i> Canlı Ders</h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:600px;">
+
+    <!-- Erişim hatası -->
+    <div th:if="${errorMessage}" class="card fade-in"
+         style="padding:2.5rem;text-align:center;">
+      <div style="font-size:3rem;color:#e03131;margin-bottom:1rem;"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <h3 style="color:#e03131;">Erişim Reddedildi</h3>
+      <p style="color:var(--text-muted);" th:text="${errorMessage}">Hata mesajı</p>
+      <a th:href="@{/egitimler}" class="btn btn-primary" style="margin-top:1rem;">
+        Eğitimlere Göz At →
+      </a>
+    </div>
+
+    <!-- Toplantı bilgileri -->
+    <div th:if="${meeting != null}" class="card fade-in" style="padding:2.5rem;text-align:center;">
+
+      <div style="font-size:3.5rem;color:var(--primary-600);margin-bottom:1rem;">
+        <i class="bi bi-camera-video-fill"></i>
+      </div>
+
+      <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.4rem;"
+           th:text="${meeting.courseTitle}">Kurs adı</div>
+      <h2 style="margin-bottom:1.5rem;" th:text="${meeting.topic}">Toplantı konusu</h2>
+
+      <div style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin-bottom:1.75rem;font-size:0.9rem;color:var(--text-muted);">
+        <div>
+          <div style="font-weight:600;color:var(--text);font-size:1rem;">
+            <span th:text="${#temporals.format(meeting.scheduledAt, 'dd.MM.yyyy')}">-</span>
+          </div>
+          <div>Tarih</div>
+        </div>
+        <div>
+          <div style="font-weight:600;color:var(--text);font-size:1rem;">
+            <span th:text="${#temporals.format(meeting.scheduledAt, 'HH:mm')}">-</span>
+          </div>
+          <div>Saat</div>
+        </div>
+        <div>
+          <div style="font-weight:600;color:var(--text);font-size:1rem;">
+            <span th:text="${meeting.durationMinutes}">0</span> dk
+          </div>
+          <div>Süre</div>
+        </div>
+      </div>
+
+      <!-- Şifre -->
+      <div th:if="${meeting.password != null and !#strings.isEmpty(meeting.password)}"
+           style="background:var(--bg-secondary);border-radius:8px;padding:0.75rem 1rem;margin-bottom:1.5rem;display:inline-block;">
+        <span style="font-size:0.85rem;color:var(--text-muted);">Toplantı Şifresi: </span>
+        <code style="font-size:1rem;font-weight:700;" th:text="${meeting.password}">-</code>
+      </div>
+
+      <a th:href="${meeting.joinUrl}" target="_blank" class="btn btn-primary"
+         style="font-size:1.05rem;padding:0.75rem 2rem;display:inline-flex;align-items:center;gap:0.5rem;justify-content:center;">
+        <i class="bi bi-box-arrow-up-right"></i> Zoom'da Katıl
+      </a>
+
+      <p style="font-size:0.8rem;color:var(--text-muted);margin-top:1.25rem;">
+        Zoom uygulaması açılacaktır. Yüklü değilse tarayıcı üzerinden katılabilirsiniz.
+      </p>
+
+    </div>
+
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

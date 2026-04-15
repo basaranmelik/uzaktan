@@ -46,4 +46,7 @@ public class CourseVideo {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
+    @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true)
+    private java.util.List<VideoWatch> watches = new java.util.ArrayList<>();
+
 }

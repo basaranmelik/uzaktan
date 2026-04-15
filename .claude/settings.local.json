@@ -27,7 +27,24 @@
       "Bash(curl -s http://localhost:8080)",
       "Bash(pkill -f \"spring-boot:run\")",
       "Bash(pkill -f \"UzaktanApplication\")",
-      "Bash(kill -9 58565 58380)"
+      "Bash(kill -9 58565 58380)",
+      "Bash(grep -E \"\\\\.java$\")",
+      "WebFetch(domain:istanbulinstitute.com)",
+      "mcp__firecrawl__firecrawl_scrape",
+      "Bash(curl -sk https://istanbulinstitute.com/)",
+      "Bash(grep -oE \"\\(font-family|fonts\\\\.googleapis\\\\.com|@import\\)[^;\"\"<>]{0,200}\")",
+      "Bash(grep -oiE '\\(Roboto|Inter|Montserrat|Lato|Open.Sans|Raleway|Poppins|Nunito|Merriweather|Playfair|Source.Sans|DM.Sans|Karla|Josefin|Mulish|Ubuntu|Oswald|PT.Sans|Noto|Libre|Quicksand\\)[^\"\"\"\"<]{0,30}')",
+      "Bash(grep -oE \"font-family[^;]{0,100}\")",
+      "Bash(curl -sk https://istanbulinstitute.com/site/css/euclid-circulara.css)",
+      "Bash(grep -E \"\\\\.\\(java|html\\)$\")",
+      "Bash(find /Users/basaran/Desktop/uzaktan/src/main/java -type f -name *Client*.java -o -name *Service*.java -o -name *Api*.java)",
+      "mcp__ide__getDiagnostics",
+      "Bash(grep -r \"th:action\" /Users/basaran/Desktop/uzaktan/src/main/resources/templates/admin/*.html)",
+      "Bash(find /Users/basaran/Desktop/uzaktan/src/main/resources/templates -type f -name *.html)",
+      "Bash(find /Users/basaran/Desktop/uzaktan/src/main/java/com/guzem/uzaktan/controller/admin -type f -name *.java)",
+      "Bash(xargs cat:*)",
+      "Bash(grep -l \"doctype\\\\|html lang\" /Users/basaran/Desktop/uzaktan/src/main/resources/templates/*.html)",
+      "Bash(grep -rL name=\"\"viewport\"\" src/main/resources/templates/ --include=*.html)"
     ]
   }
 }

@@ -23,6 +23,7 @@ public class AdminDashboardController {
     private final CertificateService certificateService;
     private final AssignmentService assignmentService;
     private final InstructorService instructorService;
+    private final com.guzem.uzaktan.service.EnrollmentService enrollmentService;
 
     @GetMapping
     public String dashboard(Model model) {
@@ -35,6 +36,8 @@ public class AdminDashboardController {
         model.addAttribute("totalAssignments", assignmentService.countAllAssignments());
         model.addAttribute("pendingSubmissions", assignmentService.countPendingSubmissions());
         model.addAttribute("totalInstructors", instructorService.findAll().size());
+        model.addAttribute("totalEnrollments", enrollmentService.countTotal());
+        model.addAttribute("pendingEnrollments", enrollmentService.countByStatus(com.guzem.uzaktan.model.EnrollmentStatus.PENDING_PAYMENT));
         return "admin/dashboard";
     }
 }

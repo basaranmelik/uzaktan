@@ -2,7 +2,9 @@ package com.guzem.uzaktan.controller;
 
 import com.guzem.uzaktan.dto.response.AssignmentResponse;
 import com.guzem.uzaktan.dto.response.EnrollmentResponse;
+import com.guzem.uzaktan.dto.response.SubmissionResponse;
 import com.guzem.uzaktan.dto.response.UserResponse;
+
 import com.guzem.uzaktan.service.AssignmentService;
 import com.guzem.uzaktan.service.CourseService;
 import com.guzem.uzaktan.service.EnrollmentService;
@@ -40,6 +42,7 @@ public class HomeController {
 
         List<EnrollmentResponse> enrollments = enrollmentService.findByUser(userId);
         List<AssignmentResponse> pendingAssignments = assignmentService.findPendingAssignmentsForStudent(userId);
+        List<SubmissionResponse> submissions = assignmentService.findAllSubmissionsForStudent(userId);
 
         model.addAttribute("user", user);
         model.addAttribute("enrollments", enrollments);
@@ -47,6 +50,7 @@ public class HomeController {
         model.addAttribute("completedCount", enrollmentService.countByUserAndStatus(userId, EnrollmentStatus.COMPLETED));
         model.addAttribute("pendingAssignments", pendingAssignments);
         model.addAttribute("pendingAssignmentCount", pendingAssignments.size());
+        model.addAttribute("submissions", submissions);
         return "dashboard";
     }
 

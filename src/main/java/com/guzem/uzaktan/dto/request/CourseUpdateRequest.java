@@ -1,7 +1,9 @@
 package com.guzem.uzaktan.dto.request;
 
 import com.guzem.uzaktan.model.CourseCategory;
+import com.guzem.uzaktan.model.CourseLevel;
 import com.guzem.uzaktan.model.CourseStatus;
+import com.guzem.uzaktan.model.CourseType;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
@@ -14,6 +16,8 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class CourseUpdateRequest {
+
+    private CourseType courseType;
 
     @Size(min = 3, max = 150, message = "Başlık 3-150 karakter arası olmalıdır.")
     private String title;
@@ -43,8 +47,19 @@ public class CourseUpdateRequest {
 
     private CourseStatus status;
 
+    @Size(max = 300)
+    private String location;
+
+    @Size(max = 300)
+    private String courseSchedule;
+
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private LocalDate certificateDeadline;
+
     @Size(max = 150)
     private String instructorName;
 
     private Long instructorId;
+
+    private CourseLevel level;
 }

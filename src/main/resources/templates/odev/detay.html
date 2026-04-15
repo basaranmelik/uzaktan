@@ -43,14 +43,7 @@
 <section class="section">
   <div class="container" style="max-width:720px;">
 
-    <div th:if="${successMessage}"
-         style="background:#d3f9d8;border:1px solid #69db7c;border-radius:8px;padding:0.75rem 1rem;color:#2b8a3e;font-weight:600;margin-bottom:1.25rem;">
-      <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
-    </div>
-    <div th:if="${errorMessage}"
-         style="background:#fff5f5;border:1px solid #ffc9c9;border-radius:8px;padding:0.75rem 1rem;color:#e03131;font-weight:600;margin-bottom:1.25rem;">
-      <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${errorMessage}"></span>
-    </div>
+
 
     <!-- Ödev açıklaması -->
     <div th:if="${assignment.description != null and !#strings.isEmpty(assignment.description)}"
@@ -170,10 +163,7 @@
                     placeholder="Cevabınızı buraya yazabilirsiniz..."></textarea>
         </div>
 
-        <div th:if="${errorMessage}"
-             style="background:#fff5f5;border:1px solid #ffc9c9;border-radius:8px;padding:0.75rem 1rem;color:#e03131;margin-bottom:1rem;">
-          <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${errorMessage}"></span>
-        </div>
+
 
         <div style="display:flex;gap:1rem;margin-top:0.5rem;">
           <button type="submit" class="btn btn-primary">

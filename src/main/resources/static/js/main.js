@@ -537,3 +537,68 @@ function initSidebarFilters() {
 document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('courses-grid')) initSidebarFilters();
 });
+
+// ---------- Toast Notification System ----------
+function showToast(message, type = 'info') {
+    let container = document.getElementById('toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'toast-container';
+        document.body.appendChild(container);
+    }
+
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    let icon = 'bi-info-circle-fill';
+    if (type === 'success') icon = 'bi-check-circle-fill';
+    if (type === 'error') icon = 'bi-exclamation-octagon-fill';
+    if (type === 'warning') icon = 'bi-exclamation-triangle-fill';
+
+    toast.innerHTML = `<i class="bi ${icon}"></i><span>${message}</span>`;
+    container.appendChild(toast);
+
+    // Show
+    setTimeout(() => toast.classList.add('show'), 10);
+
+    // Hide and Remove
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 300);
+    }, 4000);
+}
+
+// ---------- Video Locking Handler ----------
+function initVideoLocking() {
+    // Handle clicks on elements with .locked class
+    document.addEventListener('click', (e) => {
+        const lockedItem = e.target.closest('.locked');
+        if (lockedItem) {
+            e.preventDefault();
+            e.stopPropagation();
+            showToast('Lütfen önce sıradaki önceki videoları tamamlayın.', 'warning');
+        }
+    }, true);
+}
+
+// ---------- Global Toast Bridge ----------
+function initGlobalToasts() {
+    const navbar = document.getElementById('navbar');
+    if (navbar) {
+        const success = navbar.getAttribute('data-toast-success');
+        const error = navbar.getAttribute('data-toast-error');
+
+        if (success && success.trim() !== '') {
+            showToast(success, 'success');
+        }
+        if (error && error.trim() !== '') {
+            showToast(error, 'error');
+        }
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initVideoLocking();
+    initGlobalToasts();
+});
+

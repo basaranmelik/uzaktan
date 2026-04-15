@@ -75,6 +75,7 @@
     <div class="form-card">
       <form th:action="${instructorId != null ? '/admin/egitmenler/' + instructorId : '/admin/egitmenler'}"
             th:object="${instructorRequest}" method="post" enctype="multipart/form-data">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 
         <div class="form-group">
           <label for="name">Eğitmen Adı Soyadı *</label>

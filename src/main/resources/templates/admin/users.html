@@ -32,14 +32,7 @@
 <section class="section">
   <div class="container">
 
-    <div th:if="${successMessage}"
-         style="background:#d3f9d8;border:1px solid #69db7c;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;color:#2b8a3e;font-weight:600;">
-      <i class="bi bi-check-circle-fill"></i> <span th:text="${successMessage}"></span>
-    </div>
-    <div th:if="${errorMessage}"
-         style="background:#fff5f5;border:1px solid #ffc9c9;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;color:#c92a2a;font-weight:600;">
-      <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${errorMessage}"></span>
-    </div>
+
 
     <!-- Arama -->
     <div class="admin-search-bar">
@@ -80,6 +73,7 @@
 
             <td>
               <form th:action="@{/admin/kullanicilar/{id}/rol(id=${u.id})}" method="post" style="display:inline;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <select name="role" onchange="this.form.submit()"
                         style="font-size:0.78rem;padding:0.25rem 0.4rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer;">
                   <option th:each="r : ${roles}"
@@ -114,6 +108,7 @@
 
                 <!-- Kilitle / Aç -->
                 <form th:action="@{/admin/kullanicilar/{id}/kilitle(id=${u.id})}" method="post">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                   <button type="submit"
                           th:class="${u.locked} ? 'action-btn ab-success' : 'action-btn ab-warn'"
                           th:title="${u.locked} ? 'Kilidi Aç' : 'Kilitle'">
@@ -123,6 +118,7 @@
                 <!-- Sil -->
                 <form th:if="${!u.locked}"
                       th:action="@{/admin/kullanicilar/{id}/sil(id=${u.id})}" method="post">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                   <button type="submit" class="action-btn ab-del"
                           onclick="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')"
                           title="Sil">

@@ -8,6 +8,9 @@
   <title th:text="${video.title} + ' — GUZEM'">Video İzle</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <!-- Plyr.io -->
+  <link rel="stylesheet" href="https://cdn.plyr.io/3.7.8/plyr.css" />
+  <script src="https://cdn.plyr.io/3.7.8/plyr.js"></script>
   <style>
     .video-layout {
       display:grid;
@@ -17,14 +20,104 @@
     }
     @media(max-width:900px){
       .video-layout { grid-template-columns:1fr; }
+      .playlist-card { max-height:360px; overflow-y:auto; }
+    }
+    @media(max-width:480px){
+      .video-layout { gap:1rem; }
+      .playlist-card { max-height:280px; }
+      .video-title { font-size:1.05rem; }
+    }
+    @media(min-width:1440px){
+      .video-layout { grid-template-columns:1fr 380px; }
+    }
+    @media(min-width:2560px){
+      .video-layout { grid-template-columns:1fr 480px; gap:2.5rem; }
+      .video-title { font-size:1.6rem; }
+      .video-desc { font-size:1.05rem; }
+    }
+    @media(min-width:3840px){
+      .video-layout { grid-template-columns:1fr 600px; gap:3.5rem; }
     }
     .video-player-wrap {
       border-radius:12px; overflow:hidden;
       background:#000;
       aspect-ratio:16/9;
+      position: relative; /* For watermark */
     }
     .video-player-wrap video {
       width:100%; height:100%; display:block;
+    }
+
+    /* ── Theater Mode ── */
+    .video-layout.theater {
+      grid-template-columns: 1fr;
+    }
+    .video-layout.theater .playlist-card {
+      margin-top: 1rem;
+    }
+    .video-player-wrap.theater {
+      max-height: 80vh;
+      border-radius: 0;
+      margin: 0 -1rem; /* Full width mobile bleed */
+    }
+
+    /* ── Watermark ── */
+    .video-watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      z-index: 100; /* Higher z-index for plyr child */
+      color: rgba(255, 255, 255, 0.12);
+      font-size: 0.9rem;
+      font-weight: 600;
+      pointer-events: none;
+      user-select: none;
+      transform: translate(-50%, -50%) rotate(-12deg);
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+      white-space: nowrap;
+    }
+
+    @keyframes watermarkMove {
+      0% { top: 10%; left: 10%; }
+      100% { top: 80%; left: 70%; }
+    }
+
+    /* ── Plyr Customization ── */
+    :root {
+      --plyr-color-main: var(--primary-600);
+      --plyr-video-control-background-hover: var(--primary-700);
+    }
+    .plyr--full-ui input[type=range] {
+      color: var(--primary-600);
+    }
+    .plyr__control--overlaid {
+      background: var(--primary-600);
+    }
+    .plyr__control:hover {
+      background: var(--primary-600) !important;
+    }
+
+    /* ── Theater Toggle Button ── */
+    .theater-toggle {
+       background: transparent;
+       border: none;
+       color: #fff;
+       cursor: pointer;
+       padding: 7px;
+       border-radius: 4px;
+       transition: background 0.2s;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+    }
+    .theater-toggle:hover {
+       background: rgba(255, 255, 255, 0.1);
+    }
+    .btn-tools {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 0.5rem;
+      justify-content: flex-end;
     }
     .video-info {
       margin-top:1.25rem;
@@ -78,6 +171,39 @@
       background:#d3f9d8; color:#2b8a3e; border:1px solid #69db7c;
       cursor:default;
     }
+    /* Progress */
+    .izle-progress {
+      padding: 1.25rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .izle-progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+    }
+    .izle-progress-bar {
+      height: 6px;
+      background: var(--gray-100);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .izle-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+      border-radius: 99px;
+      transition: width 0.4s ease;
+    }
+    .instructor-name {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.5rem 1.25rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
   </style>
 </head>
 <body>
@@ -101,10 +227,18 @@
     <div class="video-layout">
 
       <!-- Sol: Player + Bilgi -->
-      <div>
-        <div class="video-player-wrap">
-          <video controls th:src="@{/videolar/{id}/stream(id=${video.id})}"
-                 style="width:100%;height:100%;">
+      <div id="video-main-col">
+        <div class="btn-tools">
+           <button class="btn btn-secondary btn-sm" onclick="toggleTheaterMode()" title="Tiyatro Modu (T)">
+              <i class="bi bi-aspect-ratio"></i> Tiyatro Modu
+           </button>
+        </div>
+        <div class="video-player-wrap" id="player-container">
+          <!-- Watermark -->
+          <div class="video-watermark" th:text="${currentUserFullName} + ' | ' + ${#authentication.name} + ' | ' + ${clientIp}">
+            Gazi Kullanıcı | gazi@edu.tr | 127.0.0.1
+          </div>
+          <video id="player" playsinline controls th:src="@{/videolar/{id}/stream(id=${video.id})}">
             Tarayıcınız video oynatmayı desteklemiyor.
           </video>
         </div>
@@ -148,8 +282,8 @@
             <span id="next-video-locked"
                   th:if="${nextVideo != null and nextVideo.locked}"
                   th:data-id="${nextVideo.id}"
-                  class="btn btn-primary"
-                  style="opacity:0.5;cursor:not-allowed;pointer-events:none;">
+                  class="btn btn-primary locked"
+                  style="opacity:0.6;">
               Sonraki Video <i class="bi bi-lock-fill"></i>
             </span>
           </div>
@@ -161,24 +295,34 @@
         <div class="playlist-header">
           <i class="bi bi-collection-play"></i> Kurs İçeriği
         </div>
+
+        <!-- Instructor -->
+        <div th:if="${course != null and course.instructorName != null}" class="instructor-name">
+          <i class="bi bi-person-workspace"></i>
+          <span th:text="${course.instructorName}">Eğitmen</span>
+        </div>
+
+        <!-- Progress -->
+        <div th:if="${enrollment != null and enrollment.progressPercentage != null}" class="izle-progress">
+          <div class="izle-progress-info">
+            <span>İlerleme</span>
+            <span th:text="${enrollment.progressPercentage} + '%'">0%</span>
+          </div>
+          <div class="izle-progress-bar">
+            <div class="izle-progress-fill"
+                 th:style="'width:' + ${enrollment.progressPercentage} + '%'"></div>
+          </div>
+        </div>
         <th:block th:each="v : ${allVideos}">
-          <a th:if="${!v.locked}"
-             th:href="@{/videolar/{id}(id=${v.id})}"
-             th:classappend="${v.id == video.id} ? ' active'"
+          <a th:href="${v.locked} ? 'javascript:void(0)' : @{/videolar/{id}(id=${v.id})}"
+             th:classappend="|${v.id == video.id ? 'active' : ''} ${v.locked ? 'locked' : ''}|"
              th:data-video-id="${v.id}"
              class="playlist-item">
             <div class="playlist-num" th:text="${v.orderIndex}">1</div>
             <span class="playlist-item-title" th:text="${v.title}">Video</span>
             <i th:if="${v.watched}" class="bi bi-check-circle-fill watch-check"></i>
+            <i th:if="${v.locked}" class="bi bi-lock-fill lock-icon-overlay"></i>
           </a>
-          <div th:if="${v.locked}"
-               th:data-video-id="${v.id}"
-               class="playlist-item playlist-locked"
-               style="opacity:0.5;cursor:not-allowed;">
-            <div class="playlist-num" th:text="${v.orderIndex}">1</div>
-            <span class="playlist-item-title" th:text="${v.title}">Video</span>
-            <i class="bi bi-lock-fill" style="color:var(--text-muted);flex-shrink:0;"></i>
-          </div>
         </th:block>
       </div>
 
@@ -190,79 +334,141 @@
 <script th:src="@{/js/main.js}"></script>
 <script th:inline="javascript">
 (function() {
-    var videoEl = document.querySelector('.video-player-wrap video');
-    if (!videoEl) return;
+    // ── Plyr Init ──
+    const player = new Plyr('#player', {
+        controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
+        settings: ['quality', 'speed'],
+        speed: { selected: 1, options: [0.5, 0.75, 1, 1.25, 1.5, 2] },
+        keyboard: { focused: true, global: true },
+        tooltips: { controls: true, seek: true }
+    });
+
+    // Move watermark inside Plyr container so it stays visible during fullscreen
+    const watermark = document.querySelector('.video-watermark');
+    const plyrContainer = document.querySelector('.plyr');
+    if (watermark && plyrContainer) {
+        plyrContainer.appendChild(watermark);
+    }
 
     var videoId = /*[[${video.id}]]*/ 0;
     var alreadyWatched = /*[[${alreadyWatched}]]*/ false;
     var marked = alreadyWatched;
-    var csrfMeta = document.querySelector('meta[name="_csrf"]');
-    var csrfPanel = document.querySelector('[data-csrf-token]');
-    var csrfToken = csrfMeta ? csrfMeta.getAttribute('content')
-                 : csrfPanel ? csrfPanel.getAttribute('data-csrf-token')
-                 : '';
-    var csrfHeader = csrfPanel ? csrfPanel.getAttribute('data-csrf-header') : 'X-CSRF-TOKEN';
 
-    videoEl.addEventListener('timeupdate', function() {
+    // CSRF Utility
+    function getCsrf() {
+        var meta = document.querySelector('meta[name="_csrf"]');
+        var panel = document.querySelector('[data-csrf-token]');
+        return {
+            token: meta ? meta.getAttribute('content') : (panel ? panel.dataset.csrfToken : ''),
+            header: panel ? panel.dataset.csrfHeader : 'X-CSRF-TOKEN'
+        };
+    }
+
+    // ── Watch Progress & Auto-Play ──
+    player.on('timeupdate', () => {
         if (marked) return;
-        if (videoEl.duration > 0 && videoEl.currentTime / videoEl.duration >= 0.8) {
-            marked = true;
-            fetch('/videolar/' + videoId + '/izlendi', {
-                method: 'POST',
-                headers: {
-                    [csrfHeader]: csrfToken,
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    // Tamamlandı badge'ini göster
-                    var progress = document.getElementById('watch-progress');
-                    if (progress) {
-                        progress.className = 'complete-btn done';
-                        progress.style = '';
-                        progress.innerHTML = '<i class="bi bi-check-circle-fill"></i> Tamamlandı';
-                        progress.id = 'watch-status';
-                    }
-                    // Playlist'te checkmark ekle
-                    var playlistItem = document.querySelector('.playlist-item.active');
-                    if (playlistItem && !playlistItem.querySelector('.watch-check')) {
-                        var check = document.createElement('i');
-                        check.className = 'bi bi-check-circle-fill watch-check';
-                        playlistItem.appendChild(check);
-                    }
-                    // Sonraki video kilidini aç
-                    var lockedBtn = document.getElementById('next-video-locked');
-                    if (lockedBtn) {
-                        var nextId = lockedBtn.getAttribute('data-id');
-                        var link = document.createElement('a');
-                        link.href = '/videolar/' + nextId;
-                        link.className = 'btn btn-primary';
-                        link.id = 'next-video-btn';
-                        link.innerHTML = 'Sonraki Video <i class="bi bi-arrow-right"></i>';
-                        lockedBtn.parentNode.replaceChild(link, lockedBtn);
-                    }
-                    // Playlist'te sonraki videonun kilidini aç
-                    var lockedItems = document.querySelectorAll('.playlist-locked');
-                    if (lockedItems.length > 0) {
-                        var first = lockedItems[0];
-                        var nextVideoId = first.getAttribute('data-video-id');
-                        var link = document.createElement('a');
-                        link.href = '/videolar/' + nextVideoId;
-                        link.className = 'playlist-item';
-                        link.setAttribute('data-video-id', nextVideoId);
-                        link.innerHTML = first.innerHTML;
-                        // Kilit ikonunu kaldır
-                        var lockIcon = link.querySelector('.bi-lock-fill');
-                        if (lockIcon) lockIcon.remove();
-                        first.parentNode.replaceChild(link, first);
-                    }
-                }
-            });
+        if (player.duration > 0 && player.currentTime / player.duration >= 0.8) {
+            markAsWatched();
         }
     });
+
+    player.on('ended', () => {
+        if (marked) {
+            handleAutoPlay();
+        } else {
+            // Eğer %80 olmadıysa ama bittiyse (manuel sarma vs) yine de marklayıp geçebiliriz
+            markAsWatched().then(handleAutoPlay);
+        }
+    });
+
+    function markAsWatched() {
+        if (marked) return Promise.resolve({success: true});
+        marked = true;
+        const csrf = getCsrf();
+        return fetch('/videolar/' + videoId + '/izlendi', {
+            method: 'POST',
+            headers: {
+                [csrf.header]: csrf.token,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                updateUIAsWatched();
+                return data;
+            }
+        });
+    }
+
+    function updateUIAsWatched() {
+        // Tamamlandı badge
+        var progress = document.getElementById('watch-progress');
+        if (progress) {
+            progress.className = 'complete-btn done';
+            progress.style = '';
+            progress.innerHTML = '<i class="bi bi-check-circle-fill"></i> Tamamlandı';
+            progress.id = 'watch-status';
+        }
+        // Sidebar checkmark
+        var playlistItem = document.querySelector('.playlist-item.active');
+        if (playlistItem && !playlistItem.querySelector('.watch-check')) {
+            var check = document.createElement('i');
+            check.className = 'bi bi-check-circle-fill watch-check';
+            playlistItem.appendChild(check);
+        }
+        // Next btn unlock
+        var lockedBtn = document.getElementById('next-video-locked');
+        if (lockedBtn) {
+            var nextId = lockedBtn.getAttribute('data-id');
+            var link = document.createElement('a');
+            link.href = '/videolar/' + nextId;
+            link.className = 'btn btn-primary';
+            link.id = 'next-video-btn';
+            link.innerHTML = 'Sonraki Video <i class="bi bi-arrow-right"></i>';
+            lockedBtn.parentNode.replaceChild(link, lockedBtn);
+        }
+        // Sidebar next unlock
+        var firstLocked = document.querySelector('.playlist-item.locked');
+        if (firstLocked) {
+            firstLocked.classList.remove('locked');
+            var nextVideoId = firstLocked.getAttribute('data-video-id');
+            firstLocked.href = '/videolar/' + nextVideoId;
+            var lockIcon = firstLocked.querySelector('.lock-icon-overlay');
+            if (lockIcon) lockIcon.remove();
+        }
+    }
+
+    function handleAutoPlay() {
+        const nextBtn = document.getElementById('next-video-btn');
+        if (nextBtn) {
+            showToast('Sonraki derse geçiliyor...', 'info');
+            setTimeout(() => {
+                window.location.href = nextBtn.href;
+            }, 2000);
+        }
+    }
+
+    // ── Theater Mode ──
+    window.toggleTheaterMode = function() {
+        const layout = document.querySelector('.video-layout');
+        const container = document.getElementById('player-container');
+        layout.classList.toggle('theater');
+        container.classList.toggle('theater');
+        window.dispatchEvent(new Event('resize')); // Recalculate plyr sizes
+    };
+
+    // ── Additional Keybinds ──
+    document.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+        if (e.key.toLowerCase() === 't') {
+            toggleTheaterMode();
+        }
+    });
+
 })();
+
 </script>
 </body>
 </html>

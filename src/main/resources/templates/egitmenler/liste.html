@@ -44,9 +44,8 @@
 
     <!-- Eğitmen var -->
     <div class="instructors-grid" th:if="${not #lists.isEmpty(instructors)}">
-      <a th:each="instructor : ${instructors}"
-         th:href="@{/egitmenler/{id}(id=${instructor.id})}"
-         class="instructor-card fade-in">
+      <div th:each="instructor : ${instructors}"
+           class="instructor-card fade-in">
         <div class="instructor-avatar">
           <div th:if="${instructor.photoUrl != null}" class="instructor-image" th:style="'background-image: url(' + @{${instructor.photoUrl}} + ');'"></div>
           <i th:unless="${instructor.photoUrl != null}" class="bi bi-person-circle"></i>
@@ -61,9 +60,8 @@
              th:text="${#strings.abbreviate(instructor.bio, 120)}">
             Kısa biyografi...
           </p>
-          <span class="instructor-cta">Profili Gör <i class="bi bi-arrow-right"></i></span>
         </div>
-      </a>
+      </div>
     </div>
 
     <!-- Eğitmen yok -->

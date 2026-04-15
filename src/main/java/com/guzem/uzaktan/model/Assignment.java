@@ -23,6 +23,11 @@ public class Assignment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(name = "version")
+    private Integer version;
+
+
     @Column(name = "title", nullable = false, length = 200)
     private String title;
 

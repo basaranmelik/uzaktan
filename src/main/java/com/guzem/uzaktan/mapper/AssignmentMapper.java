@@ -44,6 +44,8 @@ public class AssignmentMapper {
                 .assignmentMaxScore(s.getAssignment().getMaxScore())
                 .courseId(s.getAssignment().getCourse().getId())
                 .courseTitle(s.getAssignment().getCourse().getTitle())
+                .instructorId(s.getAssignment().getCourse().getInstructor() != null
+                        ? s.getAssignment().getCourse().getInstructor().getId() : null)
                 .userId(s.getUser().getId())
                 .userFullName(s.getUser().getFirstName() + " " + s.getUser().getLastName())
                 .textAnswer(s.getTextAnswer())
