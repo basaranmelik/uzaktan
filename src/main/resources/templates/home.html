@@ -399,6 +399,22 @@
       white-space: nowrap;
     }
 
+    .home-hero-visual {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 520px;
+    }
+
+    .home-hero-visual img {
+      width: 100%;
+      height: auto;
+      max-width: 100%;
+      display: block;
+      filter: drop-shadow(0 20px 40px rgba(0,0,0,0.15));
+    }
+
     @media (max-width: 1100px) {
       .home-hero-grid,
       .home-info-grid,
@@ -408,6 +424,10 @@
 
       .home-hero-stats {
         grid-template-columns: 1fr;
+      }
+
+      .home-hero-visual {
+        min-height: 380px;
       }
     }
 
@@ -466,53 +486,8 @@
           </div>
         </div>
       </div>
-      <div class="home-hero-panel fade-in-right">
-        <div class="home-panel-head">
-          <div>
-            <h3 class="home-panel-title">Yaklaşan Eğitimler</h3>
-            <div class="home-panel-subtitle">Gazi Üniversitesi güvencesiyle sunulan seçili programlar</div>
-          </div>
-          <div class="home-panel-chip">GUZEM Seçkisi</div>
-        </div>
-        <div class="home-preview-list" th:if="${not #lists.isEmpty(featuredCourses)}">
-          <a th:each="course, stat : ${featuredCourses}"
-             th:if="${stat.index < 3}"
-             th:href="@{/egitimler/{id}(id=${course.id})}"
-             class="home-preview-card">
-            <div class="home-preview-thumb">
-              <img th:if="${course.imagePath != null}"
-                   th:src="@{'/uploads/' + ${course.imagePath}}"
-                   th:alt="${course.title}">
-              <img th:if="${course.imagePath == null}"
-                   th:src="@{/images/gazi-logo.png}"
-                   th:alt="${course.title}"
-                   style="object-fit:contain;padding:1.3rem;background:rgba(255,255,255,0.06);">
-            </div>
-            <div>
-              <span class="home-preview-type"
-                    th:text="${course.courseTypeDisplayName != null ? course.courseTypeDisplayName : 'Eğitim'}">Eğitim</span>
-              <div class="home-preview-title" th:text="${course.title}">Kurs Başlığı</div>
-              <div class="home-preview-meta">
-                <span th:if="${course.startDate != null}">
-                  <i class="bi bi-calendar-event"></i>
-                  <span th:text="${#temporals.format(course.startDate, 'dd.MM.yyyy')}">Tarih</span>
-                </span>
-                <span th:if="${course.hours != null}">
-                  <i class="bi bi-clock"></i>
-                  <span th:text="${course.hours} + ' Saat'">0 Saat</span>
-                </span>
-                <span th:if="${course.instructorName != null}">
-                  <i class="bi bi-person-workspace"></i>
-                  <span th:text="${course.instructorName}">Eğitmen</span>
-                </span>
-              </div>
-            </div>
-          </a>
-        </div>
-        <div th:if="${#lists.isEmpty(featuredCourses)}"
-             style="padding:2.25rem 1rem;text-align:center;color:rgba(255,255,255,0.74);">
-          Yayınlanmış eğitimler burada gösterilecektir.
-        </div>
+      <div class="home-hero-visual fade-in-right">
+        <img th:src="@{/images/guzem_bckgrnd.png}" alt="Gazi Üniversitesi GUZEM">
       </div>
     </div>
   </div>
