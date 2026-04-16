@@ -1545,6 +1545,31 @@ p {
   color: rgba(255,255,255,0.85);
 }
 
+/* ---------- Admin Page Header ---------- */
+.admin-page-header {
+  text-align: left;
+}
+
+.admin-page-header .container {
+  position: relative;
+  z-index: 1;
+}
+
+.admin-page-header h1 {
+  margin-bottom: 0.5rem;
+}
+
+.admin-page-header p {
+  max-width: none;
+  margin: 0;
+}
+
+.admin-page-header .breadcrumb {
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
 /* ---------- Filter Bar ---------- */
 .filter-bar {
   display: flex;
@@ -3442,4 +3467,3 @@ textarea.form-control {
   .container            { max-width: 100%; }
   .course-detail-grid   { grid-template-columns: 1fr; }
 }
-

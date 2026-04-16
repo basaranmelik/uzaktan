@@ -10,84 +10,537 @@
   <title>Gazi Üniversitesi | Gazi Üniversitesi Online Eğitim Platformu</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .home-hero {
+      min-height: 100vh;
+      padding-top: var(--nav-height);
+      display: flex;
+      align-items: center;
+      background:
+        radial-gradient(circle at top right, rgba(123, 180, 255, 0.14), transparent 26%),
+        radial-gradient(circle at bottom left, rgba(18, 58, 103, 0.18), transparent 22%),
+        linear-gradient(135deg, #051426 0%, #0c2849 48%, #123a67 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .home-hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+      background-size: 42px 42px;
+      opacity: 0.14;
+      pointer-events: none;
+    }
+
+    .home-hero-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(340px, 0.9fr);
+      gap: 3.5rem;
+      align-items: center;
+    }
+
+    .home-hero-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.48rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.92);
+      font-size: 0.79rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 1.3rem;
+    }
+
+    .home-hero-title {
+      color: #ffffff;
+      font-size: clamp(2.7rem, 5.6vw, 4.8rem);
+      line-height: 1.04;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.1rem;
+    }
+
+    .home-hero-title span {
+      display: block;
+      color: #bfe0ff;
+    }
+
+    .home-hero-text {
+      color: rgba(255,255,255,0.78);
+      font-size: 1.08rem;
+      line-height: 1.8;
+      max-width: 640px;
+      margin-bottom: 1.7rem;
+    }
+
+    .home-hero-actions {
+      display: flex;
+      gap: 0.9rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .home-hero-stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.9rem;
+    }
+
+    .home-hero-stat {
+      padding: 1rem 1.05rem;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(12px);
+    }
+
+    .home-hero-stat strong {
+      display: block;
+      font-size: 1.22rem;
+      color: #ffffff;
+      margin-bottom: 0.22rem;
+    }
+
+    .home-hero-stat span {
+      color: rgba(255,255,255,0.72);
+      font-size: 0.82rem;
+      line-height: 1.5;
+    }
+
+    .home-hero-panel {
+      position: relative;
+      z-index: 1;
+      padding: 1.5rem;
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.16);
+      background: linear-gradient(180deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+      backdrop-filter: blur(16px);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    }
+
+    .home-panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .home-panel-title {
+      margin: 0;
+      color: #ffffff;
+      font-size: 1.16rem;
+      font-weight: 700;
+    }
+
+    .home-panel-subtitle {
+      color: rgba(255,255,255,0.68);
+      font-size: 0.84rem;
+      margin-top: 0.22rem;
+    }
+
+    .home-panel-chip {
+      padding: 0.42rem 0.82rem;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.16);
+      color: #ffffff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .home-preview-list {
+      display: grid;
+      gap: 0.85rem;
+    }
+
+    .home-preview-card {
+      display: grid;
+      grid-template-columns: 110px minmax(0, 1fr);
+      gap: 1rem;
+      align-items: center;
+      padding: 0.9rem;
+      border-radius: 12px;
+      background: rgba(5,20,42,0.3);
+      border: 1px solid rgba(255,255,255,0.12);
+      text-decoration: none;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .home-preview-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(191,224,255,0.46);
+      background: rgba(5,20,42,0.5);
+    }
+
+    .home-preview-thumb {
+      aspect-ratio: 16 / 10;
+      border-radius: 10px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .home-preview-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .home-preview-type {
+      display: inline-flex;
+      padding: 0.32rem 0.6rem;
+      border-radius: 5px;
+      background: rgba(255,255,255,0.14);
+      color: rgba(255,255,255,0.9);
+      font-size: 0.7rem;
+      font-weight: 700;
+      margin-bottom: 0.55rem;
+    }
+
+    .home-preview-title {
+      color: #ffffff;
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: 0.45rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .home-preview-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      color: rgba(255,255,255,0.7);
+      font-size: 0.78rem;
+    }
+
+    .home-band {
+      background: linear-gradient(180deg, #f5f8fc 0%, #ffffff 100%);
+    }
+
+    .home-info-grid,
+    .home-feature-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1.5rem;
+    }
+
+    .home-info-card,
+    .home-feature-card {
+      background: #ffffff;
+      border: 1px solid #e0e8f0;
+      border-radius: 14px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 24px rgba(12, 39, 71, 0.06);
+    }
+
+    .home-info-card i,
+    .home-feature-card .feature-icon {
+      margin-bottom: 1rem;
+    }
+
+    .home-info-card i {
+      width: 54px;
+      height: 54px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-size: 1.35rem;
+      color: #0d3a6b;
+      background: #eaf3fb;
+    }
+
+    .home-feature-card .feature-icon {
+      width: 52px;
+      height: 52px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      font-size: 1.4rem;
+      font-weight: 600;
+    }
+
+    .home-info-card h4,
+    .home-feature-card h4 {
+      color: #102a43;
+      margin-bottom: 0.55rem;
+    }
+
+    .home-info-card p,
+    .home-feature-card p {
+      margin: 0;
+      color: #55697d;
+      line-height: 1.75;
+      font-size: 0.95rem;
+    }
+
+    .home-featured-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+      gap: 2rem;
+    }
+
+    .home-featured-card {
+      text-decoration: none;
+      color: inherit;
+      background: #ffffff;
+      border: 1px solid #e0e8f0;
+      border-radius: 14px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(12, 39, 71, 0.06);
+      transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+    }
+
+    .home-featured-card:hover {
+      transform: translateY(-4px);
+      border-color: #d0dce8;
+      box-shadow: 0 12px 36px rgba(12, 39, 71, 0.1);
+    }
+
+    .home-featured-media {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      background: linear-gradient(135deg, #dfeaf5 0%, #eef4f9 100%);
+    }
+
+    .home-featured-media img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .home-featured-overlay {
+      position: absolute;
+      inset: auto 0 0 0;
+      padding: 1rem 1.1rem;
+      background: linear-gradient(180deg, transparent, rgba(6,20,37,0.76));
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: 1rem;
+    }
+
+    .home-featured-overlay span,
+    .home-featured-overlay strong {
+      color: #ffffff;
+      font-size: 0.76rem;
+      font-weight: 700;
+    }
+
+    .home-featured-body {
+      padding: 1.35rem;
+    }
+
+    .home-featured-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.55rem;
+      margin-bottom: 0.9rem;
+    }
+
+    .home-featured-tag {
+      padding: 0.35rem 0.7rem;
+      border-radius: 6px;
+      background: #eef5fb;
+      color: #17426d;
+      font-size: 0.73rem;
+      font-weight: 700;
+    }
+
+    .home-featured-title {
+      color: #102a43;
+      font-size: 1.18rem;
+      line-height: 1.42;
+      margin-bottom: 0.95rem;
+      min-height: 3.2em;
+    }
+
+    .home-featured-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding-top: 0.95rem;
+      border-top: 1px solid #e6edf5;
+    }
+
+    .home-featured-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.28rem;
+      color: #607487;
+      font-size: 0.84rem;
+    }
+
+    .home-featured-price {
+      color: #0d3a6b;
+      font-size: 1.18rem;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 1100px) {
+      .home-hero-grid,
+      .home-info-grid,
+      .home-feature-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .home-hero-stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .home-featured-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .home-preview-card {
+        grid-template-columns: 1fr;
+      }
+
+      .home-preview-thumb {
+        aspect-ratio: 16 / 9;
+      }
+    }
+  </style>
 </head>
 <body>
 
 <div th:replace="~{fragments/navbar :: navbar}" th:with="activeMenu='home'"></div>
 
 <!-- Hero -->
-<section class="hero">
+<section class="home-hero">
   <div class="container">
-    <div class="hero-grid">
-      <div class="hero-content">
-        <h1>Geleceğinizi <span>Şekillendirin</span></h1>
-        <p>Gazi Üniversitesi uzman eğitmenleriyle online eğitimlere katılın, yeni beceriler kazanın ve kariyerinizde fark yaratın.</p>
-        <div class="hero-actions">
-          <a th:href="@{/egitimler}" class="btn btn-primary btn-lg">Eğitimleri Keşfet →</a>
-          <a th:href="@{/hakkimizda}" class="btn btn-outline btn-lg">Daha Fazla Bilgi</a>
+    <div class="home-hero-grid">
+      <div class="hero-content fade-in-left">
+        <div class="home-hero-kicker">
+          <i class="bi bi-shield-check"></i> Gazi Üniversitesi Uzaktan Eğitim Platformu
         </div>
-        <div class="hero-stats">
-          <div class="hero-stat">
-            <div class="stat-number" data-count="15000" data-suffix="+">0</div>
-            <div class="stat-label">Aktif Öğrenci</div>
+        <h1 class="home-hero-title">
+          Yıldızların parladığı değil,
+          <span>kariyerlerin güçlendiği noktadasınız</span>
+        </h1>
+        <p class="home-hero-text">
+          Gazi Üniversitesi'nin akademik güvencesiyle hazırlanan sertifikalı eğitim programlarına erişin.
+          Uzman eğitmenlerle bilgi birikiminizi geliştirin, güncel içeriklerle mesleki yetkinliğinizi artırın
+          ve profesyonel gelişim yolculuğunuzu güçlü bir kurum desteğiyle sürdürün.
+        </p>
+        <div class="home-hero-actions">
+          <a th:href="@{/egitimler}" class="btn btn-primary btn-lg">Tüm Eğitimler</a>
+          <a th:href="@{/iletisim}" class="btn btn-outline btn-lg">Canlı Destek</a>
+        </div>
+        <div class="home-hero-stats">
+          <div class="home-hero-stat">
+            <strong data-count="15000" data-suffix="+">0</strong>
+            <span>Aktif öğrenci ve katılımcı ağı</span>
           </div>
-          <div class="hero-stat">
-            <div class="stat-number" data-count="200" data-suffix="+">0</div>
-            <div class="stat-label">Online Eğitim</div>
+          <div class="home-hero-stat">
+            <strong data-count="200" data-suffix="+">0</strong>
+            <span>Yayınlanan çevrim içi eğitim programı</span>
           </div>
-          <div class="hero-stat">
-            <div class="stat-number" data-count="50" data-suffix="+">0</div>
-            <div class="stat-label">Uzman Eğitmen</div>
+          <div class="home-hero-stat">
+            <strong data-count="50" data-suffix="+">0</strong>
+            <span>Alan deneyimi güçlü uzman eğitmen</span>
           </div>
         </div>
       </div>
-      <div class="hero-visual">
-        <div class="hero-slider" id="heroSlider">
-          <div class="hero-slide active">
-            <div style="display:flex;align-items:center;justify-content:center;height:300px;background:var(--primary-50);border-radius:16px;font-size:5rem;color:var(--primary-600);"><i class="bi bi-mortarboard-fill"></i></div>
+      <div class="home-hero-panel fade-in-right">
+        <div class="home-panel-head">
+          <div>
+            <h3 class="home-panel-title">Yaklaşan Eğitimler</h3>
+            <div class="home-panel-subtitle">Gazi Üniversitesi güvencesiyle sunulan seçili programlar</div>
           </div>
-          <div class="hero-slide">
-            <div style="display:flex;align-items:center;justify-content:center;height:300px;background:var(--primary-100);border-radius:16px;font-size:5rem;color:var(--primary-600);"><i class="bi bi-collection-fill"></i></div>
-          </div>
-          <div class="hero-slide">
-            <div style="display:flex;align-items:center;justify-content:center;height:300px;background:var(--primary-50);border-radius:16px;font-size:5rem;color:var(--primary-600);"><i class="bi bi-trophy-fill"></i></div>
-          </div>
+          <div class="home-panel-chip">GUZEM Seçkisi</div>
         </div>
-        <button class="slider-btn slider-prev" id="sliderPrev">&#8249;</button>
-        <button class="slider-btn slider-next" id="sliderNext">&#8250;</button>
-        <div class="slider-dots" id="sliderDots">
-          <span class="slider-dot active"></span>
-          <span class="slider-dot"></span>
-          <span class="slider-dot"></span>
+        <div class="home-preview-list" th:if="${not #lists.isEmpty(featuredCourses)}">
+          <a th:each="course, stat : ${featuredCourses}"
+             th:if="${stat.index < 3}"
+             th:href="@{/egitimler/{id}(id=${course.id})}"
+             class="home-preview-card">
+            <div class="home-preview-thumb">
+              <img th:if="${course.imagePath != null}"
+                   th:src="@{'/uploads/' + ${course.imagePath}}"
+                   th:alt="${course.title}">
+              <img th:if="${course.imagePath == null}"
+                   th:src="@{/images/gazi-logo.png}"
+                   th:alt="${course.title}"
+                   style="object-fit:contain;padding:1.3rem;background:rgba(255,255,255,0.06);">
+            </div>
+            <div>
+              <span class="home-preview-type"
+                    th:text="${course.courseTypeDisplayName != null ? course.courseTypeDisplayName : 'Eğitim'}">Eğitim</span>
+              <div class="home-preview-title" th:text="${course.title}">Kurs Başlığı</div>
+              <div class="home-preview-meta">
+                <span th:if="${course.startDate != null}">
+                  <i class="bi bi-calendar-event"></i>
+                  <span th:text="${#temporals.format(course.startDate, 'dd.MM.yyyy')}">Tarih</span>
+                </span>
+                <span th:if="${course.hours != null}">
+                  <i class="bi bi-clock"></i>
+                  <span th:text="${course.hours} + ' Saat'">0 Saat</span>
+                </span>
+                <span th:if="${course.instructorName != null}">
+                  <i class="bi bi-person-workspace"></i>
+                  <span th:text="${course.instructorName}">Eğitmen</span>
+                </span>
+              </div>
+            </div>
+          </a>
+        </div>
+        <div th:if="${#lists.isEmpty(featuredCourses)}"
+             style="padding:2.25rem 1rem;text-align:center;color:rgba(255,255,255,0.74);">
+          Yayınlanmış eğitimler burada gösterilecektir.
         </div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Stats -->
-<section class="stats-bar">
+<!-- Kurumsal Bilgi -->
+<section class="section home-band">
   <div class="container">
-    <div class="stats-grid">
-      <div class="stat-card fade-in">
-        <div class="stat-icon"><i class="bi bi-mortarboard-fill"></i></div>
-        <div class="stat-number" data-count="15000" data-suffix="+">0</div>
-        <div class="stat-label">Mezun Öğrenci</div>
+    <div class="section-header fade-in">
+      <span class="section-badge">Kurumsal Yapı</span>
+      <h2>Güven veren, profesyonel ve ölçülü bir eğitim deneyimi</h2>
+      <p>Akademik kalite, planlı içerik yapısı ve dijital erişim kolaylığını tek platformda birleştiriyoruz.</p>
+    </div>
+    <div class="home-info-grid">
+      <div class="home-info-card fade-in">
+        <i class="bi bi-building-check"></i>
+        <h4>Kurumsal Güvence</h4>
+        <p>Eğitimler; üniversitelerin, kurumların ve profesyonel gelişim hedefi olan bireylerin beklentilerine uygun biçimde sunulur.</p>
       </div>
-      <div class="stat-card fade-in">
-        <div class="stat-icon"><i class="bi bi-collection-fill"></i></div>
-        <div class="stat-number" data-count="200" data-suffix="+">0</div>
-        <div class="stat-label">Online Eğitim</div>
+      <div class="home-info-card fade-in">
+        <i class="bi bi-journal-text"></i>
+        <h4>Planlı İçerik Kurgusu</h4>
+        <p>Program yapıları; konu akışı, süre, eğitmen katkısı ve uygulama dengesini koruyacak şekilde düzenlenir.</p>
       </div>
-      <div class="stat-card fade-in">
-        <div class="stat-icon"><i class="bi bi-person-workspace"></i></div>
-        <div class="stat-number" data-count="50" data-suffix="+">0</div>
-        <div class="stat-label">Uzman Eğitmen</div>
-      </div>
-      <div class="stat-card fade-in">
-        <div class="stat-icon"><i class="bi bi-star-fill"></i></div>
-        <div class="stat-number" data-count="98" data-suffix="%">0</div>
-        <div class="stat-label">Memnuniyet Oranı</div>
+      <div class="home-info-card fade-in">
+        <i class="bi bi-laptop"></i>
+        <h4>Sürekli Erişim</h4>
+        <p>Katılımcılar eğitimlere farklı cihazlardan düzenli, izlenebilir ve kullanıcı dostu bir deneyimle erişir.</p>
       </div>
     </div>
   </div>
@@ -99,24 +552,51 @@
     <div class="section-header fade-in">
       <span class="section-badge">Popüler Eğitimler</span>
       <h2>Öne Çıkan Eğitimlerimiz</h2>
-      <p>En çok tercih edilen eğitimlerimizi keşfedin.</p>
+      <p>Görsel, tarih ve program bilgileriyle öne çıkan eğitimlerimizi detaylı biçimde inceleyin.</p>
     </div>
 
-    <div class="courses-grid" th:if="${not #lists.isEmpty(featuredCourses)}">
+    <div class="home-featured-grid" th:if="${not #lists.isEmpty(featuredCourses)}">
       <a th:each="course : ${featuredCourses}"
          th:href="@{/egitimler/{id}(id=${course.id})}"
-         class="card course-card fade-in">
-        <div class="card-body">
-          <span class="card-category" th:text="${course.categoryDisplayName}">Kategori</span>
-          <h4 class="card-title" th:text="${course.title}">Kurs Başlığı</h4>
-          <div class="card-meta">
-            <div class="meta-item" th:if="${course.instructorName != null}">
-              <i class="bi bi-person-workspace"></i> <span th:text="${course.instructorName}">Eğitmen</span>
+         class="home-featured-card fade-in">
+        <div class="home-featured-media">
+          <img th:if="${course.imagePath != null}"
+               th:src="@{'/uploads/' + ${course.imagePath}}"
+               th:alt="${course.title}">
+          <img th:if="${course.imagePath == null}"
+               th:src="@{/images/gazi-logo.png}"
+               th:alt="${course.title}"
+               style="object-fit:contain;padding:2rem;">
+          <div class="home-featured-overlay">
+            <span th:text="${course.categoryDisplayName}">Kategori</span>
+            <strong th:text="${course.courseTypeDisplayName != null ? course.courseTypeDisplayName : 'Eğitim'}">Eğitim</strong>
+          </div>
+        </div>
+        <div class="home-featured-body">
+          <div class="home-featured-tags">
+            <span class="home-featured-tag" th:if="${course.instructorName != null}">
+              <i class="bi bi-person-workspace"></i>
+              <span th:text="${course.instructorName}">Eğitmen</span>
+            </span>
+            <span class="home-featured-tag" th:if="${course.hours != null}">
+              <i class="bi bi-clock"></i>
+              <span th:text="${course.hours} + ' Saat'">0 Saat</span>
+            </span>
+            <span class="home-featured-tag" th:if="${course.startDate != null}">
+              <i class="bi bi-calendar3"></i>
+              <span th:text="${#temporals.format(course.startDate, 'dd.MM.yyyy')}">Tarih</span>
+            </span>
+          </div>
+          <h4 class="home-featured-title" th:text="${course.title}">Kurs Başlığı</h4>
+          <div class="home-featured-footer">
+            <div class="home-featured-meta">
+              <span>Gazi Üniversitesi</span>
+              <span th:if="${course.startDate != null and course.endDate != null}"
+                    th:text="'Başlangıç-Bitiş ' + ${#temporals.format(course.startDate, 'dd.MM.yyyy')} + ' / ' + ${#temporals.format(course.endDate, 'dd.MM.yyyy')}">Tarih</span>
+              <span th:if="${course.startDate != null and course.endDate == null}"
+                    th:text="'Başlangıç ' + ${#temporals.format(course.startDate, 'dd.MM.yyyy')}">Tarih</span>
             </div>
-            <div class="meta-item" th:if="${course.hours != null}">
-              <i class="bi bi-clock"></i> <span th:text="${course.hours} + ' Saat'">0 Saat</span>
-            </div>
-            <span class="card-price"
+            <span class="home-featured-price"
                   th:text="${course.price == null or course.price.signum() == 0} ? 'Ücretsiz' : '₺' + ${#numbers.formatDecimal(course.price, 0, 'COMMA', 0, 'POINT')}">
               ₺0
             </span>
@@ -130,7 +610,7 @@
     </div>
 
     <div class="text-center mt-3 fade-in">
-      <a th:href="@{/egitimler}" class="btn btn-secondary">Tüm Eğitimleri Gör →</a>
+      <a th:href="@{/egitimler}" class="btn btn-secondary">Tüm Eğitimleri Gör</a>
     </div>
   </div>
 </section>
@@ -140,39 +620,39 @@
   <div class="container">
     <div class="section-header fade-in">
       <span class="section-badge">Neden GUZEM?</span>
-      <h2>Size Sunduğumuz Avantajlar</h2>
-      <p>Modern eğitim anlayışımızla fark yaratan özelliklerimiz.</p>
+      <h2>Katılımcılar için tasarlanmış güçlü bir eğitim altyapısı</h2>
+      <p>Akademik derinlik, uygulama odaklı içerik ve sürdürülebilir dijital deneyimi aynı yapıda sunuyoruz.</p>
     </div>
-    <div class="features-grid">
-      <div class="feature-card fade-in">
+    <div class="home-feature-grid">
+      <div class="home-feature-card fade-in">
         <div class="feature-icon" style="background:var(--primary-50);color:var(--primary-500);"><i class="bi bi-bullseye"></i></div>
-        <h4>Pratiğe Dayalı Eğitim</h4>
-        <p>Gerçek dünya projeleriyle öğrenin, portfolyonuzu güçlendirin.</p>
+        <h4>Uygulamaya Dönük İçerik</h4>
+        <p>Gerçek senaryolara yakın konu akışlarıyla teorik bilginin pratiğe dönüşmesini destekler.</p>
       </div>
-      <div class="feature-card fade-in">
-        <div class="feature-icon" style="background:var(--primary-100);color:var(--accent-600);"><i class="bi bi-person-workspace"></i></div>
-        <h4>Uzman Eğitmenler</h4>
-        <p>Gazi Üniversitesi'nin deneyimli akademisyenlerinden öğrenin.</p>
+      <div class="home-feature-card fade-in">
+        <div class="feature-icon" style="background:var(--primary-100);color:#0d3a6b;"><i class="bi bi-person-workspace"></i></div>
+        <h4>Uzman Eğitmen Katkısı</h4>
+        <p>Alanında bilgi ve deneyim sahibi eğitmenlerle içerik kalitesini akademik çizgide sürdürür.</p>
       </div>
-      <div class="feature-card fade-in">
-        <div class="feature-icon" style="background:#fff4e6;color:#e8590c;"><i class="bi bi-phone-fill"></i></div>
-        <h4>Her Yerden Erişim</h4>
-        <p>Mobil, tablet veya bilgisayarınızdan istediğiniz zaman erişin.</p>
+      <div class="home-feature-card fade-in">
+        <div class="feature-icon" style="background:#fff4e6;color:#d97706;"><i class="bi bi-collection-play"></i></div>
+        <h4>Planlı Program Yapısı</h4>
+        <p>Ders süresi, içerik yoğunluğu ve ilerleme yapısı kontrol altında tutularak daha verimli bir deneyim sağlanır.</p>
       </div>
-      <div class="feature-card fade-in">
-        <div class="feature-icon" style="background:#f3f0ff;color:#7950f2;"><i class="bi bi-trophy-fill"></i></div>
-        <h4>Sertifikalı Eğitim</h4>
-        <p>Eğitimlerinizi tamamlayın, Gazi Üniversitesi onaylı sertifika alın.</p>
+      <div class="home-feature-card fade-in">
+        <div class="feature-icon" style="background:#eef7ff;color:#1d4f8c;"><i class="bi bi-laptop"></i></div>
+        <h4>Esnek Dijital Erişim</h4>
+        <p>Katılımcılar farklı cihazlardan platforma düzenli şekilde ulaşır, eğitim sürecini kendi temposunda sürdürür.</p>
       </div>
-      <div class="feature-card fade-in">
-        <div class="feature-icon" style="background:#fff5f5;color:#e03131;"><i class="bi bi-infinity"></i></div>
-        <h4>Ömür Boyu Erişim</h4>
-        <p>Kayıt olduğunuz eğitimlere süresiz erişim imkanı.</p>
+      <div class="home-feature-card fade-in">
+        <div class="feature-icon" style="background:#fff5f5;color:#c2410c;"><i class="bi bi-award"></i></div>
+        <h4>Belgelendirme ve Takip</h4>
+        <p>Program süreci, katılım ve tamamlanma takibiyle daha şeffaf ve raporlanabilir bir yapı sunar.</p>
       </div>
-      <div class="feature-card fade-in">
-        <div class="feature-icon" style="background:#e7f5ff;color:#1c7ed6;"><i class="bi bi-chat-square-dots-fill"></i></div>
-        <h4>Topluluk Desteği</h4>
-        <p>Eğitmen ve diğer öğrencilerle etkileşimde kalın.</p>
+      <div class="home-feature-card fade-in">
+        <div class="feature-icon" style="background:#eef7ff;color:#175ea8;"><i class="bi bi-shield-check"></i></div>
+        <h4>Güvenilir Platform Deneyimi</h4>
+        <p>Kurumsal kimliğe uygun, düzenli ve profesyonel arayüz ile eğitim yönetimi tek merkezden ilerler.</p>
       </div>
     </div>
   </div>
@@ -182,14 +662,14 @@
 <section class="cta-section">
   <div class="container">
     <div class="cta-content fade-in">
-      <h2>Öğrenmeye Başlamaya Hazır mısınız?</h2>
-      <p>Hemen kayıt olun ve yüzlerce eğitime erişim kazanın.</p>
+      <h2>Profesyonel gelişim yolculuğunuza bugün başlayın</h2>
+      <p>Kurumsal yaklaşımla hazırlanan eğitim programlarımızı inceleyin ve hedeflerinize uygun içeriklerle ilerleyin.</p>
       <div class="cta-actions">
         <span sec:authorize="isAnonymous()">
           <a th:href="@{/kayit-ol}" class="btn btn-primary btn-lg">Ücretsiz Kayıt Ol</a>
         </span>
         <span sec:authorize="isAuthenticated()">
-          <a th:href="@{/egitimler}" class="btn btn-primary btn-lg">Eğitimleri Keşfet</a>
+          <a th:href="@{/egitimler}" class="btn btn-primary btn-lg">Eğitimleri İncele</a>
         </span>
         <a th:href="@{/iletisim}" class="btn btn-outline btn-lg">Bize Ulaşın</a>
       </div>
