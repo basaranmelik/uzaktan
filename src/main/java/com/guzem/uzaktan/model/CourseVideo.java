@@ -42,7 +42,7 @@ public class CourseVideo {
     @Column(name = "original_file_name", nullable = false)
     private String originalFileName;
 
-    @Column(name = "duration_seconds")
+    @Column(name = "duration_seconds", nullable = true)
     private Integer durationSeconds;
 
     @CreationTimestamp

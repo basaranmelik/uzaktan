@@ -32,23 +32,23 @@ public class VideoWatch {
     @Column(name = "watched_at", updatable = false)
     private LocalDateTime watchedAt;
 
-    @Column(name = "completed", nullable = false)
+    @Column(name = "completed", nullable = false, columnDefinition = "BIT DEFAULT 0")
     @Builder.Default
     private boolean completed = false;
 
-    @Column(name = "watch_time_seconds", nullable = false)
+    @Column(name = "watch_time_seconds", nullable = false, columnDefinition = "INT DEFAULT 0")
     @Builder.Default
     private int watchTimeSeconds = 0;
 
-    @Column(name = "max_position_seconds", nullable = false)
+    @Column(name = "max_position_seconds", nullable = false, columnDefinition = "INT DEFAULT 0")
     @Builder.Default
     private int maxPositionSeconds = 0;
 
-    @Column(name = "seek_count", nullable = false)
+    @Column(name = "seek_count", nullable = false, columnDefinition = "INT DEFAULT 0")
     @Builder.Default
     private int seekCount = 0;
 
-    @Column(name = "authentic", nullable = false)
+    @Column(name = "authentic", nullable = false, columnDefinition = "BIT DEFAULT 0")
     @Builder.Default
     private boolean authentic = false;
 }
