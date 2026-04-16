@@ -91,6 +91,7 @@ public class AdminCourseController {
         dto.setCourseType(course.getCourseType());
         dto.setLocation(course.getLocation());
         dto.setCourseSchedule(course.getCourseSchedule());
+        dto.setManualCurriculum(course.getManualCurriculum());
         dto.setCertificateDeadline(course.getCertificateDeadline());
         model.addAttribute("courseUpdateRequest", dto);
         model.addAttribute("categories", CourseCategory.values());

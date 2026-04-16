@@ -74,6 +74,10 @@ public class Course {
     @Column(name = "course_schedule", length = 300)
     private String courseSchedule;
 
+    @Nationalized
+    @Column(name = "manual_curriculum", columnDefinition = "NVARCHAR(MAX)")
+    private String manualCurriculum;
+
     @Column(name = "certificate_deadline")
     private LocalDate certificateDeadline;
 

@@ -265,6 +265,19 @@
         </div>
       </div>
 
+      <!-- Manuel Müfredat (Yüzyüze + Uzaktan Örgün) -->
+      <div class="form-section" data-show-for="FACE_TO_FACE,REMOTE_FORMAL" style="display:none;">
+        <div class="form-section-title"><i class="bi bi-list-check"></i> Müfredat</div>
+        <div class="form-group">
+          <label>Müfredat Maddeleri</label>
+          <textarea th:field="*{manualCurriculum}" class="form-control" rows="8"
+                    placeholder="Her satıra bir madde yazın"></textarea>
+          <div class="current-val" th:if="${course.manualCurriculum != null}">
+            <i class="bi bi-info-circle"></i> Her satır kurs detayında ayrı madde olarak gösterilir.
+          </div>
+        </div>
+      </div>
+
       <!-- Konum (Sadece Yüzyüze) -->
       <div class="form-section" data-show-for="FACE_TO_FACE" style="display:none;">
         <div class="form-section-title"><i class="bi bi-geo-alt-fill"></i> Eğitim Yeri</div>

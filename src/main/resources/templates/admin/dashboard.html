@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr" xmlns:th="http://www.thymeleaf.org">
+
 <head>
   <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
 
@@ -15,6 +16,7 @@
       gap: 1rem;
       margin-bottom: 2.5rem;
     }
+
     .admin-stat {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -24,29 +26,77 @@
       align-items: center;
       gap: 1rem;
     }
+
     .admin-stat-icon {
-      width: 48px; height: 48px;
+      width: 48px;
+      height: 48px;
       border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       font-size: 1.4rem;
       flex-shrink: 0;
     }
-    .asi-blue   { background: #dbe4ff; color: #364fc7; }
-    .asi-green  { background: #d3f9d8; color: #2b8a3e; }
-    .asi-orange { background: #fff4e6; color: #e8590c; }
-    .asi-teal   { background: #e6fcf5; color: #099268; }
-    .asi-purple { background: #f3d9fa; color: #862e9c; }
-    .asi-gray   { background: #f1f3f5; color: #495057; }
-    .asi-red    { background: #fff5f5; color: #c92a2a; }
-    .admin-stat-body { min-width: 0; }
-    .admin-stat-num  { font-size: 1.75rem; font-weight: 800; color: var(--text); line-height: 1; }
-    .admin-stat-lbl  { font-size: 0.78rem; color: var(--text-muted); margin-top: 3px; font-weight: 500; }
+
+    .asi-blue {
+      background: #dbe4ff;
+      color: #364fc7;
+    }
+
+    .asi-green {
+      background: #d3f9d8;
+      color: #2b8a3e;
+    }
+
+    .asi-orange {
+      background: #fff4e6;
+      color: #e8590c;
+    }
+
+    .asi-teal {
+      background: #e6fcf5;
+      color: #099268;
+    }
+
+    .asi-purple {
+      background: #f3d9fa;
+      color: #862e9c;
+    }
+
+    .asi-gray {
+      background: #f1f3f5;
+      color: #495057;
+    }
+
+    .asi-red {
+      background: #fff5f5;
+      color: #c92a2a;
+    }
+
+    .admin-stat-body {
+      min-width: 0;
+    }
+
+    .admin-stat-num {
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1;
+    }
+
+    .admin-stat-lbl {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      font-weight: 500;
+    }
 
     .admin-shortcut-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 1rem;
     }
+
     .admin-shortcut {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -56,19 +106,32 @@
       text-decoration: none;
       color: inherit;
       transition: border-color 0.2s, box-shadow 0.2s, transform 0.15s;
-      display: flex; flex-direction: column; align-items: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
+
     .admin-shortcut:hover {
       border-color: var(--primary-400);
-      box-shadow: 0 4px 16px rgba(17,58,113,0.1);
+      box-shadow: 0 4px 16px rgba(17, 58, 113, 0.1);
       transform: translateY(-2px);
     }
+
     .admin-shortcut .sc-icon {
       font-size: 2.2rem;
       margin-bottom: 0.75rem;
     }
-    .admin-shortcut h4 { margin: 0 0 0.25rem; font-size: 0.95rem; }
-    .admin-shortcut p  { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+
+    .admin-shortcut h4 {
+      margin: 0 0 0.25rem;
+      font-size: 0.95rem;
+    }
+
+    .admin-shortcut p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
 
     .admin-section-title {
       font-size: 0.72rem;
@@ -79,189 +142,245 @@
       margin: 0 0 1rem 2px;
     }
 
-    .status-bar-wrap { margin-bottom: 2.5rem; }
-    .status-bar-row  { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.6rem; }
-    .status-bar-label { width: 110px; font-size: 0.82rem; font-weight: 600; color: var(--text-alt); flex-shrink: 0; }
-    .status-bar-track { flex: 1; height: 8px; background: var(--gray-100); border-radius: 99px; overflow: hidden; }
-    .status-bar-fill  { height: 100%; border-radius: 99px; transition: width 0.6s; }
-    .status-bar-count { font-size: 0.82rem; font-weight: 700; color: var(--text-muted); width: 32px; text-align: right; flex-shrink: 0; }
+    .status-bar-wrap {
+      margin-bottom: 2.5rem;
+    }
+
+    .status-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .status-bar-label {
+      width: 110px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-alt);
+      flex-shrink: 0;
+    }
+
+    .status-bar-track {
+      flex: 1;
+      height: 8px;
+      background: var(--gray-100);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .status-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.6s;
+    }
+
+    .status-bar-count {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      width: 32px;
+      text-align: right;
+      flex-shrink: 0;
+    }
   </style>
 </head>
+
 <body>
-<div th:replace="~{fragments/navbar :: navbar}"></div>
+  <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<section class="page-header">
-  <div class="container">
-    <h1><i class="bi bi-gear-fill"></i> Admin Paneli</h1>
-    <p>Platform genelinde istatistikler ve hızlı yönetim erişimi.</p>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container">
-
-
-
-    <!-- ── İstatistik Kartları ── -->
-    <div class="admin-section-title" style="margin-bottom:0.75rem; font-size:0.85rem; color:var(--primary-700);"><i class="bi bi-people-fill"></i> Kullanıcı İstatistikleri</div>
-    <div class="admin-stat-grid">
-      <div class="admin-stat fade-in">
-        <div class="admin-stat-icon asi-blue"><i class="bi bi-people-fill"></i></div>
-        <div class="admin-stat-body">
-          <div class="admin-stat-num" th:text="${totalUsers}">0</div>
-          <div class="admin-stat-lbl">Toplam Öğrenci</div>
-        </div>
-      </div>
-
-      <div class="admin-stat fade-in">
-        <div class="admin-stat-icon asi-red"><i class="bi bi-person-video3"></i></div>
-        <div class="admin-stat-body">
-          <div class="admin-stat-num" th:text="${totalInstructors ?: 0}">0</div>
-          <div class="admin-stat-lbl">Aktif Eğitmen</div>
-        </div>
-      </div>
-
-      <div class="admin-stat fade-in">
-        <div class="admin-stat-icon asi-teal"><i class="bi bi-person-plus-fill"></i></div>
-        <div class="admin-stat-body">
-          <div class="admin-stat-num" th:text="${totalEnrollments ?: 0}">0</div>
-          <div class="admin-stat-lbl">Toplam Kayıt</div>
-        </div>
-      </div>
-
-      <div class="admin-stat fade-in">
-        <div class="admin-stat-icon asi-orange"><i class="bi bi-hourglass-split"></i></div>
-        <div class="admin-stat-body">
-          <div class="admin-stat-num" th:text="${pendingEnrollments ?: 0}">0</div>
-          <div class="admin-stat-lbl">Onay Bekleyen Kayıt</div>
-        </div>
-      </div>
+  <section class="page-header">
+    <div class="container">
+      <h1><i class="bi bi-gear-fill"></i> Admin Paneli</h1>
+      <p>Platform genelinde istatistikler ve hızlı yönetim erişimi.</p>
     </div>
+  </section>
 
-    <div class="admin-section-title" style="margin-bottom:0.75rem; font-size:0.85rem; color:var(--primary-700);"><i class="bi bi-journal-bookmark-fill"></i> Eğitim İstatistikleri</div>
-    <div class="admin-stat-grid">
-      <!-- Genel Toplam Kurs -->
-      <div class="admin-stat fade-in" style="border-color:#339af0; background:#f8f9fa;">
-        <div class="admin-stat-icon asi-blue"><i class="bi bi-stack"></i></div>
-        <div class="admin-stat-body">
-          <div class="admin-stat-num" th:text="${totalCourses}" style="color:#1864ab;">0</div>
-          <div class="admin-stat-lbl" style="color:#1864ab; font-weight:700;">Toplam Sistem Kursu</div>
+  <section class="section">
+    <div class="container">
+
+
+
+      <!-- ── İstatistik Kartları ── -->
+      <div class="admin-section-title" style="margin-bottom:0.75rem; font-size:0.85rem; color:var(--primary-700);"><i
+          class="bi bi-people-fill"></i> Kullanıcı İstatistikleri</div>
+      <div class="admin-stat-grid">
+        <div class="admin-stat fade-in">
+          <div class="admin-stat-icon asi-blue"><i class="bi bi-people-fill"></i></div>
+          <div class="admin-stat-body">
+            <div class="admin-stat-num" th:text="${totalUsers}">0</div>
+            <div class="admin-stat-lbl">Toplam Öğrenci</div>
+          </div>
+        </div>
+
+        <div class="admin-stat fade-in">
+          <div class="admin-stat-icon asi-red"><i class="bi bi-person-video3"></i></div>
+          <div class="admin-stat-body">
+            <div class="admin-stat-num" th:text="${totalInstructors ?: 0}">0</div>
+            <div class="admin-stat-lbl">Aktif Eğitmen</div>
+          </div>
+        </div>
+
+        <div class="admin-stat fade-in">
+          <div class="admin-stat-icon asi-teal"><i class="bi bi-person-plus-fill"></i></div>
+          <div class="admin-stat-body">
+            <div class="admin-stat-num" th:text="${totalEnrollments ?: 0}">0</div>
+            <div class="admin-stat-lbl">Toplam Kayıt</div>
+          </div>
+        </div>
+
+        <div class="admin-stat fade-in">
+          <div class="admin-stat-icon asi-orange"><i class="bi bi-hourglass-split"></i></div>
+          <div class="admin-stat-body">
+            <div class="admin-stat-num" th:text="${pendingEnrollments ?: 0}">0</div>
+            <div class="admin-stat-lbl">Onay Bekleyen Kayıt</div>
+          </div>
         </div>
       </div>
 
-      <div th:each="entry : ${courseCounts}" class="admin-stat fade-in">
-        <div class="admin-stat-icon"
-             th:classappend="${entry.key.name() == 'PUBLISHED'}    ? ' asi-green'  :
+      <!-- ── Kurs Türü İstatistikleri ── -->
+      <div class="admin-section-title" style="margin-bottom:0.75rem; font-size:0.85rem; color:var(--primary-700);"><i class="bi bi-display"></i> Kurs Dağılımları ve Türleri</div>
+      <div class="admin-stat-grid" th:if="${typeCounts != null and !#maps.isEmpty(typeCounts)}">
+        
+        <!-- Genel Toplam Kurs -->
+        <div class="admin-stat fade-in" style="border-color:#339af0; background:#f8f9fa;">
+          <div class="admin-stat-icon asi-blue"><i class="bi bi-stack"></i></div>
+          <div class="admin-stat-body">
+            <div class="admin-stat-num" th:text="${totalCourses}" style="color:#1864ab;">0</div>
+            <div class="admin-stat-lbl" style="color:#1864ab; font-weight:700;">Toplam Sistem Kursu</div>
+          </div>
+        </div>
+        
+        <div th:each="entry : ${typeCounts}" class="admin-stat fade-in">
+          <div class="admin-stat-icon" th:classappend="${entry.key.name() == 'ONLINE'} ? ' asi-blue' :
+                             (${entry.key.name() == 'FACE_TO_FACE'} ? ' asi-green' : ' asi-purple')">
+            <i class="bi" th:classappend="${entry.key.name() == 'ONLINE'} ? ' bi-laptop' :
+                                       (${entry.key.name() == 'FACE_TO_FACE'} ? ' bi-people-fill' : ' bi-building')"></i>
+          </div>
+          <div class="admin-stat-body">
+            <div class="admin-stat-num" th:text="${entry.value}">0</div>
+            <div class="admin-stat-lbl" th:text="${entry.key.displayName}">Tür</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-section-title" style="margin-bottom:0.75rem; font-size:0.85rem; color:var(--primary-700);"><i
+          class="bi bi-journal-bookmark-fill"></i> Eğitim İstatistikleri</div>
+      <div class="admin-stat-grid">
+
+        <div th:each="entry : ${courseCounts}" class="admin-stat fade-in">
+          <div class="admin-stat-icon" th:classappend="${entry.key.name() == 'PUBLISHED'}    ? ' asi-green'  :
                              (${entry.key.name() == 'DRAFT'}       ? ' asi-orange' :
                              (${entry.key.name() == 'IN_PROGRESS'} ? ' asi-teal'   :
                              (${entry.key.name() == 'COMPLETED'}   ? ' asi-blue'   : ' asi-gray')))">
-          <i class="bi bi-collection-fill"></i>
-        </div>
-        <div class="admin-stat-body">
-          <div class="admin-stat-num" th:text="${entry.value}">0</div>
-          <div class="admin-stat-lbl" th:text="${entry.key.displayName}">Durum</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="admin-section-title" style="margin-bottom:0.75rem; font-size:0.85rem; color:var(--primary-700);"><i class="bi bi-mortarboard-fill"></i> Akademik & Değerlendirme</div>
-    <div class="admin-stat-grid">
-      <div class="admin-stat fade-in">
-        <div class="admin-stat-icon asi-teal"><i class="bi bi-journal-text"></i></div>
-        <div class="admin-stat-body">
-          <div class="admin-stat-num" th:text="${totalAssignments ?: 0}">0</div>
-          <div class="admin-stat-lbl">Sistemdeki Ödevler</div>
+            <i class="bi bi-collection-fill"></i>
+          </div>
+          <div class="admin-stat-body">
+            <div class="admin-stat-num" th:text="${entry.value}">0</div>
+            <div class="admin-stat-lbl" th:text="${entry.key.displayName}">Durum</div>
+          </div>
         </div>
       </div>
 
-      <div class="admin-stat fade-in">
-        <div class="admin-stat-icon asi-orange"><i class="bi bi-inbox-fill"></i></div>
-        <div class="admin-stat-body">
-          <div class="admin-stat-num" th:text="${pendingSubmissions ?: 0}">0</div>
-          <div class="admin-stat-lbl">Değerlendirme Bekleyen</div>
+      <div class="admin-section-title" style="margin-bottom:0.75rem; font-size:0.85rem; color:var(--primary-700);"><i
+          class="bi bi-mortarboard-fill"></i> Akademik & Değerlendirme</div>
+      <div class="admin-stat-grid">
+        <div class="admin-stat fade-in">
+          <div class="admin-stat-icon asi-teal"><i class="bi bi-journal-text"></i></div>
+          <div class="admin-stat-body">
+            <div class="admin-stat-num" th:text="${totalAssignments ?: 0}">0</div>
+            <div class="admin-stat-lbl">Sistemdeki Ödevler</div>
+          </div>
+        </div>
+
+        <div class="admin-stat fade-in">
+          <div class="admin-stat-icon asi-orange"><i class="bi bi-inbox-fill"></i></div>
+          <div class="admin-stat-body">
+            <div class="admin-stat-num" th:text="${pendingSubmissions ?: 0}">0</div>
+            <div class="admin-stat-lbl">Değerlendirme Bekleyen</div>
+          </div>
+        </div>
+
+        <div class="admin-stat fade-in">
+          <div class="admin-stat-icon asi-purple"><i class="bi bi-award-fill"></i></div>
+          <div class="admin-stat-body">
+            <div class="admin-stat-num" th:text="${totalCertificates}">0</div>
+            <div class="admin-stat-lbl">Verilen Sertifikalar</div>
+          </div>
         </div>
       </div>
 
-      <div class="admin-stat fade-in">
-        <div class="admin-stat-icon asi-purple"><i class="bi bi-award-fill"></i></div>
-        <div class="admin-stat-body">
-          <div class="admin-stat-num" th:text="${totalCertificates}">0</div>
-          <div class="admin-stat-lbl">Verilen Sertifikalar</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── Kurs Durum Dağılımı ── -->
-    <div th:if="${courseCounts != null and !#maps.isEmpty(courseCounts)}"
-         style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:1.5rem 2rem;margin-bottom:2.5rem;">
-      <div class="admin-section-title" style="margin-bottom:1.25rem;">Kurs Durum Dağılımı</div>
-      <div th:each="entry : ${courseCounts}" class="status-bar-row">
-        <span class="status-bar-label" th:text="${entry.key.displayName}">Durum</span>
-        <div class="status-bar-track">
-          <div class="status-bar-fill"
-               th:style="${'width:' + (totalCourses > 0 ? (entry.value * 100 / totalCourses) : 0) + '%;background:' +
+      <!-- ── Kurs Durum Dağılımı ── -->
+      <div th:if="${courseCounts != null and !#maps.isEmpty(courseCounts)}"
+        style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:1.5rem 2rem;margin-bottom:2.5rem;">
+        <div class="admin-section-title" style="margin-bottom:1.25rem;">Kurs Durum Dağılımı</div>
+        <div th:each="entry : ${courseCounts}" class="status-bar-row">
+          <span class="status-bar-label" th:text="${entry.key.displayName}">Durum</span>
+          <div class="status-bar-track">
+            <div class="status-bar-fill" th:style="${'width:' + (totalCourses > 0 ? (entry.value * 100 / totalCourses) : 0) + '%;background:' +
                  (entry.key.name() == 'PUBLISHED'    ? '#40c057' :
                  (entry.key.name() == 'DRAFT'        ? '#fd7e14' :
                  (entry.key.name() == 'IN_PROGRESS'  ? '#1c7ed6' :
-                 (entry.key.name() == 'COMPLETED'    ? '#339af0' : '#adb5bd'))))}"
-          ></div>
+                 (entry.key.name() == 'COMPLETED'    ? '#339af0' : '#adb5bd'))))}"></div>
+          </div>
+          <span class="status-bar-count" th:text="${entry.value}">0</span>
         </div>
-        <span class="status-bar-count" th:text="${entry.value}">0</span>
       </div>
+
+
+      <!-- ── Hızlı Erişim ── -->
+      <div class="admin-section-title">Hızlı Erişim</div>
+      <div class="admin-shortcut-grid">
+
+        <a th:href="@{/admin/kurslar/yeni}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#364fc7;"><i class="bi bi-plus-circle-fill"></i></div>
+          <h4>Yeni Kurs</h4>
+          <p>Eğitim ekle</p>
+        </a>
+
+        <a th:href="@{/admin/kurslar}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#2b8a3e;"><i class="bi bi-collection-fill"></i></div>
+          <h4>Kursları Yönet</h4>
+          <p>Düzenle, yayınla</p>
+        </a>
+
+        <a th:href="@{/admin/kullanicilar}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#862e9c;"><i class="bi bi-people-fill"></i></div>
+          <h4>Kullanıcılar</h4>
+          <p>Kilitle, sil, rol ata</p>
+        </a>
+
+        <a th:href="@{/admin/kayitlar}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#099268;"><i class="bi bi-person-check-fill"></i></div>
+          <h4>Kayıtlar</h4>
+          <p>Aktifleştir, sil</p>
+        </a>
+
+        <a th:href="@{/admin/sertifikalar}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#e8590c;"><i class="bi bi-award-fill"></i></div>
+          <h4>Sertifikalar</h4>
+          <p>Düzenle, iptal et</p>
+        </a>
+
+        <a th:href="@{/admin/egitmenler}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#d6336c;"><i class="bi bi-file-person-fill"></i></div>
+          <h4>Eğitmenler</h4>
+          <p>Eğitmen ekle, yönet</p>
+        </a>
+
+        <a th:href="@{/admin/yorumlar}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#fbbf24;"><i class="bi bi-star-half"></i></div>
+          <h4>Yorumlar</h4>
+          <p>Bekleyen Onaylar</p>
+        </a>
+
+      </div>
+
     </div>
+  </section>
 
-    <!-- ── Hızlı Erişim ── -->
-    <div class="admin-section-title">Hızlı Erişim</div>
-    <div class="admin-shortcut-grid">
-
-      <a th:href="@{/admin/kurslar/yeni}" class="admin-shortcut fade-in">
-        <div class="sc-icon" style="color:#364fc7;"><i class="bi bi-plus-circle-fill"></i></div>
-        <h4>Yeni Kurs</h4>
-        <p>Eğitim ekle</p>
-      </a>
-
-      <a th:href="@{/admin/kurslar}" class="admin-shortcut fade-in">
-        <div class="sc-icon" style="color:#2b8a3e;"><i class="bi bi-collection-fill"></i></div>
-        <h4>Kursları Yönet</h4>
-        <p>Düzenle, yayınla</p>
-      </a>
-
-      <a th:href="@{/admin/kullanicilar}" class="admin-shortcut fade-in">
-        <div class="sc-icon" style="color:#862e9c;"><i class="bi bi-people-fill"></i></div>
-        <h4>Kullanıcılar</h4>
-        <p>Kilitle, sil, rol ata</p>
-      </a>
-
-      <a th:href="@{/admin/kayitlar}" class="admin-shortcut fade-in">
-        <div class="sc-icon" style="color:#099268;"><i class="bi bi-person-check-fill"></i></div>
-        <h4>Kayıtlar</h4>
-        <p>Aktifleştir, sil</p>
-      </a>
-
-      <a th:href="@{/admin/sertifikalar}" class="admin-shortcut fade-in">
-        <div class="sc-icon" style="color:#e8590c;"><i class="bi bi-award-fill"></i></div>
-        <h4>Sertifikalar</h4>
-        <p>Düzenle, iptal et</p>
-      </a>
-
-      <a th:href="@{/admin/egitmenler}" class="admin-shortcut fade-in">
-        <div class="sc-icon" style="color:#d6336c;"><i class="bi bi-file-person-fill"></i></div>
-        <h4>Eğitmenler</h4>
-        <p>Eğitmen ekle, yönet</p>
-      </a>
-
-      <a th:href="@{/admin/yorumlar}" class="admin-shortcut fade-in">
-        <div class="sc-icon" style="color:#fbbf24;"><i class="bi bi-star-half"></i></div>
-        <h4>Yorumlar</h4>
-        <p>Bekleyen Onaylar</p>
-      </a>
-
-    </div>
-
-  </div>
-</section>
-
-<div th:replace="~{fragments/footer :: footer}"></div>
-<script th:src="@{/js/main.js}"></script>
+  <div th:replace="~{fragments/footer :: footer}"></div>
+  <script th:src="@{/js/main.js}"></script>
 </body>
+
 </html>

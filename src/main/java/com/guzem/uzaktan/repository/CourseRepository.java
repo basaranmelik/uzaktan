@@ -39,6 +39,14 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     long countByStatus(CourseStatus status);
 
+    long countByCourseType(com.guzem.uzaktan.model.CourseType courseType);
+
+    @Query("SELECT c FROM Course c WHERE c.status = 'PUBLISHED' AND c.startDate <= CURRENT_DATE")
+    List<Course> findPublishedCoursesToStart();
+
+    @Query("SELECT c FROM Course c WHERE c.status = 'IN_PROGRESS' AND c.endDate < CURRENT_DATE")
+    List<Course> findInProgressCoursesToComplete();
+
     List<Course> findByInstructorIdAndStatusNot(Long instructorId, CourseStatus status);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)

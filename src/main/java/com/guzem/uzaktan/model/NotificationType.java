@@ -6,7 +6,10 @@ public enum NotificationType {
     CERTIFICATE_ISSUED("Sertifika Hazır"),
     REVIEW_APPROVED("Yorum Onaylandı"),
     ASSIGNMENT_DUE_SOON("Ödev Son Gün"),
-    COURSE_ENDED("Kurs Tamamlandı");
+    COURSE_ENDED("Kurs Tamamlandı"),
+    MEETING_SCHEDULED("Yeni Canlı Ders"),
+    MEETING_CANCELLED("Canlı Ders İptal"),
+    MEETING_REMINDER("Canlı Ders Hatırlatma");
 
     private final String displayName;
 

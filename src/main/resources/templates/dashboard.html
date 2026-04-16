@@ -283,8 +283,45 @@
         </div>
       </div>
 
-      <!-- SAĞ KOLON: ÖDEVLER -->
+      <!-- SAĞ KOLON: ZOOM + ÖDEVLER -->
       <div class="assignments-section" style="display:flex; flex-direction:column; gap:2rem;">
+
+        <!-- Yaklaşan Canlı Dersler -->
+        <div th:if="${upcomingMeetings != null and !#lists.isEmpty(upcomingMeetings)}"
+             class="ux-widget" style="border-top:4px solid #2b8a3e;">
+          <div class="widget-title" style="color:#2b8a3e;">
+            <i class="bi bi-camera-video-fill" style="color:#2b8a3e;"></i> Yaklaşan Canlı Dersler
+          </div>
+          <div class="task-list">
+            <a th:each="m : ${upcomingMeetings}"
+               th:href="@{/zoom/toplanti/{id}/katil(id=${m.id})}"
+               style="text-decoration:none;color:inherit;display:block;">
+              <div class="task-item" style="border-left:3px solid #2b8a3e;">
+                <div class="task-item-course" th:text="${m.courseTitle}" style="color:#2b8a3e;"></div>
+                <div class="task-item-title" th:text="${m.topic}">Ders</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;">
+                  <div style="font-size:0.8rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:0.3rem;">
+                    <i class="bi bi-calendar-event"></i>
+                    <span th:text="${#temporals.format(m.scheduledAt, 'dd.MM HH:mm')}"></span>
+                  </div>
+                  <span th:if="${m.live}"
+                        style="font-size:0.72rem;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:20px;font-weight:700;">
+                    CANLI
+                  </span>
+                  <span th:unless="${m.live}"
+                        class="btn btn-primary shadow-sm"
+                        style="padding:0.3rem 0.8rem;font-size:0.75rem;border-radius:8px;pointer-events:none;background:#2b8a3e;border-color:#2b8a3e;">
+                    Katıl
+                  </span>
+                </div>
+              </div>
+            </a>
+            <a th:href="@{/zoom/derslerim}" class="btn"
+               style="width:100%;background:#f0fdf4;color:#2b8a3e;border:1px solid #bbf7d0;border-radius:8px;font-size:0.85rem;font-weight:600;margin-top:0.5rem;text-align:center;">
+              Tüm Canlı Derslerime Git <i class="bi bi-arrow-right"></i>
+            </a>
+          </div>
+        </div>
         
         <!-- Bekleyen Ödevler -->
         <div class="ux-widget border-top border-primary border-4" style="border-top-color: var(--primary-600) !important; border-top-style: solid; border-top-width: 4px;">

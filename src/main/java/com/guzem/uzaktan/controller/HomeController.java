@@ -9,6 +9,7 @@ import com.guzem.uzaktan.service.AssignmentService;
 import com.guzem.uzaktan.service.CourseService;
 import com.guzem.uzaktan.service.EnrollmentService;
 import com.guzem.uzaktan.service.UserService;
+import com.guzem.uzaktan.service.ZoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,6 +29,7 @@ public class HomeController {
     private final UserService userService;
     private final EnrollmentService enrollmentService;
     private final AssignmentService assignmentService;
+    private final ZoomService zoomService;
 
     @GetMapping({"/", "/home"})
     public String home(Model model) {
@@ -51,6 +53,7 @@ public class HomeController {
         model.addAttribute("pendingAssignments", pendingAssignments);
         model.addAttribute("pendingAssignmentCount", pendingAssignments.size());
         model.addAttribute("submissions", submissions);
+        model.addAttribute("upcomingMeetings", zoomService.getUpcomingForStudent(userId));
         return "dashboard";
     }
 

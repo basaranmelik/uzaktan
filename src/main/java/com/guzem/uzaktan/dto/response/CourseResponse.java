@@ -34,6 +34,7 @@ public class CourseResponse {
     private String courseTypeDisplayName;
     private String location;
     private String courseSchedule;
+    private String manualCurriculum;
     private LocalDate certificateDeadline;
     private String imagePath;
     private String instructorName;

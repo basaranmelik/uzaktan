@@ -7,6 +7,7 @@
   <title>Zoom Toplantısına Katıl | Gazi Üniversitesi</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }</style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -70,14 +71,35 @@
         <code style="font-size:1rem;font-weight:700;" th:text="${meeting.password}">-</code>
       </div>
 
+      <!-- Canlı rozet -->
+      <div th:if="${meeting.live}"
+           style="display:inline-flex;align-items:center;gap:6px;background:#dcfce7;color:#16a34a;
+                  padding:4px 14px;border-radius:20px;font-weight:700;font-size:0.82rem;margin-bottom:1rem;">
+        <span style="width:8px;height:8px;border-radius:50%;background:#16a34a;animation:pulse 1s infinite;display:inline-block;"></span>
+        DERS ŞU AN CANLI
+      </div>
+
       <a th:href="${meeting.joinUrl}" target="_blank" class="btn btn-primary"
          style="font-size:1.05rem;padding:0.75rem 2rem;display:inline-flex;align-items:center;gap:0.5rem;justify-content:center;">
-        <i class="bi bi-box-arrow-up-right"></i> Zoom'da Katıl
+        <i class="bi bi-box-arrow-up-right"></i>
+        <span th:text="${meeting.live} ? 'Hemen Katıl' : 'Zoom\'da Katıl'">Zoom'da Katıl</span>
       </a>
 
       <p style="font-size:0.8rem;color:var(--text-muted);margin-top:1.25rem;">
         Zoom uygulaması açılacaktır. Yüklü değilse tarayıcı üzerinden katılabilirsiniz.
       </p>
+
+      <!-- Kayıt linki -->
+      <div th:if="${meeting.recordingUrl != null and !#strings.isEmpty(meeting.recordingUrl)}"
+           style="margin-top:1.25rem;padding:1rem;background:var(--bg-secondary);border-radius:10px;">
+        <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:0.5rem;">
+          <i class="bi bi-play-circle-fill" style="color:var(--primary-600);"></i> Ders kaydı mevcut
+        </div>
+        <a th:href="${meeting.recordingUrl}" target="_blank" class="btn btn-secondary"
+           style="font-size:0.88rem;padding:0.4rem 1rem;">
+          <i class="bi bi-play-circle"></i> Kaydı İzle
+        </a>
+      </div>
 
     </div>
 

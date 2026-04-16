@@ -91,7 +91,7 @@
           <label>Kurs Başlığı *</label>
           <input type="text" th:field="*{title}" class="form-control"
                  th:classappend="${#fields.hasErrors('title')} ? ' is-invalid'"
-                 placeholder="Kursun tam adı" maxlength="150" required autofocus>
+                 placeholder="Kursun tam adı" maxlength="150" required>
           <div class="invalid-feedback" th:errors="*{title}" th:if="${#fields.hasErrors('title')}"></div>
         </div>
 
@@ -177,6 +177,17 @@
         </div>
       </div>
 
+      <!-- Manuel Müfredat (Yüzyüze + Uzaktan Örgün) -->
+      <div class="form-section" id="field-manual-curriculum" data-show-for="FACE_TO_FACE,REMOTE_FORMAL" style="display:none;">
+        <div class="form-section-title"><i class="bi bi-list-check"></i> Müfredat</div>
+        <div class="form-group">
+          <label>Müfredat Maddeleri</label>
+          <textarea th:field="*{manualCurriculum}" class="form-control" rows="8"
+                    placeholder="Her satıra bir madde yazın&#10;1. Gün: Bilimsel araştırma nedir?&#10;Bilimsel araştırmanın yapısı ve organizasyonu&#10;Geçerlik güvenirlik"></textarea>
+          <small style="color:var(--text-muted);">Her satır kurs detay sayfasında ayrı bir madde olarak gösterilir.</small>
+        </div>
+      </div>
+
       <!-- Konum (Sadece Yüzyüze) -->
       <div class="form-section" id="field-location" data-show-for="FACE_TO_FACE" style="display:none;">
         <div class="form-section-title"><i class="bi bi-geo-alt-fill"></i> Eğitim Yeri *</div>
@@ -231,15 +242,15 @@
             </select>
           </div>
           <div class="form-group">
-            <label>Sistem Kullanıcısı (Öğretmen) *</label>
-            <select th:field="*{instructorId}" class="form-control" required>
-              <option value="">— Seçilmedi —</option>
+            <label>Sistem Kullanıcısı (Öğretmen) <span style="color:var(--text-muted);font-weight:400;">(opsiyonel)</span></label>
+            <select th:field="*{instructorId}" class="form-control">
+              <option value="">— İsteğe Bağlı —</option>
               <option th:each="t : ${teachers}"
                       th:value="${t.id}"
                       th:text="${t.firstName + ' ' + t.lastName + ' (' + t.email + ')'}"></option>
             </select>
             <small style="color:var(--text-muted);">
-              <i class="bi bi-info-circle"></i> Seçilen öğretmen bu kursa erişebilir ve ödev ekleyebilir.
+              <i class="bi bi-info-circle"></i> Seçerseniz ilgili öğretmen bu kursa erişebilir ve ödev ekleyebilir.
             </small>
           </div>
         </div>

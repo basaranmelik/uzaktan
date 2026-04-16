@@ -183,6 +183,34 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(readOnly = true)
+    public Map<CourseType, Long> getTypeCounts() {
+        return Arrays.stream(CourseType.values())
+                .collect(Collectors.toMap(
+                        type -> type,
+                        courseRepository::countByCourseType
+                ));
+    }
+
+    @Override
+    @Transactional
+    public void updateCourseStatuses() {
+        // Find published courses whose start date has arrived and set to IN_PROGRESS
+        List<Course> coursesToStart = courseRepository.findPublishedCoursesToStart();
+        for (Course course : coursesToStart) {
+            course.setStatus(CourseStatus.IN_PROGRESS);
+        }
+        courseRepository.saveAll(coursesToStart);
+
+        // Find in-progress courses whose end date has passed and set to COMPLETED
+        List<Course> coursesToComplete = courseRepository.findInProgressCoursesToComplete();
+        for (Course course : coursesToComplete) {
+            course.setStatus(CourseStatus.COMPLETED);
+        }
+        courseRepository.saveAll(coursesToComplete);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<CourseResponse> findByInstructor(Long instructorId) {
         List<Course> courses = courseRepository.findByInstructorIdAndStatusNot(instructorId, CourseStatus.CANCELLED);
         Map<Long, Long> enrollmentCounts = buildEnrollmentCountMap(

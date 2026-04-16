@@ -44,6 +44,9 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
             """)
     List<Enrollment> findActiveEnrollmentsForCoursesEndingOn(@Param("endDate") LocalDate endDate);
 
+    @Query("SELECT e FROM Enrollment e JOIN FETCH e.user WHERE e.course.id = :courseId AND e.status = com.guzem.uzaktan.model.EnrollmentStatus.ACTIVE")
+    List<Enrollment> findActiveEnrollmentsForCourse(@Param("courseId") Long courseId);
+
     @Query("""
             SELECT e.user FROM Enrollment e
             WHERE e.course.id = :courseId

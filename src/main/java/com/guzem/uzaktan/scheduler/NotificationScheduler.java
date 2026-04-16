@@ -3,8 +3,11 @@ package com.guzem.uzaktan.scheduler;
 import com.guzem.uzaktan.model.Enrollment;
 import com.guzem.uzaktan.model.NotificationType;
 import com.guzem.uzaktan.model.User;
+import com.guzem.uzaktan.model.ZoomMeeting;
 import com.guzem.uzaktan.repository.AssignmentRepository;
 import com.guzem.uzaktan.repository.EnrollmentRepository;
+import com.guzem.uzaktan.repository.ZoomMeetingRepository;
+import com.guzem.uzaktan.service.EmailService;
 import com.guzem.uzaktan.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -21,7 +25,9 @@ public class NotificationScheduler {
 
     private final AssignmentRepository assignmentRepository;
     private final EnrollmentRepository enrollmentRepository;
+    private final ZoomMeetingRepository zoomMeetingRepository;
     private final NotificationService notificationService;
+    private final EmailService emailService;
 
     /**
      * Her gün 08:00'de çalışır.
@@ -47,6 +53,12 @@ public class NotificationScheduler {
                         "\"" + assignment.getTitle() + "\" ödevinin son teslim tarihi yarın. Henüz teslim yapmadınız!",
                         "/panom"
                 );
+                emailService.sendAssignmentDueReminder(
+                        user,
+                        assignment.getTitle(),
+                        assignment.getCourse().getTitle(),
+                        assignment.getDueDate()
+                );
             }
         });
     }
@@ -70,6 +82,32 @@ public class NotificationScheduler {
                     "\"" + enrollment.getCourse().getTitle() + "\" kursu bugün sona erdi. Başarılar!",
                     "/panom"
             );
+        }
+    }
+
+    /**
+     * Her 15 dakikada bir çalışır.
+     * 30 dakika içinde başlayacak Zoom toplantıları için
+     * aktif kayıtlı öğrencilere hatırlatma gönderir.
+     */
+    @Scheduled(cron = "0 */15 * * * *")
+    @Transactional
+    public void sendMeetingReminders() {
+        LocalDateTime from = LocalDateTime.now().plusMinutes(25);
+        LocalDateTime to   = LocalDateTime.now().plusMinutes(35);
+
+        List<ZoomMeeting> meetings = zoomMeetingRepository.findScheduledBetween(from, to);
+        for (ZoomMeeting meeting : meetings) {
+            List<User> users = enrollmentRepository
+                    .findActiveEnrollmentsForCourse(meeting.getCourse().getId())
+                    .stream().map(Enrollment::getUser).collect(Collectors.toList());
+            for (User user : users) {
+                notificationService.create(user, NotificationType.MEETING_REMINDER,
+                        "Canlı Ders 30 Dakika Sonra Başlıyor",
+                        "\"" + meeting.getTopic() + "\" dersi 30 dakika sonra başlıyor!",
+                        "/zoom/toplanti/" + meeting.getId() + "/katil");
+                emailService.sendMeetingReminder(user, meeting);
+            }
         }
     }
 }

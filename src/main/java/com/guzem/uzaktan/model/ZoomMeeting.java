@@ -55,6 +55,9 @@ public class ZoomMeeting {
     @Column(name = "status", nullable = false)
     private ZoomMeetingStatus status = ZoomMeetingStatus.SCHEDULED;
 
+    @Column(name = "recording_url", length = 500)
+    private String recordingUrl;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

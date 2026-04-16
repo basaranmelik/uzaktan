@@ -1,21 +1,24 @@
 package com.guzem.uzaktan.service.impl;
 
 import com.guzem.uzaktan.dto.request.ZoomMeetingCreateRequest;
+import com.guzem.uzaktan.dto.request.ZoomMeetingUpdateRequest;
 import com.guzem.uzaktan.dto.response.ZoomMeetingResponse;
 import com.guzem.uzaktan.exception.ResourceNotFoundException;
 import com.guzem.uzaktan.exception.UnauthorizedActionException;
-import com.guzem.uzaktan.model.Course;
-import com.guzem.uzaktan.model.ZoomMeeting;
-import com.guzem.uzaktan.model.ZoomMeetingStatus;
+import com.guzem.uzaktan.model.*;
 import com.guzem.uzaktan.repository.CourseRepository;
+import com.guzem.uzaktan.repository.EnrollmentRepository;
 import com.guzem.uzaktan.repository.ZoomMeetingRepository;
+import com.guzem.uzaktan.service.EmailService;
 import com.guzem.uzaktan.service.EnrollmentService;
+import com.guzem.uzaktan.service.NotificationService;
 import com.guzem.uzaktan.service.ZoomService;
 import com.guzem.uzaktan.service.client.ZoomApiClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
@@ -25,7 +28,10 @@ public class ZoomServiceImpl implements ZoomService {
 
     private final ZoomMeetingRepository zoomMeetingRepository;
     private final CourseRepository courseRepository;
+    private final EnrollmentRepository enrollmentRepository;
     private final EnrollmentService enrollmentService;
+    private final NotificationService notificationService;
+    private final EmailService emailService;
     private final ZoomApiClient zoomApiClient;
 
     private static final DateTimeFormatter ZOOM_DT_FORMAT =
@@ -59,7 +65,54 @@ public class ZoomServiceImpl implements ZoomService {
                 .durationMinutes(request.getDurationMinutes())
                 .build();
 
-        return toResponse(zoomMeetingRepository.save(meeting));
+        ZoomMeetingResponse response = toResponse(zoomMeetingRepository.save(meeting));
+
+        // Kayıtlı tüm aktif öğrencilere bildirim + e-posta gönder
+        ZoomMeeting savedMeeting = zoomMeetingRepository.findById(response.getId()).orElseThrow();
+        notifyEnrolledStudents(course, NotificationType.MEETING_SCHEDULED,
+                "Yeni Canlı Ders Planlandı",
+                "\"" + course.getTitle() + "\" kursuna yeni bir canlı ders eklendi: " + request.getTopic(),
+                "/zoom/toplanti/" + response.getId() + "/katil");
+        enrollmentRepository.findActiveEnrollmentsForCourse(course.getId())
+                .forEach(e -> emailService.sendMeetingScheduled(e.getUser(), savedMeeting));
+
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public ZoomMeetingResponse updateMeeting(Long meetingId, ZoomMeetingUpdateRequest request, Long teacherUserId) {
+        ZoomMeeting meeting = findMeetingById(meetingId);
+        verifyTeacherOwnership(meeting, teacherUserId);
+
+        if (meeting.getStatus() == ZoomMeetingStatus.CANCELLED) {
+            throw new IllegalStateException("İptal edilmiş bir toplantı güncellenemez.");
+        }
+
+        ZoomApiClient.ZoomApiMeetingRequest apiRequest = new ZoomApiClient.ZoomApiMeetingRequest();
+        apiRequest.setTopic(request.getTopic());
+        apiRequest.setStartTime(request.getScheduledAt().format(ZOOM_DT_FORMAT));
+        apiRequest.setDuration(request.getDurationMinutes());
+
+        try {
+            zoomApiClient.updateMeeting(meeting.getZoomMeetingId(), apiRequest);
+        } catch (Exception ignored) {
+            // Zoom API güncellemesi başarısız olsa bile DB'yi güncelleriz
+        }
+
+        meeting.setTopic(request.getTopic());
+        meeting.setScheduledAt(request.getScheduledAt());
+        meeting.setDurationMinutes(request.getDurationMinutes());
+
+        ZoomMeetingResponse response = toResponse(zoomMeetingRepository.save(meeting));
+
+        // Öğrencileri bilgilendir
+        notifyEnrolledStudents(meeting.getCourse(), NotificationType.MEETING_SCHEDULED,
+                "Canlı Ders Güncellendi",
+                "\"" + meeting.getCourse().getTitle() + "\" kursundaki \"" + request.getTopic() + "\" dersi güncellendi.",
+                "/zoom/toplanti/" + meetingId + "/katil");
+
+        return response;
     }
 
     @Override
@@ -79,6 +132,25 @@ public class ZoomServiceImpl implements ZoomService {
         }
 
         meeting.setStatus(ZoomMeetingStatus.CANCELLED);
+        zoomMeetingRepository.save(meeting);
+
+        // Öğrencileri bildirim + e-posta ile bilgilendir
+        notifyEnrolledStudents(meeting.getCourse(), NotificationType.MEETING_CANCELLED,
+                "Canlı Ders İptal Edildi",
+                "\"" + meeting.getCourse().getTitle() + "\" kursundaki \"" + meeting.getTopic() + "\" dersi iptal edildi.",
+                "/panom");
+        ZoomMeeting cancelledMeeting = meeting;
+        enrollmentRepository.findActiveEnrollmentsForCourse(meeting.getCourse().getId())
+                .forEach(e -> emailService.sendMeetingCancelled(e.getUser(), cancelledMeeting));
+    }
+
+    @Override
+    @Transactional
+    public void addRecordingUrl(Long meetingId, String recordingUrl, Long teacherUserId) {
+        ZoomMeeting meeting = findMeetingById(meetingId);
+        verifyTeacherOwnership(meeting, teacherUserId);
+        meeting.setRecordingUrl(recordingUrl != null && recordingUrl.isBlank() ? null : recordingUrl);
+        zoomMeetingRepository.save(meeting);
     }
 
     @Override
@@ -115,10 +187,27 @@ public class ZoomServiceImpl implements ZoomService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<ZoomMeetingResponse> getUpcomingForStudent(Long studentUserId) {
+        return zoomMeetingRepository.findUpcomingForStudent(studentUserId, LocalDateTime.now())
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public ZoomMeetingResponse findByIdForTeacher(Long meetingId, Long teacherUserId) {
         ZoomMeeting meeting = findMeetingById(meetingId);
         verifyTeacherOwnership(meeting, teacherUserId);
         return toResponse(meeting);
+    }
+
+    // ---- Yardımcı metodlar ----
+
+    private void notifyEnrolledStudents(Course course, NotificationType type,
+                                         String title, String message, String link) {
+        enrollmentRepository.findActiveEnrollmentsForCourse(course.getId())
+                .forEach(e -> notificationService.create(e.getUser(), type, title, message, link));
     }
 
     private ZoomMeeting findMeetingById(Long meetingId) {
@@ -134,6 +223,11 @@ public class ZoomServiceImpl implements ZoomService {
     }
 
     private ZoomMeetingResponse toResponse(ZoomMeeting m) {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime end = m.getScheduledAt().plusMinutes(m.getDurationMinutes());
+        boolean past = end.isBefore(now);
+        boolean live = !past && m.getScheduledAt().isBefore(now);
+
         return ZoomMeetingResponse.builder()
                 .id(m.getId())
                 .topic(m.getTopic())
@@ -146,6 +240,9 @@ public class ZoomServiceImpl implements ZoomService {
                 .statusDisplayName(m.getStatus().getDisplayName())
                 .courseId(m.getCourse().getId())
                 .courseTitle(m.getCourse().getTitle())
+                .recordingUrl(m.getRecordingUrl())
+                .past(past)
+                .live(live)
                 .createdAt(m.getCreatedAt())
                 .build();
     }

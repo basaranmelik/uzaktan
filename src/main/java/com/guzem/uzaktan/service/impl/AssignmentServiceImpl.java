@@ -13,6 +13,7 @@ import com.guzem.uzaktan.mapper.AssignmentMapper;
 import com.guzem.uzaktan.model.*;
 import com.guzem.uzaktan.repository.*;
 import com.guzem.uzaktan.service.AssignmentService;
+import com.guzem.uzaktan.service.EmailService;
 import com.guzem.uzaktan.service.FileStorageService;
 import com.guzem.uzaktan.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +48,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     private final AssignmentMapper assignmentMapper;
     private final FileStorageService fileStorageService;
     private final NotificationService notificationService;
+    private final EmailService emailService;
 
     // ----------------------------------------------------------------
     // Öğretmen / Admin işlemleri
@@ -134,6 +136,7 @@ public class AssignmentServiceImpl implements AssignmentService {
                 "Ödeviniz Notlandırıldı",
                 "\"" + submission.getAssignment().getTitle() + "\" ödeviniz notlandırıldı: " + request.getScore() + " puan.",
                 "/panom");
+        emailService.sendAssignmentGradedToStudent(submission);
         return response;
     }
 
@@ -182,7 +185,13 @@ public class AssignmentServiceImpl implements AssignmentService {
                 .status(SubmissionStatus.SUBMITTED)
                 .build();
 
-        return assignmentMapper.toSubmissionResponse(submissionRepository.save(submission));
+        AssignmentSubmission saved = submissionRepository.save(submission);
+        // Öğretmene e-posta bildirimi
+        User teacher = assignment.getCourse().getInstructor();
+        if (teacher != null) {
+            emailService.sendAssignmentSubmittedToTeacher(teacher, saved);
+        }
+        return assignmentMapper.toSubmissionResponse(saved);
     }
 
     @Override

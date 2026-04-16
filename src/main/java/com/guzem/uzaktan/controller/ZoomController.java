@@ -1,6 +1,7 @@
 package com.guzem.uzaktan.controller;
 
 import com.guzem.uzaktan.dto.request.ZoomMeetingCreateRequest;
+import com.guzem.uzaktan.dto.request.ZoomMeetingUpdateRequest;
 import com.guzem.uzaktan.dto.response.ZoomMeetingResponse;
 import com.guzem.uzaktan.exception.UnauthorizedActionException;
 import com.guzem.uzaktan.service.CourseService;
@@ -25,7 +26,7 @@ public class ZoomController {
     private final CourseService courseService;
     private final UserService userService;
 
-    // ---- Öğretmen endpoint'leri (/egitmen/zoom/**) ----
+    // ---- Öğretmen: toplantı listesi ----
 
     @GetMapping("/egitmen/zoom/kurslarim/{courseId}")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
@@ -37,6 +38,8 @@ public class ZoomController {
         model.addAttribute("meetings", zoomService.findByCourse(courseId, userId));
         return "egitmen/zoom-toplantilari";
     }
+
+    // ---- Öğretmen: yeni toplantı ----
 
     @GetMapping("/egitmen/zoom/kurslarim/{courseId}/yeni")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
@@ -60,9 +63,62 @@ public class ZoomController {
         }
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         zoomService.createMeeting(courseId, request, userId);
-        redirectAttributes.addFlashAttribute("successMessage", "Zoom toplantısı başarıyla oluşturuldu.");
+        redirectAttributes.addFlashAttribute("successMessage", "Zoom toplantısı başarıyla oluşturuldu. Kayıtlı öğrencilere bildirim gönderildi.");
         return "redirect:/egitmen/zoom/kurslarim/" + courseId;
     }
+
+    // ---- Öğretmen: toplantı düzenle ----
+
+    @GetMapping("/egitmen/zoom/toplanti/{id}/duzenle")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    public String editMeetingForm(@PathVariable Long id,
+                                  @AuthenticationPrincipal UserDetails principal,
+                                  Model model) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        ZoomMeetingResponse meeting = zoomService.findByIdForTeacher(id, userId);
+        ZoomMeetingUpdateRequest req = new ZoomMeetingUpdateRequest();
+        req.setTopic(meeting.getTopic());
+        req.setScheduledAt(meeting.getScheduledAt());
+        req.setDurationMinutes(meeting.getDurationMinutes());
+        model.addAttribute("meeting", meeting);
+        model.addAttribute("zoomMeetingUpdateRequest", req);
+        return "egitmen/zoom-toplanti-duzenle";
+    }
+
+    @PostMapping("/egitmen/zoom/toplanti/{id}/duzenle")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    public String updateMeeting(@PathVariable Long id,
+                                @Valid @ModelAttribute("zoomMeetingUpdateRequest") ZoomMeetingUpdateRequest request,
+                                BindingResult bindingResult,
+                                @AuthenticationPrincipal UserDetails principal,
+                                Model model,
+                                RedirectAttributes redirectAttributes) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("meeting", zoomService.findByIdForTeacher(id, userId));
+            return "egitmen/zoom-toplanti-duzenle";
+        }
+        ZoomMeetingResponse updated = zoomService.updateMeeting(id, request, userId);
+        redirectAttributes.addFlashAttribute("successMessage", "Toplantı güncellendi. Kayıtlı öğrencilere bildirim gönderildi.");
+        return "redirect:/egitmen/zoom/kurslarim/" + updated.getCourseId();
+    }
+
+    // ---- Öğretmen: kayıt linki ekle ----
+
+    @PostMapping("/egitmen/zoom/toplanti/{id}/kayit")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    public String addRecordingUrl(@PathVariable Long id,
+                                  @RequestParam(required = false) String recordingUrl,
+                                  @AuthenticationPrincipal UserDetails principal,
+                                  RedirectAttributes redirectAttributes) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        ZoomMeetingResponse meeting = zoomService.findByIdForTeacher(id, userId);
+        zoomService.addRecordingUrl(id, recordingUrl, userId);
+        redirectAttributes.addFlashAttribute("successMessage", "Kayıt linki kaydedildi.");
+        return "redirect:/egitmen/zoom/kurslarim/" + meeting.getCourseId();
+    }
+
+    // ---- Öğretmen: toplantı iptal ----
 
     @PostMapping("/egitmen/zoom/toplanti/{id}/iptal")
     @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
@@ -72,11 +128,11 @@ public class ZoomController {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         ZoomMeetingResponse meeting = zoomService.findByIdForTeacher(id, userId);
         zoomService.cancelMeeting(id, userId);
-        redirectAttributes.addFlashAttribute("successMessage", "Toplantı iptal edildi.");
+        redirectAttributes.addFlashAttribute("successMessage", "Toplantı iptal edildi. Kayıtlı öğrencilere bildirim gönderildi.");
         return "redirect:/egitmen/zoom/kurslarim/" + meeting.getCourseId();
     }
 
-    // ---- Öğrenci endpoint'i (/zoom/**) ----
+    // ---- Öğrenci: katıl ----
 
     @GetMapping("/zoom/toplanti/{id}/katil")
     public String joinMeeting(@PathVariable Long id,
@@ -89,5 +145,15 @@ public class ZoomController {
             model.addAttribute("errorMessage", e.getMessage());
         }
         return "zoom/katil";
+    }
+
+    // ---- Öğrenci: tüm derslerim ----
+
+    @GetMapping("/zoom/derslerim")
+    @PreAuthorize("isAuthenticated()")
+    public String studentMeetings(@AuthenticationPrincipal UserDetails principal, Model model) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        model.addAttribute("meetings", zoomService.getUpcomingForStudent(userId));
+        return "zoom/derslerim";
     }
 }

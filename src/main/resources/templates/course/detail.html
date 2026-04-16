@@ -291,7 +291,7 @@
     }
     .cd-curriculum-row {
       display: grid;
-      grid-template-columns: 48px 1fr auto;
+      grid-template-columns: 48px 1fr;
       align-items: center; gap: 0.85rem;
       padding: 1rem 1.5rem;
       border-bottom: 1px solid var(--gray-100);
@@ -313,7 +313,27 @@
       font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 480px;
     }
-    .cd-lock { color: var(--gray-400); font-size: 0.9rem; flex-shrink: 0; }
+    .cd-rich-content {
+      background: var(--bg);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-sm);
+      padding: 1.75rem 2rem;
+      margin-bottom: 2rem;
+    }
+    .cd-rich-content-list {
+      margin: 0;
+      padding-left: 1.25rem;
+      color: var(--text-alt);
+    }
+    .cd-rich-content-list li {
+      font-size: 1rem;
+      line-height: 1.9;
+      margin-bottom: 0.55rem;
+    }
+    .cd-rich-content-list li:last-child {
+      margin-bottom: 0;
+    }
 
     /* empty */
     .cd-empty {
@@ -471,7 +491,9 @@
 
         <h1 class="cd-title" th:text="${course.title}">Kurs Başlığı</h1>
 
-        <p class="cd-desc" th:text="${course.description}">Kurs açıklaması</p>
+        <p class="cd-desc"
+           th:if="${course.courseType == null or course.courseType.name() == 'ONLINE'}"
+           th:text="${course.description}">Kurs açıklaması</p>
 
         <!-- Yıldız -->
         <div class="cd-stars">
@@ -699,6 +721,24 @@
     <!-- Flash -->
 
 
+    <!-- Yüzyüze / Uzaktan Örgün Eğitim İçeriği -->
+    <div th:if="${(course.courseType != null and course.courseType.name() != 'ONLINE') and course.manualCurriculum != null and !#strings.isEmpty(course.manualCurriculum)}">
+      <div class="cd-section-header">
+        <h2 class="cd-section-title">
+          <i class="bi bi-journal-text"></i> Eğitim İçeriği
+        </h2>
+      </div>
+      <div class="cd-rich-content">
+        <ul class="cd-rich-content-list">
+          <li th:each="item : ${#strings.listSplit(course.manualCurriculum, '\n')}"
+              th:if="${!#strings.isEmpty(#strings.trim(item))}"
+              th:text="${#strings.trim(item)}">
+            Müfredat maddesi
+          </li>
+        </ul>
+      </div>
+    </div>
+
     <!-- Kurs Icerigi -->
     <div th:if="${videos != null and !#lists.isEmpty(videos)}">
 
@@ -745,7 +785,6 @@
             <div th:if="${v.description != null and !#strings.isEmpty(v.description)}"
                  class="cd-vdesc" th:text="${v.description}"></div>
           </div>
-          <i class="bi bi-lock cd-lock" title="Kayıtlı öğrencilere açık"></i>
         </div>
       </div>
 

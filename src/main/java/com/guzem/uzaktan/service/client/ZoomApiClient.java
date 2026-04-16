@@ -67,6 +67,16 @@ public class ZoomApiClient {
                 .body(ZoomApiMeetingResponse.class);
     }
 
+    public void updateMeeting(String zoomMeetingId, ZoomApiMeetingRequest request) {
+        zoomRestClient.patch()
+                .uri("/meetings/" + zoomMeetingId)
+                .header("Authorization", "Bearer " + getAccessToken())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(request)
+                .retrieve()
+                .toBodilessEntity();
+    }
+
     public void deleteMeeting(String zoomMeetingId) {
         zoomRestClient.delete()
                 .uri("/meetings/" + zoomMeetingId)

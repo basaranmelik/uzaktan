@@ -26,7 +26,6 @@ public class DataInitializer implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        dropRoleCheckConstraints();
 
         if (userRepository.findByEmail("admin@guzem.gazi.edu.tr").isEmpty()) {
             User admin = User.builder()
@@ -38,21 +37,6 @@ public class DataInitializer implements ApplicationRunner {
                     .build();
             userRepository.save(admin);
             log.info("Default admin kullanıcısı oluşturuldu — kullanıcı adı: admin");
-        }
-    }
-
-    private void dropRoleCheckConstraints() {
-        try {
-            List<String> constraintNames = jdbcTemplate.queryForList(
-                    "SELECT name FROM sys.check_constraints WHERE parent_object_id = OBJECT_ID('users') AND definition LIKE '%role%'",
-                    String.class
-            );
-            for (String name : constraintNames) {
-                jdbcTemplate.execute("ALTER TABLE users DROP CONSTRAINT " + name);
-                log.info("Role check kısıtlaması '{}' silindi.", name);
-            }
-        } catch (DataAccessException e) {
-            log.debug("Role check kısıtlaması silinirken hata (muhtemelen mevcut değil): {}", e.getMessage());
         }
     }
 }

@@ -121,7 +121,7 @@ public class SecurityConfig {
                                         "font-src 'self' cdn.jsdelivr.net fonts.gstatic.com; " +
                                         "img-src 'self' data:; " +
                                         "media-src 'self'; " +
-                                        "connect-src 'self'; " +
+                                        "connect-src 'self' cdn.plyr.io; " +
                                         "frame-ancestors 'none'"))
                 )
                 .authenticationProvider(authenticationProvider());

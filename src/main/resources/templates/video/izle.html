@@ -5,6 +5,8 @@
 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
   <title th:text="${video.title} + ' — GUZEM'">Video İzle</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -335,6 +337,7 @@
 <script th:inline="javascript">
 (function() {
     // ── Plyr Init ──
+    const videoElement = document.getElementById('player');
     const player = new Plyr('#player', {
         controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume', 'captions', 'settings', 'pip', 'airplay', 'fullscreen'],
         settings: ['quality', 'speed'],
@@ -353,23 +356,32 @@
     var videoId = /*[[${video.id}]]*/ 0;
     var alreadyWatched = /*[[${alreadyWatched}]]*/ false;
     var marked = alreadyWatched;
+    var markingInFlight = false;
 
     // CSRF Utility
     function getCsrf() {
         var meta = document.querySelector('meta[name="_csrf"]');
+        var headerMeta = document.querySelector('meta[name="_csrf_header"]');
         var panel = document.querySelector('[data-csrf-token]');
         return {
             token: meta ? meta.getAttribute('content') : (panel ? panel.dataset.csrfToken : ''),
-            header: panel ? panel.dataset.csrfHeader : 'X-CSRF-TOKEN'
+            header: headerMeta ? headerMeta.getAttribute('content') : (panel ? panel.dataset.csrfHeader : 'X-CSRF-TOKEN')
         };
+    }
+
+    function shouldMarkWatched(currentTime, duration) {
+        return !marked && Number.isFinite(duration) && duration > 0 && currentTime / duration >= 0.8;
+    }
+
+    function checkWatchThreshold(currentTime, duration) {
+        if (shouldMarkWatched(currentTime, duration)) {
+            markAsWatched();
+        }
     }
 
     // ── Watch Progress & Auto-Play ──
     player.on('timeupdate', () => {
-        if (marked) return;
-        if (player.duration > 0 && player.currentTime / player.duration >= 0.8) {
-            markAsWatched();
-        }
+        checkWatchThreshold(player.currentTime, player.duration);
     });
 
     player.on('ended', () => {
@@ -377,13 +389,48 @@
             handleAutoPlay();
         } else {
             // Eğer %80 olmadıysa ama bittiyse (manuel sarma vs) yine de marklayıp geçebiliriz
-            markAsWatched().then(handleAutoPlay);
+            markAsWatched().then(data => {
+                if (data && data.success) {
+                    handleAutoPlay();
+                }
+            });
         }
     });
 
+    if (videoElement) {
+        videoElement.addEventListener('timeupdate', () => {
+            checkWatchThreshold(videoElement.currentTime, videoElement.duration);
+        });
+
+        videoElement.addEventListener('ended', () => {
+            if (marked) {
+                handleAutoPlay();
+                return;
+            }
+
+            markAsWatched().then(data => {
+                if (data && data.success) {
+                    handleAutoPlay();
+                }
+            });
+        });
+    }
+
+    var thresholdPoller = window.setInterval(() => {
+        if (marked || !videoElement) {
+            if (marked) {
+                window.clearInterval(thresholdPoller);
+            }
+            return;
+        }
+        checkWatchThreshold(videoElement.currentTime, videoElement.duration);
+    }, 2000);
+
     function markAsWatched() {
-        if (marked) return Promise.resolve({success: true});
-        marked = true;
+        if (marked) return Promise.resolve({ success: true });
+        if (markingInFlight) return Promise.resolve({ success: false });
+        markingInFlight = true;
+
         const csrf = getCsrf();
         return fetch('/videolar/' + videoId + '/izlendi', {
             method: 'POST',
@@ -392,12 +439,26 @@
                 'Content-Type': 'application/json'
             }
         })
-        .then(r => r.json())
+        .then(r => {
+            if (!r.ok) {
+                throw new Error('mark-watched-failed:' + r.status);
+            }
+            return r.json();
+        })
         .then(data => {
             if (data.success) {
+                marked = true;
                 updateUIAsWatched();
                 return data;
             }
+            throw new Error('mark-watched-unsuccessful');
+        })
+        .catch(() => {
+            showToast('Video tamamlandı bilgisi kaydedilemedi. Lütfen tekrar deneyin.', 'warning');
+            return { success: false };
+        })
+        .finally(() => {
+            markingInFlight = false;
         });
     }
 

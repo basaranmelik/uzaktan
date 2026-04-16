@@ -30,6 +30,7 @@ public class AdminDashboardController {
         var courseCounts = courseService.getStatusCounts();
         long totalCourses = courseCounts.values().stream().mapToLong(v -> v).sum();
         model.addAttribute("courseCounts", courseCounts);
+        model.addAttribute("typeCounts", courseService.getTypeCounts());
         model.addAttribute("totalCourses", totalCourses);
         model.addAttribute("totalUsers", userService.findAllUsers().size());
         model.addAttribute("totalCertificates", certificateService.findAll().size());

@@ -37,6 +37,10 @@ public interface CourseService {
 
     Map<CourseStatus, Long> getStatusCounts();
 
+    Map<com.guzem.uzaktan.model.CourseType, Long> getTypeCounts();
+
+    void updateCourseStatuses();
+
     List<CourseResponse> findByInstructor(Long instructorId);
 
     long countTotalStudentsForInstructor(Long instructorId);

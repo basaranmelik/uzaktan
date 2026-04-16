@@ -44,7 +44,12 @@
       "Bash(find /Users/basaran/Desktop/uzaktan/src/main/java/com/guzem/uzaktan/controller/admin -type f -name *.java)",
       "Bash(xargs cat:*)",
       "Bash(grep -l \"doctype\\\\|html lang\" /Users/basaran/Desktop/uzaktan/src/main/resources/templates/*.html)",
-      "Bash(grep -rL name=\"\"viewport\"\" src/main/resources/templates/ --include=*.html)"
+      "Bash(grep -rL name=\"\"viewport\"\" src/main/resources/templates/ --include=*.html)",
+      "Bash(iconv -f ISO-8859-9 -t UTF-8 /Users/basaran/Desktop/uzaktan/src/main/resources/application.properties)",
+      "Bash(mv /tmp/app_props_utf8.properties /Users/basaran/Desktop/uzaktan/src/main/resources/application.properties)",
+      "Bash(find /Users/basaran/Desktop/uzaktan -path */migrations/* -o -path */db/* -o -name flyway*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
