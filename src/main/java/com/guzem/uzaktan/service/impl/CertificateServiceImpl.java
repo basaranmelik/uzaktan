@@ -12,6 +12,8 @@ import com.guzem.uzaktan.repository.UserRepository;
 import com.guzem.uzaktan.service.CertificateService;
 import com.guzem.uzaktan.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,6 +62,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "userCertificates", key = "#userId")
     public List<CertificateResponse> findByUser(Long userId) {
         return certificateRepository.findByUserId(userId).stream()
                 .map(certificateMapper::toResponse)
@@ -83,6 +86,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "certificate", key = "#code")
     public CertificateResponse findByCode(String code) {
         Certificate certificate = certificateRepository.findByCertificateCode(code)
                 .orElseThrow(() -> new ResourceNotFoundException("Sertifika", "kod", code));

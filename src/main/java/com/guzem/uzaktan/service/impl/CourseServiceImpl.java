@@ -19,6 +19,9 @@ import com.guzem.uzaktan.repository.UserRepository;
 import com.guzem.uzaktan.service.CourseService;
 import com.guzem.uzaktan.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -50,6 +53,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "publishedCourses", key = "#page + '-' + #size")
     public Page<CourseSummaryResponse> findPublishedCourses(int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return courseRepository.findByStatus(CourseStatus.PUBLISHED, pageable)
@@ -58,6 +62,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "coursesByCategory", key = "#category + '-' + #page + '-' + #size")
     public Page<CourseSummaryResponse> findByCategory(CourseCategory category, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         return courseRepository.findByStatusAndCategory(CourseStatus.PUBLISHED, category, pageable)
@@ -88,6 +93,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "course", key = "#id")
     public CourseResponse findById(Long id) {
         Course course = loadCourse(id);
         long enrolledCount = courseRepository.countActiveEnrollments(id);
@@ -95,6 +101,7 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    @CacheEvict(value = {"publishedCourses", "coursesByCategory", "courseStats"}, allEntries = true)
     public CourseResponse create(CourseCreateRequest request, MultipartFile image) {
         validateCourseTypeFields(request.getCourseType(), request.getQuota(),
                 request.getStartDate(), request.getEndDate(), request.getLocation());
@@ -111,6 +118,12 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "course", key = "#id"),
+        @CacheEvict(value = "publishedCourses", allEntries = true),
+        @CacheEvict(value = "coursesByCategory", allEntries = true),
+        @CacheEvict(value = "courseStats", allEntries = true)
+    })
     public CourseResponse update(Long id, CourseUpdateRequest request, MultipartFile image) {
         Course course = loadCourse(id);
         // Tip değişiyorsa yeni tipe göre, değişmiyorsa mevcut tipe göre validate et
@@ -149,12 +162,24 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "course", key = "#id"),
+        @CacheEvict(value = "publishedCourses", allEntries = true),
+        @CacheEvict(value = "coursesByCategory", allEntries = true),
+        @CacheEvict(value = "courseStats", allEntries = true)
+    })
     public void delete(Long id) {
         Course course = loadCourse(id);
         courseRepository.delete(course);
     }
 
     @Override
+    @Caching(evict = {
+        @CacheEvict(value = "course", key = "#id"),
+        @CacheEvict(value = "publishedCourses", allEntries = true),
+        @CacheEvict(value = "coursesByCategory", allEntries = true),
+        @CacheEvict(value = "courseStats", allEntries = true)
+    })
     public void changeStatus(Long id, CourseStatus newStatus) {
         Course course = loadCourse(id);
         course.setStatus(newStatus);
@@ -173,6 +198,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "courseStats", key = "'status'")
     public Map<CourseStatus, Long> getStatusCounts() {
         return Arrays.stream(CourseStatus.values())
                 .collect(Collectors.toMap(
@@ -183,6 +209,7 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "courseStats", key = "'type'")
     public Map<CourseType, Long> getTypeCounts() {
         return Arrays.stream(CourseType.values())
                 .collect(Collectors.toMap(

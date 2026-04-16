@@ -1547,7 +1547,7 @@ p {
 
 /* ---------- Admin Page Header ---------- */
 .admin-page-header {
-  text-align: left;
+  text-align: center;
 }
 
 .admin-page-header .container {
@@ -1560,14 +1560,43 @@ p {
 }
 
 .admin-page-header p {
-  max-width: none;
-  margin: 0;
+  max-width: 550px;
+  margin: 0 auto;
 }
 
 .admin-page-header .breadcrumb {
-  justify-content: flex-start;
+  justify-content: center;
   flex-wrap: wrap;
   margin-bottom: 1rem;
+}
+
+.page-header .container {
+  position: relative;
+  z-index: 1;
+}
+
+.page-header .container > div[style*="display:flex"] {
+  flex-direction: column;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center;
+  gap: 1rem !important;
+}
+
+.page-header .container > div[style*="display:flex"] > div {
+  text-align: center;
+}
+
+.page-header .container > div[style*="display:flex"] > .btn,
+.page-header .container > div[style*="display:flex"] > a,
+.page-header .container > div[style*="display:flex"] form {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+  align-self: center;
+}
+
+.page-header .container > div[style*="text-align:right"] {
+  text-align: center !important;
 }
 
 /* ---------- Filter Bar ---------- */

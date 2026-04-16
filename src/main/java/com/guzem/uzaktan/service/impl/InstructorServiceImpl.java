@@ -10,6 +10,9 @@ import com.guzem.uzaktan.exception.ResourceNotFoundException;
 import com.guzem.uzaktan.service.FileStorageService;
 import com.guzem.uzaktan.service.InstructorService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -27,6 +30,7 @@ public class InstructorServiceImpl implements InstructorService {
     private final FileStorageService fileStorageService;
 
     @Override
+    @Cacheable(value = "instructors")
     public List<InstructorResponse> findAll() {
         return instructorRepository.findAllByOrderByNameAsc()
                 .stream()
@@ -35,12 +39,14 @@ public class InstructorServiceImpl implements InstructorService {
     }
 
     @Override
+    @Cacheable(value = "instructor", key = "#id")
     public InstructorResponse findById(Long id) {
         return instructorMapper.toResponse(loadInstructor(id));
     }
 
     @Override
     @Transactional
+    @CacheEvict(value = "instructors", allEntries = true)
     public InstructorResponse create(InstructorCreateRequest request) {
         Instructor instructor = new Instructor();
         instructor.setName(request.getName());
@@ -53,6 +59,10 @@ public class InstructorServiceImpl implements InstructorService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "instructor", key = "#id"),
+        @CacheEvict(value = "instructors", allEntries = true)
+    })
     public InstructorResponse update(Long id, InstructorUpdateRequest request) {
         Instructor instructor = loadInstructor(id);
         instructor.setName(request.getName());

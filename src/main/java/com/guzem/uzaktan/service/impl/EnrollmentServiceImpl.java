@@ -20,6 +20,8 @@ import com.guzem.uzaktan.repository.VideoWatchRepository;
 import com.guzem.uzaktan.service.EnrollmentService;
 import com.guzem.uzaktan.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -44,6 +46,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     private final NotificationService notificationService;
 
     @Override
+    @CacheEvict(value = "enrollmentStatus", key = "#userId + '-' + #courseId")
     public EnrollmentResponse enroll(Long userId, Long courseId) {
         if (enrollmentRepository.existsByUserIdAndCourseId(userId, courseId)) {
             throw new DuplicateEnrollmentException(userId, courseId);
@@ -178,6 +181,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "enrollmentStatus", key = "#userId + '-' + #courseId")
     public boolean isActiveEnrollment(Long userId, Long courseId) {
         return enrollmentRepository.findByUserIdAndCourseId(userId, courseId)
                 .map(e -> e.getStatus() == EnrollmentStatus.ACTIVE || e.getStatus() == EnrollmentStatus.COMPLETED)
