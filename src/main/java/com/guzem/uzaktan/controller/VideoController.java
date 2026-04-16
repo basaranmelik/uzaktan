@@ -10,7 +10,10 @@ import com.guzem.uzaktan.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
+import org.springframework.core.io.support.ResourceRegion;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRange;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -81,17 +84,19 @@ public class VideoController {
 
     @GetMapping("/{id}/stream")
     @ResponseBody
-    public ResponseEntity<Resource> streamVideo(@PathVariable Long id,
-                                                @AuthenticationPrincipal UserDetails principal) {
+    public ResponseEntity<ResourceRegion> streamVideo(
+            @PathVariable Long id,
+            @AuthenticationPrincipal UserDetails principal,
+            @RequestHeader(value = HttpHeaders.RANGE, required = false) String rangeHeader) throws java.io.IOException {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         CourseVideoResponse video = courseVideoService.findById(id);
 
         if (!enrollmentService.isActiveEnrollment(userId, video.getCourseId())) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         if (!courseVideoService.canAccessVideo(id, userId)) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         }
 
         Path filePath = fileStorageService.resolve(video.getFilePath());
@@ -100,10 +105,48 @@ public class VideoController {
             if (!resource.exists()) {
                 return ResponseEntity.notFound().build();
             }
-            return ResponseEntity.ok()
-                    .contentType(MediaType.parseMediaType(detectContentType(video.getOriginalFileName())))
+
+            String contentType = detectContentType(video.getOriginalFileName());
+            long fileLength = resource.contentLength();
+
+            if (rangeHeader == null) {
+                // Full file request
+                return ResponseEntity.ok()
+                        .contentType(MediaType.parseMediaType(contentType))
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
+                        .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                        .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(fileLength))
+                        .body(new ResourceRegion(resource, 0, fileLength));
+            }
+
+            // Range request handling
+            long start = 0, end = fileLength - 1;
+            if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
+                String range = rangeHeader.substring("bytes=".length());
+                String[] parts = range.split("-");
+
+                if (!parts[0].isEmpty()) {
+                    start = Long.parseLong(parts[0]);
+                }
+                if (parts.length > 1 && !parts[1].isEmpty()) {
+                    end = Long.parseLong(parts[1]);
+                }
+
+                start = Math.max(0, Math.min(start, fileLength - 1));
+                end = Math.max(start, Math.min(end, fileLength - 1));
+            }
+
+            long contentLength = end - start + 1;
+            ResourceRegion region = new ResourceRegion(resource, start, contentLength);
+
+            return ResponseEntity.status(HttpStatus.PARTIAL_CONTENT)
+                    .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
-                    .body(resource);
+                    .header(HttpHeaders.ACCEPT_RANGES, "bytes")
+                    .header(HttpHeaders.CONTENT_LENGTH, String.valueOf(contentLength))
+                    .header(HttpHeaders.CONTENT_RANGE, "bytes " + start + "-" + end + "/" + fileLength)
+                    .body(region);
+
         } catch (MalformedURLException e) {
             return ResponseEntity.badRequest().build();
         }
