@@ -116,8 +116,8 @@ public class SecurityConfig {
                                 .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
-                                        "script-src 'self' 'unsafe-inline' cdn.jsdelivr.net; " +
-                                        "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net fonts.googleapis.com; " +
+                                        "script-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdn.plyr.io; " +
+                                        "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net fonts.googleapis.com cdn.plyr.io; " +
                                         "font-src 'self' cdn.jsdelivr.net fonts.gstatic.com; " +
                                         "img-src 'self' data:; " +
                                         "media-src 'self'; " +
