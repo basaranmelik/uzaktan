@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +43,12 @@ public class InstructorServiceImpl implements InstructorService {
     @Cacheable(value = "instructor", key = "#id")
     public InstructorResponse findById(Long id) {
         return instructorMapper.toResponse(loadInstructor(id));
+    }
+
+    @Override
+    public Optional<InstructorResponse> findByName(String name) {
+        return instructorRepository.findByName(name)
+                .map(instructorMapper::toResponse);
     }
 
     @Override

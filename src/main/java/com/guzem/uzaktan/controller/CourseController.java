@@ -36,7 +36,7 @@ public class CourseController {
     private final CourseVideoService courseVideoService;
     private final CourseReviewService courseReviewService;
     private final com.guzem.uzaktan.service.CartService cartService;
-    private final com.guzem.uzaktan.repository.InstructorRepository instructorRepository;
+    private final com.guzem.uzaktan.service.InstructorService instructorService;
 
     @GetMapping
     public String listCourses(
@@ -76,7 +76,7 @@ public class CourseController {
         CourseResponse course = courseService.findById(id);
         
         if (course.getInstructorName() != null) {
-            instructorRepository.findByName(course.getInstructorName())
+            instructorService.findByName(course.getInstructorName())
                 .ifPresent(ins -> course.setInstructorImage(ins.getPhotoUrl()));
         }
         

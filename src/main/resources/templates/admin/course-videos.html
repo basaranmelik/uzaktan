@@ -296,7 +296,7 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
-<script th:inline="javascript">
+<script>
 function escapeHtml(str) {
   return String(str)
     .replace(/&/g, '&amp;')

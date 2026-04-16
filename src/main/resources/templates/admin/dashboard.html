@@ -142,47 +142,7 @@
       margin: 0 0 1rem 2px;
     }
 
-    .status-bar-wrap {
-      margin-bottom: 2.5rem;
-    }
 
-    .status-bar-row {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0.6rem;
-    }
-
-    .status-bar-label {
-      width: 110px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--text-alt);
-      flex-shrink: 0;
-    }
-
-    .status-bar-track {
-      flex: 1;
-      height: 8px;
-      background: var(--gray-100);
-      border-radius: 99px;
-      overflow: hidden;
-    }
-
-    .status-bar-fill {
-      height: 100%;
-      border-radius: 99px;
-      transition: width 0.6s;
-    }
-
-    .status-bar-count {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: var(--text-muted);
-      width: 32px;
-      text-align: right;
-      flex-shrink: 0;
-    }
   </style>
 </head>
 
@@ -199,7 +159,53 @@
   <section class="section">
     <div class="container">
 
+      <!-- ── Hızlı Erişim ── -->
+      <div class="admin-section-title">Hızlı Erişim</div>
+      <div class="admin-shortcut-grid" style="margin-bottom:2.5rem;">
 
+        <a th:href="@{/admin/kurslar/yeni}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#364fc7;"><i class="bi bi-plus-circle-fill"></i></div>
+          <h4>Yeni Kurs</h4>
+          <p>Eğitim ekle</p>
+        </a>
+
+        <a th:href="@{/admin/kurslar}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#2b8a3e;"><i class="bi bi-collection-fill"></i></div>
+          <h4>Kursları Yönet</h4>
+          <p>Düzenle, yayınla</p>
+        </a>
+
+        <a th:href="@{/admin/kullanicilar}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#862e9c;"><i class="bi bi-people-fill"></i></div>
+          <h4>Kullanıcılar</h4>
+          <p>Kilitle, sil, rol ata</p>
+        </a>
+
+        <a th:href="@{/admin/kayitlar}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#099268;"><i class="bi bi-person-check-fill"></i></div>
+          <h4>Kayıtlar</h4>
+          <p>Aktifleştir, sil</p>
+        </a>
+
+        <a th:href="@{/admin/sertifikalar}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#e8590c;"><i class="bi bi-award-fill"></i></div>
+          <h4>Sertifikalar</h4>
+          <p>Düzenle, iptal et</p>
+        </a>
+
+        <a th:href="@{/admin/egitmenler}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#d6336c;"><i class="bi bi-file-person-fill"></i></div>
+          <h4>Eğitmenler</h4>
+          <p>Eğitmen ekle, yönet</p>
+        </a>
+
+        <a th:href="@{/admin/yorumlar}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#fbbf24;"><i class="bi bi-star-half"></i></div>
+          <h4>Yorumlar</h4>
+          <p>Bekleyen Onaylar</p>
+        </a>
+
+      </div>
 
       <!-- ── İstatistik Kartları ── -->
       <div class="admin-section-title" style="margin-bottom:0.75rem; font-size:0.85rem; color:var(--primary-700);"><i
@@ -310,71 +316,6 @@
         </div>
       </div>
 
-      <!-- ── Kurs Durum Dağılımı ── -->
-      <div th:if="${courseCounts != null and !#maps.isEmpty(courseCounts)}"
-        style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:1.5rem 2rem;margin-bottom:2.5rem;">
-        <div class="admin-section-title" style="margin-bottom:1.25rem;">Kurs Durum Dağılımı</div>
-        <div th:each="entry : ${courseCounts}" class="status-bar-row">
-          <span class="status-bar-label" th:text="${entry.key.displayName}">Durum</span>
-          <div class="status-bar-track">
-            <div class="status-bar-fill" th:style="${'width:' + (totalCourses > 0 ? (entry.value * 100 / totalCourses) : 0) + '%;background:' +
-                 (entry.key.name() == 'PUBLISHED'    ? '#40c057' :
-                 (entry.key.name() == 'DRAFT'        ? '#fd7e14' :
-                 (entry.key.name() == 'IN_PROGRESS'  ? '#1c7ed6' :
-                 (entry.key.name() == 'COMPLETED'    ? '#339af0' : '#adb5bd'))))}"></div>
-          </div>
-          <span class="status-bar-count" th:text="${entry.value}">0</span>
-        </div>
-      </div>
-
-
-      <!-- ── Hızlı Erişim ── -->
-      <div class="admin-section-title">Hızlı Erişim</div>
-      <div class="admin-shortcut-grid">
-
-        <a th:href="@{/admin/kurslar/yeni}" class="admin-shortcut fade-in">
-          <div class="sc-icon" style="color:#364fc7;"><i class="bi bi-plus-circle-fill"></i></div>
-          <h4>Yeni Kurs</h4>
-          <p>Eğitim ekle</p>
-        </a>
-
-        <a th:href="@{/admin/kurslar}" class="admin-shortcut fade-in">
-          <div class="sc-icon" style="color:#2b8a3e;"><i class="bi bi-collection-fill"></i></div>
-          <h4>Kursları Yönet</h4>
-          <p>Düzenle, yayınla</p>
-        </a>
-
-        <a th:href="@{/admin/kullanicilar}" class="admin-shortcut fade-in">
-          <div class="sc-icon" style="color:#862e9c;"><i class="bi bi-people-fill"></i></div>
-          <h4>Kullanıcılar</h4>
-          <p>Kilitle, sil, rol ata</p>
-        </a>
-
-        <a th:href="@{/admin/kayitlar}" class="admin-shortcut fade-in">
-          <div class="sc-icon" style="color:#099268;"><i class="bi bi-person-check-fill"></i></div>
-          <h4>Kayıtlar</h4>
-          <p>Aktifleştir, sil</p>
-        </a>
-
-        <a th:href="@{/admin/sertifikalar}" class="admin-shortcut fade-in">
-          <div class="sc-icon" style="color:#e8590c;"><i class="bi bi-award-fill"></i></div>
-          <h4>Sertifikalar</h4>
-          <p>Düzenle, iptal et</p>
-        </a>
-
-        <a th:href="@{/admin/egitmenler}" class="admin-shortcut fade-in">
-          <div class="sc-icon" style="color:#d6336c;"><i class="bi bi-file-person-fill"></i></div>
-          <h4>Eğitmenler</h4>
-          <p>Eğitmen ekle, yönet</p>
-        </a>
-
-        <a th:href="@{/admin/yorumlar}" class="admin-shortcut fade-in">
-          <div class="sc-icon" style="color:#fbbf24;"><i class="bi bi-star-half"></i></div>
-          <h4>Yorumlar</h4>
-          <p>Bekleyen Onaylar</p>
-        </a>
-
-      </div>
 
     </div>
   </section>

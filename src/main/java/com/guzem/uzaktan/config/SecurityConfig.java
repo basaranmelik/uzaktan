@@ -63,12 +63,9 @@ public class SecurityConfig {
                                     && !sonra.contains(":")) {
                                 res.sendRedirect(req.getContextPath() + sonra);
                             } else {
-                                boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.ADMIN.getAuthority()));
-                                boolean isTeacher = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals(Role.TEACHER.getAuthority()));
-                                
-                                if (isAdmin) {
+                                if (hasRole(auth, Role.ADMIN)) {
                                     res.sendRedirect(req.getContextPath() + "/admin");
-                                } else if (isTeacher) {
+                                } else if (hasRole(auth, Role.TEACHER)) {
                                     res.sendRedirect(req.getContextPath() + "/egitmen/panel");
                                 } else {
                                     res.sendRedirect(req.getContextPath() + "/panom");
@@ -95,12 +92,8 @@ public class SecurityConfig {
                             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                             String redirect = "/";
                             if (auth != null) {
-                                boolean isAdmin = auth.getAuthorities().stream()
-                                        .anyMatch(a -> a.getAuthority().equals(Role.ADMIN.getAuthority()));
-                                boolean isTeacher = auth.getAuthorities().stream()
-                                        .anyMatch(a -> a.getAuthority().equals(Role.TEACHER.getAuthority()));
-                                if (isAdmin) redirect = "/admin";
-                                else if (isTeacher) redirect = "/egitmen/panel";
+                                if (hasRole(auth, Role.ADMIN)) redirect = "/admin";
+                                else if (hasRole(auth, Role.TEACHER)) redirect = "/egitmen/panel";
                                 else redirect = "/panom";
                             }
                             response.sendRedirect(request.getContextPath() + redirect);
@@ -114,6 +107,10 @@ public class SecurityConfig {
                                 .maxAgeInSeconds(31536000))
                         .referrerPolicy(referrer -> referrer
                                 .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                        // TODO: 'unsafe-inline' script-src'den kaldırmak için template'lerdeki
+                        //   inline onclick/onchange handler'lar (sss.html, admin/users.html, vb.)
+                        //   addEventListener tabanlı yaklaşıma geçirilmelidir.
+                        //   Inline JS blokları (izle.html, course-videos.html) zaten dış dosyaya taşındı.
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
                                         "script-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdn.plyr.io; " +
@@ -144,5 +141,10 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
+    }
+
+    private static boolean hasRole(Authentication auth, Role role) {
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals(role.getAuthority()));
     }
 }

@@ -125,14 +125,16 @@ public class VideoController {
             if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
                 String range = rangeHeader.substring("bytes=".length());
                 String[] parts = range.split("-");
-
-                if (!parts[0].isEmpty()) {
-                    start = Long.parseLong(parts[0]);
+                try {
+                    if (!parts[0].isEmpty()) {
+                        start = Long.parseLong(parts[0]);
+                    }
+                    if (parts.length > 1 && !parts[1].isEmpty()) {
+                        end = Long.parseLong(parts[1]);
+                    }
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.badRequest().build();
                 }
-                if (parts.length > 1 && !parts[1].isEmpty()) {
-                    end = Long.parseLong(parts[1]);
-                }
-
                 start = Math.max(0, Math.min(start, fileLength - 1));
                 end = Math.max(start, Math.min(end, fileLength - 1));
             }

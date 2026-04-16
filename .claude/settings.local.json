@@ -51,7 +51,16 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(docker-compose up:*)",
-      "Bash(pkill -f \"mvnw spring-boot:run\" sleep 2 ps aux)"
+      "Bash(pkill -f \"mvnw spring-boot:run\" sleep 2 ps aux)",
+      "Bash(pkill -f \"mvnw spring-boot:run\")",
+      "Bash(docker-compose down:*)",
+      "Bash(curl -s http://localhost:8080/giris)",
+      "Bash(pkill -f \"mvnw spring-boot:run\" sleep 2 ./mvnw clean package -DskipTests)",
+      "Bash(grep -r /*[[ /Users/basaran/Desktop/uzaktan/src/main/resources/templates --include=*.html)",
+      "Bash(grep -r th:data- /Users/basaran/Desktop/uzaktan/src/main/resources/templates --include=*.html)",
+      "Bash(find /Users/basaran/Desktop/uzaktan/src/main/resources/templates -name \"*.html\" -exec grep -l \"<script\" {})",
+      "Bash(find /Users/basaran/Desktop/uzaktan/src/main/resources/templates -name *.html -exec grep -l th:data- {})",
+      "Bash(2)"
     ]
   }
 }
