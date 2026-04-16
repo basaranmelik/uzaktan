@@ -3,7 +3,8 @@ target/
 .mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-.claude
+.claude*
+.claude/*.local.json
 CLAUDE.md
 
 ### STS ###
@@ -33,3 +34,4 @@ build/
 
 ### VS Code ###
 .vscode/
+.env

@@ -3,6 +3,7 @@ package com.guzem.uzaktan.controller;
 import com.guzem.uzaktan.dto.request.ProfileUpdateRequest;
 import com.guzem.uzaktan.dto.response.UserResponse;
 import com.guzem.uzaktan.service.CertificateService;
+import com.guzem.uzaktan.util.PhoneUtils;
 import com.guzem.uzaktan.service.EnrollmentService;
 import com.guzem.uzaktan.service.UserService;
 import jakarta.validation.Valid;
@@ -60,7 +61,7 @@ public class ProfileController {
             bindingResult.rejectValue("email", "duplicate", "Bu e-posta adresi zaten kullanımda.");
         }
         
-        if (request.getPhoneNumber() != null && !request.getPhoneNumber().trim().isEmpty() && !request.getPhoneNumber().equals("+90 ")) {
+        if (PhoneUtils.isProvided(request.getPhoneNumber())) {
             if (!request.getPhoneNumber().equals(user.getPhoneNumber()) && userService.existsByPhoneNumber(request.getPhoneNumber())) {
                 bindingResult.rejectValue("phoneNumber", "duplicate", "Bu telefon numarası zaten kullanımda.");
             }
