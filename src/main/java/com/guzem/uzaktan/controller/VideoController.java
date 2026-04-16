@@ -1,5 +1,6 @@
 package com.guzem.uzaktan.controller;
 
+import com.guzem.uzaktan.dto.request.VideoProgressRequest;
 import com.guzem.uzaktan.dto.response.CourseVideoResponse;
 import com.guzem.uzaktan.exception.ResourceNotFoundException;
 import com.guzem.uzaktan.service.CourseService;
@@ -167,6 +168,20 @@ public class VideoController {
 
         courseVideoService.markWatched(id, userId);
         return ResponseEntity.ok(Map.of("success", true));
+    }
+
+    @PostMapping("/{id}/progress")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> recordProgress(@PathVariable Long id,
+                                                               @AuthenticationPrincipal UserDetails principal,
+                                                               @RequestBody VideoProgressRequest req) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        CourseVideoResponse video = courseVideoService.findById(id);
+        if (!enrollmentService.isActiveEnrollment(userId, video.getCourseId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("ok", false));
+        }
+        courseVideoService.recordProgress(id, userId, req);
+        return ResponseEntity.ok(Map.of("ok", true));
     }
 
     private String detectContentType(String fileName) {

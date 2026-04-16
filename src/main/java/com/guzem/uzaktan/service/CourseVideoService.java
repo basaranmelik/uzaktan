@@ -1,5 +1,6 @@
 package com.guzem.uzaktan.service;
 
+import com.guzem.uzaktan.dto.request.VideoProgressRequest;
 import com.guzem.uzaktan.dto.response.CourseVideoResponse;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,6 +22,8 @@ public interface CourseVideoService {
     void delete(Long videoId);
 
     void markWatched(Long videoId, Long userId);
+
+    void recordProgress(Long videoId, Long userId, VideoProgressRequest req);
 
     void updateOrder(Long courseId, List<Long> orderedIds);
 

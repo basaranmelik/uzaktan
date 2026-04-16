@@ -31,4 +31,24 @@ public class VideoWatch {
     @CreationTimestamp
     @Column(name = "watched_at", updatable = false)
     private LocalDateTime watchedAt;
+
+    @Column(name = "completed", nullable = false)
+    @Builder.Default
+    private boolean completed = false;
+
+    @Column(name = "watch_time_seconds", nullable = false)
+    @Builder.Default
+    private int watchTimeSeconds = 0;
+
+    @Column(name = "max_position_seconds", nullable = false)
+    @Builder.Default
+    private int maxPositionSeconds = 0;
+
+    @Column(name = "seek_count", nullable = false)
+    @Builder.Default
+    private int seekCount = 0;
+
+    @Column(name = "authentic", nullable = false)
+    @Builder.Default
+    private boolean authentic = false;
 }

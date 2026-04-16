@@ -49,7 +49,9 @@
       "Bash(mv /tmp/app_props_utf8.properties /Users/basaran/Desktop/uzaktan/src/main/resources/application.properties)",
       "Bash(find /Users/basaran/Desktop/uzaktan -path */migrations/* -o -path */db/* -o -name flyway*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(pkill -f \"mvnw spring-boot:run\" sleep 2 ps aux)"
     ]
   }
 }

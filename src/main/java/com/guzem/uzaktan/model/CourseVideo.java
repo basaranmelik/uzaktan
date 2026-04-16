@@ -42,11 +42,15 @@ public class CourseVideo {
     @Column(name = "original_file_name", nullable = false)
     private String originalFileName;
 
+    @Column(name = "duration_seconds")
+    private Integer durationSeconds;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "video", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private java.util.List<VideoWatch> watches = new java.util.ArrayList<>();
 
 }

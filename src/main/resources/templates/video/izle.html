@@ -491,6 +491,67 @@
         }
     }
 
+    // ── Authenticity Tracking ──
+    var isPlaying = false;
+    var playStart = null;
+    var watchTimeDelta = 0;
+    var hasSeeked = false;
+
+    player.on('playing', () => {
+        isPlaying = true;
+        playStart = Date.now();
+    });
+
+    player.on('pause', () => {
+        if (isPlaying && playStart) {
+            watchTimeDelta += (Date.now() - playStart) / 1000;
+        }
+        isPlaying = false;
+        playStart = null;
+    });
+
+    player.on('seeked', () => {
+        hasSeeked = true;
+        if (isPlaying && playStart) {
+            watchTimeDelta += (Date.now() - playStart) / 1000;
+            playStart = Date.now();
+        }
+    });
+
+    function sendProgressPing() {
+        var now = Date.now();
+        var current = watchTimeDelta;
+        if (isPlaying && playStart) {
+            current += (now - playStart) / 1000;
+        }
+        var delta = Math.round(current);
+        if (delta < 2) return;
+
+        watchTimeDelta = 0;
+        if (isPlaying) playStart = now;
+        var seeked = hasSeeked;
+        hasSeeked = false;
+
+        var csrf = getCsrf();
+        fetch('/videolar/' + videoId + '/progress', {
+            method: 'POST',
+            headers: { [csrf.header]: csrf.token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                watchTimeDelta: delta,
+                currentPosition: Math.round(player.currentTime || 0),
+                duration: Math.round(player.duration || 0),
+                seeked: seeked
+            })
+        }).catch(() => {});
+    }
+
+    var progressPingTimer = setInterval(sendProgressPing, 15000);
+
+    window.addEventListener('beforeunload', () => {
+        sendProgressPing();
+        clearInterval(progressPingTimer);
+    });
+
     // ── Theater Mode ──
     window.toggleTheaterMode = function() {
         const layout = document.querySelector('.video-layout');

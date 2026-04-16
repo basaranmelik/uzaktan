@@ -1,5 +1,6 @@
 package com.guzem.uzaktan.service.impl;
 
+import com.guzem.uzaktan.dto.request.VideoProgressRequest;
 import com.guzem.uzaktan.dto.response.CourseVideoResponse;
 import com.guzem.uzaktan.exception.ResourceNotFoundException;
 import com.guzem.uzaktan.model.Course;
@@ -207,19 +208,52 @@ public class CourseVideoServiceImpl implements CourseVideoService {
     }
 
     @Override
+    public void recordProgress(Long videoId, Long userId, VideoProgressRequest req) {
+        CourseVideo video = loadVideo(videoId);
+        if (req.getDuration() > 0 && video.getDurationSeconds() == null) {
+            video.setDurationSeconds(req.getDuration());
+            courseVideoRepository.save(video);
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", userId));
+
+        VideoWatch watch = videoWatchRepository.findByUserIdAndVideoId(userId, videoId)
+                .orElseGet(() -> VideoWatch.builder().user(user).video(video).build());
+
+        if (watch.isCompleted()) {
+            return;
+        }
+
+        watch.setWatchTimeSeconds(watch.getWatchTimeSeconds() + Math.max(0, req.getWatchTimeDelta()));
+        watch.setMaxPositionSeconds(Math.max(watch.getMaxPositionSeconds(), req.getCurrentPosition()));
+        if (req.isSeeked()) {
+            watch.setSeekCount(watch.getSeekCount() + 1);
+        }
+        videoWatchRepository.save(watch);
+    }
+
+    @Override
     public void markWatched(Long videoId, Long userId) {
-        if (videoWatchRepository.existsByUserIdAndVideoId(userId, videoId)) {
-            return; // already watched
+        if (videoWatchRepository.existsByUserIdAndVideoIdAndCompletedTrue(userId, videoId)) {
+            return;
         }
 
         CourseVideo video = loadVideo(videoId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", userId));
 
-        VideoWatch watch = VideoWatch.builder()
-                .user(user)
-                .video(video)
-                .build();
+        VideoWatch watch = videoWatchRepository.findByUserIdAndVideoId(userId, videoId)
+                .orElseGet(() -> VideoWatch.builder().user(user).video(video).build());
+
+        boolean authentic = false;
+        Integer duration = video.getDurationSeconds();
+        if (duration != null && duration > 0) {
+            authentic = watch.getWatchTimeSeconds() >= duration * 0.5;
+        }
+
+        watch.setCompleted(true);
+        watch.setAuthentic(authentic);
         videoWatchRepository.save(watch);
 
         enrollmentService.recalculateProgress(userId, video.getCourse().getId());
