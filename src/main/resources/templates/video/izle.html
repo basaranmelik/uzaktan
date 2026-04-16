@@ -397,25 +397,6 @@
         }
     });
 
-    if (videoElement) {
-        videoElement.addEventListener('timeupdate', () => {
-            checkWatchThreshold(videoElement.currentTime, videoElement.duration);
-        });
-
-        videoElement.addEventListener('ended', () => {
-            if (marked) {
-                handleAutoPlay();
-                return;
-            }
-
-            markAsWatched().then(data => {
-                if (data && data.success) {
-                    handleAutoPlay();
-                }
-            });
-        });
-    }
-
     var thresholdPoller = window.setInterval(() => {
         if (marked || !videoElement) {
             if (marked) {

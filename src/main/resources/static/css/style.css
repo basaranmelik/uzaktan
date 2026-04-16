@@ -3154,6 +3154,7 @@ textarea.form-control {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  pointer-events: none;
 }
 .toast {
   background: #fff;
@@ -3170,6 +3171,7 @@ textarea.form-control {
   font-size: 0.9rem;
   font-weight: 500;
   color: var(--text);
+  pointer-events: auto;
 }
 .toast-success { border-left-color: #2b8a3e; }
 .toast-error   { border-left-color: #c92a2a; }

@@ -539,7 +539,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ---------- Toast Notification System ----------
-function showToast(message, type = 'info') {
+function showToast(message, type = 'info', duration = 4000) {
     let container = document.getElementById('toast-container');
     if (!container) {
         container = document.createElement('div');
@@ -549,23 +549,40 @@ function showToast(message, type = 'info') {
 
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    
+
     let icon = 'bi-info-circle-fill';
     if (type === 'success') icon = 'bi-check-circle-fill';
     if (type === 'error') icon = 'bi-exclamation-octagon-fill';
     if (type === 'warning') icon = 'bi-exclamation-triangle-fill';
 
-    toast.innerHTML = `<i class="bi ${icon}"></i><span>${message}</span>`;
+    toast.innerHTML = `
+        <i class="bi ${icon}"></i>
+        <span style="flex: 1;">${message}</span>
+        <button class="toast-close" style="background: none; border: none; color: inherit; cursor: pointer; padding: 0; font-size: 1.2rem; opacity: 0.6;">×</button>
+    `;
+
+    const closeBtn = toast.querySelector('.toast-close');
+    let timeoutId = null;
+    let dismissed = false;
+
+    const removeToast = () => {
+        if (!dismissed) {
+            dismissed = true;
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+            if (timeoutId) clearTimeout(timeoutId);
+        }
+    };
+
+    closeBtn.addEventListener('click', removeToast);
+
     container.appendChild(toast);
 
     // Show
     setTimeout(() => toast.classList.add('show'), 10);
 
-    // Hide and Remove
-    setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => toast.remove(), 300);
-    }, 4000);
+    // Auto-hide
+    timeoutId = setTimeout(removeToast, duration);
 }
 
 // ---------- Video Locking Handler ----------
