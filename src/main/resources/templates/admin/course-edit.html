@@ -161,9 +161,12 @@
         </div>
 
         <div class="form-group">
-          <label>Açıklama</label>
-          <textarea th:field="*{description}" class="form-control" rows="4"
+          <label id="desc-label-edit">Açıklama</label>
+          <textarea th:field="*{description}" id="desc-input-edit" class="form-control" rows="4"
                     th:placeholder="${course.description}" maxlength="5000"></textarea>
+          <small id="desc-hint-edit" style="color:var(--text-muted);display:none;">
+            <i class="bi bi-info-circle"></i> Uzaktan örgün kurslar için opsiyonel.
+          </small>
         </div>
 
         <div class="form-row">
@@ -390,6 +393,18 @@
       const types = el.dataset.showFor.split(',');
       el.style.display = types.includes(selected) ? '' : 'none';
     });
+
+    // Update description label based on course type
+    const descLabel = document.getElementById('desc-label-edit');
+    const descHint = document.getElementById('desc-hint-edit');
+
+    if (selected === 'REMOTE_FORMAL') {
+      descLabel.textContent = 'Açıklama';
+      descHint.style.display = 'block';
+    } else {
+      descLabel.textContent = 'Açıklama';
+      descHint.style.display = 'none';
+    }
   }
   document.querySelectorAll('input[name="courseType"]').forEach(r =>
     r.addEventListener('change', updateTypeFields));

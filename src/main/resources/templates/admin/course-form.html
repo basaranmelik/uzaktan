@@ -96,9 +96,12 @@
         </div>
 
         <div class="form-group">
-          <label>Açıklama *</label>
-          <textarea th:field="*{description}" class="form-control" rows="4"
+          <label id="desc-label">Açıklama *</label>
+          <textarea th:field="*{description}" id="desc-input" class="form-control" rows="4"
                     placeholder="Kursun içeriği, hedef kitlesi, kazanımlar..." maxlength="5000" required></textarea>
+          <small id="desc-hint" style="color:var(--text-muted);display:none;">
+            <i class="bi bi-info-circle"></i> Uzaktan örgün kurslar için opsiyonel.
+          </small>
         </div>
 
         <div class="form-row">
@@ -304,6 +307,21 @@
       quotaInput.required = true;
       quotaInput.placeholder = '30';
       quotaHint.style.display = 'none';
+    }
+
+    // Update description field based on course type
+    const descLabel = document.getElementById('desc-label');
+    const descInput = document.getElementById('desc-input');
+    const descHint = document.getElementById('desc-hint');
+
+    if (selected === 'REMOTE_FORMAL') {
+      descLabel.textContent = 'Açıklama';
+      descInput.required = false;
+      descHint.style.display = 'block';
+    } else {
+      descLabel.textContent = 'Açıklama *';
+      descInput.required = true;
+      descHint.style.display = 'none';
     }
   }
 
