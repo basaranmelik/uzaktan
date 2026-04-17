@@ -30,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.math.RoundingMode;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -105,6 +106,7 @@ public class CourseServiceImpl implements CourseService {
     public CourseResponse create(CourseCreateRequest request, MultipartFile image) {
         validateCourseTypeFields(request.getCourseType(), request.getQuota(),
                 request.getStartDate(), request.getEndDate(), request.getLocation());
+        normalizePrice(request);
         Course course = courseMapper.toEntity(request);
         if (request.getInstructorId() != null) {
             User instructor = userRepository.findById(request.getInstructorId())
@@ -133,6 +135,7 @@ public class CourseServiceImpl implements CourseService {
                 request.getStartDate() != null ? request.getStartDate() : course.getStartDate(),
                 request.getEndDate() != null ? request.getEndDate() : course.getEndDate(),
                 request.getLocation() != null ? request.getLocation() : course.getLocation());
+        normalizePrice(request);
         courseMapper.updateEntity(course, request);
         if (request.getInstructorId() != null) {
             User instructor = userRepository.findById(request.getInstructorId())
@@ -200,11 +203,13 @@ public class CourseServiceImpl implements CourseService {
     @Transactional(readOnly = true)
     @Cacheable(value = "courseStats", key = "'status'")
     public Map<CourseStatus, Long> getStatusCounts() {
-        return Arrays.stream(CourseStatus.values())
-                .collect(Collectors.toMap(
-                        status -> status,
-                        courseRepository::countByStatus
-                ));
+        Map<CourseStatus, Long> ordered = new java.util.LinkedHashMap<>();
+        for (CourseStatus status : new CourseStatus[]{
+                CourseStatus.PUBLISHED, CourseStatus.IN_PROGRESS,
+                CourseStatus.DRAFT, CourseStatus.COMPLETED, CourseStatus.CANCELLED}) {
+            ordered.put(status, courseRepository.countByStatus(status));
+        }
+        return ordered;
     }
 
     @Override
@@ -302,6 +307,18 @@ public class CourseServiceImpl implements CourseService {
             map.put((Long) row[0], (Long) row[1]);
         }
         return map;
+    }
+
+    private void normalizePrice(CourseCreateRequest request) {
+        if (request.getPrice() != null) {
+            request.setPrice(request.getPrice().setScale(2, RoundingMode.HALF_UP));
+        }
+    }
+
+    private void normalizePrice(CourseUpdateRequest request) {
+        if (request.getPrice() != null) {
+            request.setPrice(request.getPrice().setScale(2, RoundingMode.HALF_UP));
+        }
     }
 
     private Course loadCourse(Long id) {

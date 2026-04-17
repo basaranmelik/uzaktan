@@ -6,9 +6,118 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="GUZEM hakkında bilgi edinin.">
   <title>Hakkımızda | Gazi Üniversitesi UZEM</title>
-  
+
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .about-glass-panel {
+      background: linear-gradient(145deg, rgba(255,255,255,0.92) 0%, rgba(255,255,255,0.8) 100%);
+      border: 1px solid rgba(136, 201, 242, 0.35);
+      border-radius: 18px;
+      box-shadow: 0 14px 38px rgba(17, 58, 113, 0.08);
+      backdrop-filter: blur(6px);
+    }
+    .gazi-image-card {
+      background: #ffffff;
+      border: 1px solid #e0e8f0;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 16px 36px rgba(12, 39, 71, 0.1);
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+      max-width: 980px;
+      margin: 0 auto;
+    }
+    .gazi-image-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 24px 44px rgba(12, 39, 71, 0.14);
+    }
+    .gazi-image-container {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      overflow: hidden;
+      background: linear-gradient(135deg, #dfeaf5 0%, #eef4f9 100%);
+    }
+    .gazi-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .gazi-image-caption {
+      padding: 2rem;
+      text-align: center;
+      background: linear-gradient(180deg, #f5f8fc 0%, #ffffff 100%);
+    }
+    .gazi-image-caption h3 {
+      color: #102a43;
+      margin: 0 0 0.5rem;
+      font-size: 1.2rem;
+    }
+    .gazi-image-caption p {
+      color: #55697d;
+      margin: 0;
+      line-height: 1.7;
+      font-size: 1rem;
+    }
+    .mission-vision-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-xl);
+      margin-top: var(--space-2xl);
+    }
+    .mv-card {
+      position: relative;
+      padding: var(--space-2xl);
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: #fff;
+      box-shadow: var(--shadow-md);
+      transition: transform var(--transition-base), box-shadow var(--transition-base), border-color var(--transition-base);
+    }
+    .mv-card:hover {
+      transform: translateY(-6px);
+      box-shadow: var(--shadow-xl);
+      border-color: var(--primary-200);
+    }
+    .mv-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(136,201,242,0.24) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .mv-icon {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--space-md);
+      font-size: 1.4rem;
+      color: #fff;
+      box-shadow: 0 10px 24px rgba(17, 58, 113, 0.24);
+    }
+    .mv-icon.mission { background: linear-gradient(135deg, #113a71 0%, #1a6fad 100%); }
+    .mv-icon.vision  { background: linear-gradient(135deg, #0d2d58 0%, #4aaae0 100%); }
+    .mv-card h3 {
+      margin: 0 0 var(--space-sm);
+      font-size: 1.35rem;
+      color: var(--primary-700);
+    }
+    .mv-card p {
+      margin: 0;
+      color: var(--text-alt);
+      line-height: 1.8;
+      font-size: 0.98rem;
+    }
+    @media (max-width: 900px) {
+      .mission-vision-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -26,14 +135,35 @@
 
 <section class="section">
   <div class="container">
-    <div class="about-intro-grid">
-      <div class="about-image fade-in-left" style="display:flex;align-items:center;justify-content:center;"><i class="bi bi-mortarboard-fill" style="font-size:5rem;color:var(--primary-400);"></i></div>
-      <div class="about-text fade-in-right">
-        <span class="section-badge">Hikayemiz</span>
-        <h3>Eğitimde Dijital Dönüşümün Öncüsü</h3>
-        <p>Gazi Üniversitesi Uzaktan Eğitim Merkezi (GUZEM), 2020 yılında herkesin kaliteli eğitime erişebilmesi vizyonuyla kurulmuştur.</p>
-        <p>Alanında uzman akademisyenler, güncel müfredat ve pratiğe dayalı eğitim yaklaşımımızla sektörde kalıcı bir fark yaratıyoruz.</p>
-        <p>Bugün 50'den fazla uzman eğitmen, yüzlerce sertifika programı ve aktif öğrencileriyle Türkiye'nin en seçkin online eğitim platformlarından biriyiz.</p>
+    <div class="gazi-image-card about-glass-panel fade-in">
+      <div class="gazi-image-container">
+        <img th:src="@{/images/gazi_rektorluk_2.png}" alt="Gazi Üniversitesi Rektörlüğü">
+      </div>
+      <div class="gazi-image-caption">
+        <h3>Gazi Üniversitesi Uzaktan Eğitim ve Araştırma Merkezi</h3>
+        <p>Gazinin Dijital Yüzü sloganını benimseyen GUZEM, uzaktan eğitim ile ilgili araştırma ve geliştirme yapma, ön lisans, lisans ve lisansüstü eğitimdeki e-öğrenme temelli ders ve programlar ile faaliyetleri düzenleme ve üniversite verilmekte olan dersleri e-öğrenme ile destekleme, uzaktan eğitim yoluyla mezuniyet sonrası eğitim programları düzenleyerek mesleki bilgilerin düzenlenmesine yardımcı olma, ihtiyaç duyulan alanlarda toplumun her kesimine yönelik diploma, sertifika vb. programları düzenleyerek bilgiyi topluma yayma ve yaşam boyu öğrenim ilkesini topluma benimsetme hedefleriyle Gazi Üniversitesi'nin ulusal ve uluslararası ölçekte alanında öncü araştırma merkezlerinden birisi olma yolunca çalışmalarına devam etmektedir.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-header fade-in">
+      <span class="section-badge">Kurumsal Yönümüz</span>
+      <h2>Misyon ve Vizyon</h2>
+      <p>Uzaktan eğitimde kaliteyi, erişilebilirliği ve yenilikçiliği merkeze alan yaklaşımımız.</p>
+    </div>
+    <div class="mission-vision-grid">
+      <div class="mv-card fade-in">
+        <div class="mv-icon mission"><i class="bi bi-bullseye"></i></div>
+        <h3>Misyonumuz</h3>
+        <p>Gazi Üniversitesi Uzaktan Eğitim Uygulama ve Araştırma Merkezi’nin misyonu, çağdaş bilgi ve iletişim teknolojilerini kullanarak eğitim ve öğretimin etkinliğini artıran, hayat boyu öğrenimin önemini kavramış, kişilerin eğitim ihtiyaçlarını karşılamayı ilke edinmiş, sürdürülebilir eğitim sistemine sahip, yeniliklere açık, katılımcı, ulusal düzeyde rekabet edebilir, uluslararası işbirliğine açık, lider bir merkez olmaktır.</p>
+      </div>
+      <div class="mv-card fade-in">
+        <div class="mv-icon vision"><i class="bi bi-binoculars-fill"></i></div>
+        <h3>Vizyonumuz</h3>
+        <p>Gazi Üniversitesi Uzaktan Eğitim Uygulama ve Araştırma Merkezi'nin vizyonu bütün çalışma ekibiyle, sadece Gazi Üniversitesi’e değil, tüm Türkiye’ye uzatan eğitim hizmetlerini ulaştırmaktır.</p>
       </div>
     </div>
   </div>
@@ -43,126 +173,59 @@
   <div class="container">
     <div class="section-header fade-in">
       <span class="section-badge">Değerlerimiz</span>
-      <h2>Misyon, Vizyon ve Değerler</h2>
-      <p>Eğitim felsefemizi şekillendiren temel dayanaklarımız.</p>
+      <h2>Temel Değerlerimiz</h2>
+      <p>Kurumsal yaklaşımımızı ve çalışma kültürümüzü belirleyen önceliklerimiz.</p>
     </div>
     <div class="values-grid">
       <div class="value-card fade-in">
         <div class="value-icon" style="background:var(--primary-50);color:var(--primary-500);"><i class="bi bi-bullseye"></i></div>
-        <h4>Misyonumuz</h4>
-        <p>Herkesin konum ve ekonomik koşullarından bağımsız olarak kaliteli bilgiye ve tecrübeye erişebilmesini sağlamak.</p>
+        <h4>Eğitim ve Araştırmada Öncü</h4>
+        <p>Evrensel bilime ve millî kültürün oluşmasına katkı sağlayan öğrenme ve araştırma isteğini teşvik eden yüksek akademik niteliği.</p>
       </div>
       <div class="value-card fade-in">
         <div class="value-icon" style="background:#e6fcf5;color:var(--accent-600);"><i class="bi bi-binoculars-fill"></i></div>
-        <h4>Vizyonumuz</h4>
-        <p>Türkiye'nin ve bölgenin en yenilikçi, en prestijli eğitim platformu olmaya devam etmek.</p>
+        <h4>Kalite Odaklı</h4>
+        <p>Kurum kültürüne uygun olarak; eğitim-öğretim, araştırma ve toplumsal hizmet alanlarında çağın gerek ve ihtiyaçlarına göre sürekli iyileştirme faaliyetlerini sürdürmeyi.</p>
       </div>
       <div class="value-card fade-in">
         <div class="value-icon" style="background:#fff4e6;color:#e8590c;"><i class="bi bi-lightbulb-fill"></i></div>
-        <h4>İnovasyon</h4>
-        <p>Eğitim teknolojilerindeki güncel paradigmaları yakalar, eğitimlere yansıtırız.</p>
+        <h4>Katılımcı</h4>
+        <p>Kurumsal karar verme süreçlerini iç ve dış paydaş katılımı sağlayarak yürütmeyi.</p>
       </div>
       <div class="value-card fade-in">
         <div class="value-icon" style="background:#f3f0ff;color:#7950f2;"><i class="bi bi-people-fill"></i></div>
-        <h4>Erişilebilirlik</h4>
-        <p>Eğitimi mekan bağımsız herkes için anlaşılır, akıcı ve ulaşılabilir hale getiririz.</p>
+        <h4>Çevreye Duyarlı</h4>
+        <p>Ürün ve hizmetleri geliştirirken ve sunarken çevrenin korunmasına ve iyileştirilmesine özen göstermeyi.</p>
       </div>
       <div class="value-card fade-in">
         <div class="value-icon" style="background:#fff5f5;color:#e03131;"><i class="bi bi-star-fill"></i></div>
-        <h4>Kalite Odaklılık</h4>
-        <p>Açılan her program üniversitenin kalite standartlarından geçer ve özenle sunulur.</p>
+        <h4>Sorgulayıcı ve Yenilikçi</h4>
+        <p>Bilimde özgünlüğü arayan; araştırma, eğitim, teknoloji konularındaki gelişmelerde sorgulayıcı, eleştirel, toplumun ve insanlığın gereksinimlerine hizmet edecek yenilikçi çağdaş yaklaşımı.</p>
       </div>
       <div class="value-card fade-in">
         <div class="value-icon" style="background:#e7f5ff;color:#1c7ed6;"><i class="bi bi-globe2"></i></div>
-        <h4>Toplumsal Etki</h4>
-        <p>Bilginin yayılmasının sadece bireyi değil, tüm toplumu dönüştürdüğüne inanırız.</p>
+        <h4>İnsana ve Topluma Karşı Sorumlu</h4>
+        <p>Millî değerleri sahiplenmeyi merkeze alan, her türlü görüş ve düşüncenin barış ve hoşgörü içinde dile getirilebildiği; farklılıkların zenginlik olarak görüldüğü, her türlü ayrımcılığa karşı çıkan evrensel yaklaşımı; üretilen bilgi, teknoloji ve hizmeti iç ve dış paydaşlar aracılığı ile toplum yararına sunmayı.</p>
       </div>
-    </div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="container">
-    <div class="section-header fade-in">
-      <span class="section-badge">Yolculuğumuz</span>
-      <h2>GUZEM'in Hikayesi</h2>
-      <p>Kuruluşumuzdan bugüne önemli dönüm noktalarımız.</p>
-    </div>
-    <div class="timeline">
-      <div class="timeline-item fade-in">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-          <div class="timeline-year">2020</div>
-          <h4>Kuruluş</h4>
-          <p>GUZEM, bir avuç öğretim görevlisiyle ilk programlarını başlattı.</p>
-        </div>
+      <div class="value-card fade-in">
+        <div class="value-icon" style="background:#f3f0ff;color:#7950f2;"><i class="bi bi-award-fill"></i></div>
+        <h4>Liyakat ve Etik Değerlere Bağlı</h4>
+        <p>Evrensel, bilimsel, akademik ve mesleki etik değerleri merkeze almayı; başarıyı, yeteneği, çalışmayı ve çabayı yüceltmeyi; seçim ve değerlendirmelerini yetkinlikler temelinde ve nesnelliği gözeterek gerçekleştirmeyi.</p>
       </div>
-      <div class="timeline-item fade-in">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-          <div class="timeline-year">2021</div>
-          <h4>Hızlı Büyüme</h4>
-          <p>1.000 aktif öğrenciye ve devasa bir eğitim arşivine ulaşıldı.</p>
-        </div>
+      <div class="value-card fade-in">
+        <div class="value-icon" style="background:#fff4e6;color:#e8590c;"><i class="bi bi-building-fill-check"></i></div>
+        <h4>Kurumsal Aidiyeti Yüksek</h4>
+        <p>Mensubu olmakla gurur duyulan ve bunun sorumluluğunu taşıyabilen bir kurum olmayı.</p>
       </div>
-      <div class="timeline-item fade-in">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-          <div class="timeline-year">2022</div>
-          <h4>Kurumsal Eğitimler</h4>
-          <p>Şirketler ve kurumlar için özel uzmanlık eğitimleri planlandı.</p>
-        </div>
+      <div class="value-card fade-in">
+        <div class="value-icon" style="background:#e6fcf5;color:var(--accent-600);"><i class="bi bi-bank2"></i></div>
+        <h4>Tarih ve Kültürüne Bağlı</h4>
+        <p>Tarihî, kültürel, millî ve manevi değerlere karşı duyarlı bir yaklaşıma sahip olmayı.</p>
       </div>
-      <div class="timeline-item fade-in">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-          <div class="timeline-year">2023</div>
-          <h4>Dışa Açılım</h4>
-          <p>Türkiye'yi aşan ve yurt dışından katılan öğrencilere ev sahipliği yapılmaya başlandı.</p>
-        </div>
-      </div>
-      <div class="timeline-item fade-in">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-          <div class="timeline-year">2024</div>
-          <h4>10.000 Barajı</h4>
-          <p>10 binden fazla öğrenci %98'lik etkileyici bir memnuniyet oranı sağladı.</p>
-        </div>
-      </div>
-      <div class="timeline-item fade-in">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-          <div class="timeline-year">2025</div>
-          <h4>Akıllı Dönüşüm</h4>
-          <p>Ödevlendirme ve sistem içi deneyimleri maksimize edecek teknik geliştirmelere geçildi.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section class="stats-bar">
-  <div class="container">
-    <div class="stats-grid">
-      <div class="stat-card fade-in">
-        <div class="stat-icon"><i class="bi bi-mortarboard-fill"></i></div>
-        <div class="stat-number" data-count="15000" data-suffix="+">0</div>
-        <div class="stat-label">Aktif Öğrenci</div>
-      </div>
-      <div class="stat-card fade-in">
-        <div class="stat-icon"><i class="bi bi-collection-fill"></i></div>
-        <div class="stat-number" data-count="200" data-suffix="+">0</div>
-        <div class="stat-label">Online Eğitim</div>
-      </div>
-      <div class="stat-card fade-in">
-        <div class="stat-icon"><i class="bi bi-person-video3"></i></div>
-        <div class="stat-number" data-count="50" data-suffix="+">0</div>
-        <div class="stat-label">Uzman Eğitmen</div>
-      </div>
-      <div class="stat-card fade-in">
-        <div class="stat-icon"><i class="bi bi-globe-americas"></i></div>
-        <div class="stat-number" data-count="12" data-suffix="">0</div>
-        <div class="stat-label">Ülke</div>
+      <div class="value-card fade-in">
+        <div class="value-icon" style="background:var(--primary-50);color:var(--primary-500);"><i class="bi bi-globe-americas"></i></div>
+        <h4>Bölgesel ve Küresel Sorumluluklarının Farkında</h4>
+        <p>Sahip olduğu birim ve insan kaynaklarıyla ülkenin fiziki, ekonomik, stratejik ve sosyal şartlarına, yakın coğrafya ve dünya sorunlarına duyarlı olmayı ve çözüm üretebilmeyi kendine temel değerler olarak benimser.</p>
       </div>
     </div>
   </div>
@@ -184,10 +247,5 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 
 <script th:src="@{/js/main.js}"></script>
-<script>
-    if (typeof animateCounters === 'function') {
-        animateCounters();
-    }
-</script>
 </body>
 </html>

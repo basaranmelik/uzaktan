@@ -14,4 +14,6 @@ public interface CourseReviewRepository extends JpaRepository<CourseReview, Long
     List<CourseReview> findByIsApprovedFalseOrderByCreatedAtDesc();
 
     boolean existsByCourseIdAndUserId(Long courseId, Long userId);
+
+    long countByIsApprovedFalse();
 }

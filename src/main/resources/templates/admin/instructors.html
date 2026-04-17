@@ -73,7 +73,6 @@
       <table class="admin-table">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Eğitmen</th>
             <th>Uzmanlık</th>
             <th>İşlem</th>
@@ -81,8 +80,6 @@
         </thead>
         <tbody id="instructors-table-body">
           <tr th:each="ins : ${instructors}" class="instructor-row">
-            <td style="color:var(--text-muted);" th:text="${ins.id}">1</td>
-
             <td>
               <div class="instructor-info">
                 <img th:if="${ins.photoUrl != null}" th:src="@{${ins.photoUrl}}" class="instructor-photo" alt="Foto">

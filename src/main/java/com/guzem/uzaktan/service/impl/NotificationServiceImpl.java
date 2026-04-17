@@ -73,6 +73,17 @@ public class NotificationServiceImpl implements NotificationService {
         });
     }
 
+    @Override
+    public boolean delete(Long notificationId, Long userId) {
+        return notificationRepository.findById(notificationId)
+                .filter(n -> n.getRecipient().getId().equals(userId))
+                .map(n -> {
+                    notificationRepository.delete(n);
+                    return true;
+                })
+                .orElse(false);
+    }
+
     private NotificationResponse toResponse(Notification n) {
         return NotificationResponse.builder()
                 .id(n.getId())

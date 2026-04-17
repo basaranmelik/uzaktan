@@ -20,4 +20,6 @@ public interface NotificationService {
     void markAllRead(Long userId);
 
     void markRead(Long notificationId, Long userId);
+
+    boolean delete(Long notificationId, Long userId);
 }

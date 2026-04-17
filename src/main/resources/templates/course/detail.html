@@ -108,7 +108,7 @@
     .cd-meta-pill i { color: var(--accent-500); font-size: 0.85rem; }
 
     /* rating stars row */
-    .cd-stars { font-size: 1.1rem; margin-bottom: 1.25rem; }
+    .cd-stars { font-size: 1.1rem; margin-bottom: 0; margin-top: auto; }
 
     /* ── Sidebar card ── */
     .cd-sidebar {
@@ -428,7 +428,7 @@
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       transition: box-shadow var(--transition-fast), transform var(--transition-fast);
-      margin-top: auto;
+      margin-top: 0;
     }
     .cd-instructor-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.1); }
     .cd-instructor-avatar {
@@ -511,35 +511,6 @@
           <span th:if="${course.reviewCount == 0}" style="color:rgba(255,255,255,0.5); font-size:0.85rem;">
             <i class="bi bi-star"></i> Henüz değerlendirme yok
           </span>
-        </div>
-
-        <!-- Info Strip Kartlari -->
-        <div class="cd-info-strip">
-          <div class="cd-info-card" th:if="${course.hours != null}">
-            <i class="bi bi-clock-history"></i>
-            <div class="cd-ic-value" th:text="${course.hours} + ' Saat'">0 Saat</div>
-            <div class="cd-ic-label">Toplam Süre</div>
-          </div>
-          <div class="cd-info-card" th:if="${course.module != null}">
-            <i class="bi bi-collection-play-fill"></i>
-            <div class="cd-ic-value" th:text="${course.module} + ' Modül'">0 Modül</div>
-            <div class="cd-ic-label">Video İçerik</div>
-          </div>
-          <div class="cd-info-card">
-            <i class="bi bi-people-fill"></i>
-            <div class="cd-ic-value" th:text="${course.enrolledCount}">0</div>
-            <div class="cd-ic-label">Kayıtlı Öğrenci</div>
-          </div>
-          <div class="cd-info-card">
-            <i class="bi bi-award-fill"></i>
-            <div class="cd-ic-value">Evet</div>
-            <div class="cd-ic-label">Sertifika</div>
-          </div>
-          <div class="cd-info-card" th:if="${course.averageRating != null and course.reviewCount > 0}">
-            <i class="bi bi-star-fill" style="color: var(--warm-500);"></i>
-            <div class="cd-ic-value" th:text="${course.averageRating} + ' / 5'">0</div>
-            <div class="cd-ic-label" th:text="${course.reviewCount} + ' Değerlendirme'">Değerlendirme</div>
-          </div>
         </div>
 
         <!-- Eğitmen Kartı -->

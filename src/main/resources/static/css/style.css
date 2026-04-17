@@ -560,6 +560,24 @@ p {
   width: 7px; height: 7px; border-radius: 50%;
   background: var(--primary-600); flex-shrink: 0; margin-top: 6px;
 }
+.nav-notif-remove {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.nav-notif-remove:hover {
+  background: #ffe3e3;
+  color: #c92a2a;
+}
 
 /* Cart items */
 .nav-cart-item {

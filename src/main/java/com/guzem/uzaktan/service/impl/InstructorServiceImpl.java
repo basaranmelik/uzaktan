@@ -82,6 +82,10 @@ public class InstructorServiceImpl implements InstructorService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "instructor", key = "#id"),
+        @CacheEvict(value = "instructors", allEntries = true)
+    })
     public void delete(Long id) {
         Instructor instructor = loadInstructor(id);
         instructorRepository.delete(instructor);

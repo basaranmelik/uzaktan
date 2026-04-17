@@ -2,6 +2,7 @@ package com.guzem.uzaktan.controller.admin;
 
 import com.guzem.uzaktan.service.AssignmentService;
 import com.guzem.uzaktan.service.CertificateService;
+import com.guzem.uzaktan.service.CourseReviewService;
 import com.guzem.uzaktan.service.CourseService;
 import com.guzem.uzaktan.service.InstructorService;
 import com.guzem.uzaktan.service.UserService;
@@ -24,6 +25,7 @@ public class AdminDashboardController {
     private final AssignmentService assignmentService;
     private final InstructorService instructorService;
     private final com.guzem.uzaktan.service.EnrollmentService enrollmentService;
+    private final CourseReviewService courseReviewService;
 
     @GetMapping
     public String dashboard(Model model) {
@@ -39,6 +41,8 @@ public class AdminDashboardController {
         model.addAttribute("totalInstructors", instructorService.findAll().size());
         model.addAttribute("totalEnrollments", enrollmentService.countTotal());
         model.addAttribute("pendingEnrollments", enrollmentService.countByStatus(com.guzem.uzaktan.model.EnrollmentStatus.PENDING_PAYMENT));
+        model.addAttribute("totalReviews", courseReviewService.countAllReviews());
+        model.addAttribute("pendingReviews", courseReviewService.countPendingReviews());
         return "admin/dashboard";
     }
 }

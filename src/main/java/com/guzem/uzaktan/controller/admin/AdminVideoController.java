@@ -2,9 +2,13 @@ package com.guzem.uzaktan.controller.admin;
 
 import com.guzem.uzaktan.service.CourseService;
 import com.guzem.uzaktan.service.CourseVideoService;
+import com.guzem.uzaktan.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -15,14 +19,18 @@ import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN','TEACHER')")
 public class AdminVideoController {
 
     private final CourseService courseService;
     private final CourseVideoService courseVideoService;
+    private final UserService userService;
 
     @GetMapping("/admin/kurslar/{courseId}/videolar")
-    public String courseVideos(@PathVariable Long courseId, Model model) {
+    public String courseVideos(@PathVariable Long courseId,
+                               @AuthenticationPrincipal UserDetails principal,
+                               Model model) {
+        ensureCanManageCourse(courseId, principal);
         model.addAttribute("course", courseService.findById(courseId));
         model.addAttribute("videos", courseVideoService.findByCourse(courseId));
         return "admin/course-videos";
@@ -30,10 +38,12 @@ public class AdminVideoController {
 
     @PostMapping("/admin/kurslar/{courseId}/videolar")
     public String uploadVideos(@PathVariable Long courseId,
+                               @AuthenticationPrincipal UserDetails principal,
                                @RequestParam("files") MultipartFile[] files,
                                @RequestParam(value = "titles", required = false) String[] titles,
                                @RequestParam(value = "orderIndices", required = false) Integer[] orderIndices,
                                RedirectAttributes redirectAttributes) {
+        ensureCanManageCourse(courseId, principal);
         try {
             long nonEmpty = java.util.Arrays.stream(files).filter(f -> !f.isEmpty()).count();
             if (nonEmpty == 0) {
@@ -52,9 +62,12 @@ public class AdminVideoController {
     }
 
     @PostMapping("/admin/videolar/{id}/sil")
-    public String deleteVideo(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public String deleteVideo(@PathVariable Long id,
+                              @AuthenticationPrincipal UserDetails principal,
+                              RedirectAttributes redirectAttributes) {
         var video = courseVideoService.findById(id);
         Long courseId = video.getCourseId();
+        ensureCanManageCourse(courseId, principal);
         courseVideoService.delete(id);
         redirectAttributes.addFlashAttribute("successMessage", "Video silindi.");
         return "redirect:/admin/kurslar/" + courseId + "/videolar";
@@ -63,17 +76,21 @@ public class AdminVideoController {
     @PostMapping(value = "/admin/kurslar/{courseId}/videolar/sira", consumes = "application/json")
     @ResponseBody
     public ResponseEntity<Void> reorderVideos(@PathVariable Long courseId,
+                                              @AuthenticationPrincipal UserDetails principal,
                                               @RequestBody List<Long> orderedIds) {
+        ensureCanManageCourse(courseId, principal);
         courseVideoService.updateOrder(courseId, orderedIds);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/admin/videolar/{id}/duzenle")
     public String updateVideo(@PathVariable Long id,
+                              @AuthenticationPrincipal UserDetails principal,
                               @RequestParam String title,
                               @RequestParam(required = false) String description,
                               RedirectAttributes redirectAttributes) {
         Long courseId = courseVideoService.findById(id).getCourseId();
+        ensureCanManageCourse(courseId, principal);
         try {
             courseVideoService.update(id, title, description);
             redirectAttributes.addFlashAttribute("successMessage", "Video güncellendi.");
@@ -81,5 +98,18 @@ public class AdminVideoController {
             redirectAttributes.addFlashAttribute("errorMessage", "Güncelleme hatası: " + e.getMessage());
         }
         return "redirect:/admin/kurslar/" + courseId + "/videolar";
+    }
+
+    private void ensureCanManageCourse(Long courseId, UserDetails principal) {
+        var course = courseService.findById(courseId);
+        boolean isAdmin = principal.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+        if (isAdmin) {
+            return;
+        }
+        Long teacherUserId = userService.findUserIdByEmail(principal.getUsername());
+        if (course.getInstructorId() == null || !course.getInstructorId().equals(teacherUserId)) {
+            throw new AccessDeniedException("Bu kursun videolarini yonetme yetkiniz yok.");
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.guzem.uzaktan.controller;
 
 import com.guzem.uzaktan.dto.request.VideoProgressRequest;
+import com.guzem.uzaktan.dto.response.CourseResponse;
 import com.guzem.uzaktan.dto.response.CourseVideoResponse;
 import com.guzem.uzaktan.exception.ResourceNotFoundException;
 import com.guzem.uzaktan.service.CourseService;
@@ -48,15 +49,33 @@ public class VideoController {
                              Model model) {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         CourseVideoResponse video = courseVideoService.findById(id);
-        if (!enrollmentService.isActiveEnrollment(userId, video.getCourseId())) {
-            throw new ResourceNotFoundException("Video", "id", id);
+
+        // Eğitmen/Admin için kurs sahibi kontrolü, öğrenci için kayıt kontrolü
+        boolean isTeacherOrAdmin = principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER"));
+
+        if (isTeacherOrAdmin) {
+            // Admin her kursu görebilir, eğitmen kendi kursunu görebilir
+            if (!principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                CourseResponse course = courseService.findById(video.getCourseId());
+                if (course.getInstructorId() == null || !course.getInstructorId().equals(userId)) {
+                    throw new ResourceNotFoundException("Video", "id", id);
+                }
+            }
+        } else {
+            // Öğrenci kayıtlı olmalı
+            if (!enrollmentService.isActiveEnrollment(userId, video.getCourseId())) {
+                throw new ResourceNotFoundException("Video", "id", id);
+            }
         }
 
-        if (!courseVideoService.canAccessVideo(id, userId)) {
+        if (!isTeacherOrAdmin && !courseVideoService.canAccessVideo(id, userId)) {
             return "redirect:/egitimler/" + video.getCourseId();
         }
 
-        List<CourseVideoResponse> allVideos = courseVideoService.findByCourseForStudent(video.getCourseId(), userId);
+        List<CourseVideoResponse> allVideos = isTeacherOrAdmin
+            ? courseVideoService.findByCourse(video.getCourseId())
+            : courseVideoService.findByCourseForStudent(video.getCourseId(), userId);
 
         int currentIndex = 0;
         CourseVideoResponse currentVideo = video;
@@ -75,10 +94,11 @@ public class VideoController {
         model.addAttribute("prevVideo", currentIndex > 0 ? allVideos.get(currentIndex - 1) : null);
         model.addAttribute("nextVideo", currentIndex < allVideos.size() - 1 ? allVideos.get(currentIndex + 1) : null);
         model.addAttribute("alreadyWatched", currentVideo.isWatched());
-        
+        model.addAttribute("isTeacherOrAdmin", isTeacherOrAdmin);
+
         // Gerçek TCP bağlantı adresi — kullanıcı tarafından manipüle edilemez
         model.addAttribute("clientIp", request.getRemoteAddr());
-        
+
         return "video/izle";
     }
 
@@ -91,12 +111,23 @@ public class VideoController {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         CourseVideoResponse video = courseVideoService.findById(id);
 
-        if (!enrollmentService.isActiveEnrollment(userId, video.getCourseId())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        }
+        // Eğitmen/Admin kontrol
+        boolean isTeacherOrAdmin = principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER"));
 
-        if (!courseVideoService.canAccessVideo(id, userId)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        if (!isTeacherOrAdmin) {
+            if (!enrollmentService.isActiveEnrollment(userId, video.getCourseId())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+            if (!courseVideoService.canAccessVideo(id, userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        } else if (!principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+            // Eğitmen - kendi kursunu kontrol et
+            CourseResponse course = courseService.findById(video.getCourseId());
+            if (course.getInstructorId() == null || !course.getInstructorId().equals(userId)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
         }
 
         Path filePath = fileStorageService.resolve(video.getFilePath());
@@ -160,6 +191,15 @@ public class VideoController {
                                                             @AuthenticationPrincipal UserDetails principal) {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         CourseVideoResponse video = courseVideoService.findById(id);
+
+        // Eğitmen/Admin için tracking yapılmaz
+        boolean isTeacherOrAdmin = principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER"));
+
+        if (isTeacherOrAdmin) {
+            return ResponseEntity.ok(Map.of("success", true)); // Tracking yapılmaz
+        }
+
         if (!enrollmentService.isActiveEnrollment(userId, video.getCourseId())) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("success", false));
         }
@@ -178,6 +218,15 @@ public class VideoController {
                                                                @RequestBody VideoProgressRequest req) {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         CourseVideoResponse video = courseVideoService.findById(id);
+
+        // Eğitmen/Admin için tracking yapılmaz
+        boolean isTeacherOrAdmin = principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER"));
+
+        if (isTeacherOrAdmin) {
+            return ResponseEntity.ok(Map.of("ok", true)); // Tracking yapılmaz
+        }
+
         if (!enrollmentService.isActiveEnrollment(userId, video.getCourseId())) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("ok", false));
         }

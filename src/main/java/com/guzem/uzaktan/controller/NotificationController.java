@@ -30,6 +30,15 @@ public class NotificationController {
         return "bildirimler";
     }
 
+    @GetMapping("/sayac")
+    @ResponseBody
+    public ResponseEntity<java.util.Map<String, Long>> getUnreadCount(
+            @AuthenticationPrincipal UserDetails principal) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        long count = notificationService.getUnreadCount(userId);
+        return ResponseEntity.ok(java.util.Map.of("count", count));
+    }
+
     @PostMapping("/{id}/oku")
     @ResponseBody
     public ResponseEntity<Void> markRead(@PathVariable Long id,
@@ -37,5 +46,22 @@ public class NotificationController {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         notificationService.markRead(id, userId);
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/{id}/sil")
+    @ResponseBody
+    public ResponseEntity<java.util.Map<String, Object>> delete(@PathVariable Long id,
+                                                                 @AuthenticationPrincipal UserDetails principal) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        boolean deleted = notificationService.delete(id, userId);
+        if (!deleted) {
+            return ResponseEntity.status(404)
+                    .body(java.util.Map.of("success", false));
+        }
+        long unreadCount = notificationService.getUnreadCount(userId);
+        return ResponseEntity.ok(java.util.Map.of(
+                "success", true,
+                "count", unreadCount
+        ));
     }
 }

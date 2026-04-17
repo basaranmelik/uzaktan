@@ -145,7 +145,9 @@
                     th:text="${unreadNotifCount}"
                     th:style="${unreadNotifCount == 0} ? 'display:none' : ''">0</span>
             </button>
-            <div class="nav-panel" id="notifPanel">
+            <div class="nav-panel" id="notifPanel"
+                 th:data-csrf-token="${_csrf.token}"
+                 th:data-csrf-header="${_csrf.headerName}">
               <div class="nav-panel-head">
                 <span><i class="bi bi-bell" style="margin-right:0.4rem;color:var(--primary-500);"></i>Bildirimler</span>
                 <span class="nav-panel-count" th:text="${unreadNotifCount} + ' yeni'">0 yeni</span>
@@ -153,6 +155,7 @@
               <!-- Bildirimler var -->
               <div class="nav-panel-body" th:if="${not #lists.isEmpty(recentNotifications)}">
                 <div th:each="n : ${recentNotifications}"
+                     th:data-id="${n.id}"
                      th:classappend="${!n.read} ? ' unread'" class="nav-notif-item">
                   <div th:class="'nav-notif-icon ' + ${n.type.name() == 'CERTIFICATE_ISSUED' ? 'green' : (n.type.name() == 'ASSIGNMENT_GRADED' ? 'amber' : 'blue')}">
                     <i th:class="'bi ' + ${n.type.name() == 'CERTIFICATE_ISSUED' ? 'bi-award-fill' : (n.type.name() == 'ENROLLMENT_ACTIVE' ? 'bi-patch-check-fill' : (n.type.name() == 'ASSIGNMENT_GRADED' ? 'bi-pencil-fill' : 'bi-chat-dots-fill'))}"></i>
@@ -165,6 +168,12 @@
                     <div class="nav-notif-time"><i class="bi bi-clock"></i> <span th:text="${n.timeAgo}"></span></div>
                   </div>
                   <div th:if="${!n.read}" class="nav-notif-dot"></div>
+                  <button type="button"
+                          class="nav-notif-remove"
+                          title="Bildirimi kapat"
+                          onclick="removeNotification(this)">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
                 </div>
               </div>
               <!-- Bildirim yok -->
@@ -323,6 +332,77 @@
           }
         });
     }
+
+    // ── Bildirimi panelden kapat/sil ──
+    function removeNotification(btn) {
+      var panel = document.getElementById('notifPanel');
+      if (!panel) return;
+      var row = btn.closest('.nav-notif-item');
+      if (!row) return;
+      var notifId = row.getAttribute('data-id');
+      if (!notifId) return;
+
+      var csrf = panel.dataset.csrfToken;
+      var header = panel.dataset.csrfHeader || 'X-CSRF-TOKEN';
+
+      fetch('/bildirimler/' + notifId + '/sil', {
+        method: 'POST',
+        headers: {
+          [header]: csrf,
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(function(res) {
+        if (!res.ok) throw new Error('Bildirimi kapatma basarisiz');
+        return res.json();
+      })
+      .then(function(data) {
+        row.remove();
+        var badge = document.getElementById('notifBadge');
+        if (badge) {
+          badge.textContent = data.count;
+          badge.style.display = data.count > 0 ? '' : 'none';
+        }
+        var countEl = panel.querySelector('.nav-panel-count');
+        if (countEl) countEl.textContent = data.count + ' yeni';
+
+        var body = panel.querySelector('.nav-panel-body');
+        if (body && body.querySelectorAll('.nav-notif-item').length === 0) {
+          body.innerHTML =
+            '<div style="padding:2rem;text-align:center;color:var(--text-muted);">' +
+            '<i class="bi bi-bell-slash" style="font-size:2rem;display:block;margin-bottom:0.5rem;color:var(--gray-300);"></i>' +
+            '<div style="font-size:0.85rem;">Yeni bildirim yok</div></div>';
+        }
+
+        if (typeof showToast === 'function') {
+          showToast('Bildirim kapatildi.', 'info');
+        }
+      })
+      .catch(function() {
+        if (typeof showToast === 'function') {
+          showToast('Bildirim kapatilirken bir hata olustu.', 'error');
+        }
+      });
+    }
+
+    // ── Bildirim Sayacı Polling (30s) ──
+    (function() {
+      var badge = document.getElementById('notifBadge');
+      if (!badge) return; // giriş yapmamış
+      function pollNotifCount() {
+        fetch('/bildirimler/sayac', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+          .then(function(r) { return r.ok ? r.json() : null; })
+          .then(function(data) {
+            if (!data) return;
+            badge.textContent = data.count;
+            badge.style.display = data.count > 0 ? '' : 'none';
+            var countEl = document.querySelector('#notifPanel .nav-panel-count');
+            if (countEl) countEl.textContent = data.count + ' yeni';
+          })
+          .catch(function() {});
+      }
+      setInterval(pollNotifCount, 30000);
+    })();
 
     // ── Navbar Arama ──
     document.addEventListener('DOMContentLoaded', function() {

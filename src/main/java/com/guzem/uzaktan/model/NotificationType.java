@@ -5,6 +5,7 @@ public enum NotificationType {
     ASSIGNMENT_GRADED("Ödev Notlandırıldı"),
     CERTIFICATE_ISSUED("Sertifika Hazır"),
     REVIEW_APPROVED("Yorum Onaylandı"),
+    REVIEW_PENDING("Onay Bekleyen Yorum"),
     ASSIGNMENT_DUE_SOON("Ödev Son Gün"),
     COURSE_ENDED("Kurs Tamamlandı"),
     MEETING_SCHEDULED("Yeni Canlı Ders"),

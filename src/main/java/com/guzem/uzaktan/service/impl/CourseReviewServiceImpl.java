@@ -67,7 +67,17 @@ public class CourseReviewServiceImpl implements CourseReviewService {
                 .isApproved(false)
                 .build();
 
-        return courseReviewMapper.toResponse(courseReviewRepository.save(review));
+        CourseReview saved = courseReviewRepository.save(review);
+
+        // Admin'lere yeni yorum bildirimi
+        String userName = user.getFirstName() + " " + user.getLastName();
+        userRepository.findByRole(com.guzem.uzaktan.model.Role.ADMIN).forEach(admin ->
+                notificationService.create(admin, com.guzem.uzaktan.model.NotificationType.REVIEW_PENDING,
+                        "Yeni Yorum Onay Bekliyor",
+                        userName + ", \"" + course.getTitle() + "\" kursuna yorum yaptı.",
+                        "/admin/yorumlar"));
+
+        return courseReviewMapper.toResponse(saved);
     }
 
     @Override
@@ -122,5 +132,15 @@ public class CourseReviewServiceImpl implements CourseReviewService {
     @Override
     public boolean hasUserReviewed(Long courseId, Long userId) {
         return courseReviewRepository.existsByCourseIdAndUserId(courseId, userId);
+    }
+
+    @Override
+    public long countPendingReviews() {
+        return courseReviewRepository.countByIsApprovedFalse();
+    }
+
+    @Override
+    public long countAllReviews() {
+        return courseReviewRepository.count();
     }
 }

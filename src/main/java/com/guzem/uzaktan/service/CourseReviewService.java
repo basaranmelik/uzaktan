@@ -18,4 +18,8 @@ public interface CourseReviewService {
     void deleteReview(Long reviewId);
     
     boolean hasUserReviewed(Long courseId, Long userId);
+
+    long countPendingReviews();
+
+    long countAllReviews();
 }

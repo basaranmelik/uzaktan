@@ -82,13 +82,13 @@
             </td>
             <td>
               <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                <a th:href="@{/egitimler/izle/{id}(id=${course.id})}"
+                   class="action-btn ab-view">
+                  <i class="bi bi-play-circle"></i> Videoları İzle
+                </a>
                 <a th:href="@{/egitmen/kurslarim/{id}/odevler(id=${course.id})}"
                    class="action-btn ab-edit">
                   <i class="bi bi-journal-text"></i> Ödevler
-                </a>
-                <a th:href="@{/egitimler/{id}(id=${course.id})}"
-                   class="action-btn ab-view" target="_blank">
-                  <i class="bi bi-eye"></i>
                 </a>
               </div>
             </td>

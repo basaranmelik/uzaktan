@@ -314,6 +314,22 @@
             <div class="admin-stat-lbl">Verilen Sertifikalar</div>
           </div>
         </div>
+
+        <div class="admin-stat fade-in">
+          <div class="admin-stat-icon asi-blue"><i class="bi bi-chat-square-text-fill"></i></div>
+          <div class="admin-stat-body">
+            <div class="admin-stat-num" th:text="${totalReviews ?: 0}">0</div>
+            <div class="admin-stat-lbl">Toplam Yorum</div>
+          </div>
+        </div>
+
+        <div class="admin-stat fade-in">
+          <div class="admin-stat-icon asi-orange"><i class="bi bi-chat-square-dots-fill"></i></div>
+          <div class="admin-stat-body">
+            <div class="admin-stat-num" th:text="${pendingReviews ?: 0}">0</div>
+            <div class="admin-stat-lbl">Onay Bekleyen Yorum</div>
+          </div>
+        </div>
       </div>
 
 

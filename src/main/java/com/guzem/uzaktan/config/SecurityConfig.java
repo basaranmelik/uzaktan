@@ -44,6 +44,8 @@ public class SecurityConfig {
                                 "/kvkk",
                                 "/kullanim", "/gizlilik"
                         ).permitAll()
+                        .requestMatchers("/admin/kurslar/*/videolar", "/admin/kurslar/*/videolar/**", "/admin/videolar/**")
+                        .hasAnyRole("ADMIN", "TEACHER")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/egitmen/**").hasAnyRole("TEACHER", "ADMIN")
                         .anyRequest().authenticated()
@@ -119,6 +121,7 @@ public class SecurityConfig {
                                         "img-src 'self' data:; " +
                                         "media-src 'self'; " +
                                         "connect-src 'self' cdn.plyr.io; " +
+                                        "frame-src https://www.google.com/maps/; " +
                                         "frame-ancestors 'none'"))
                 )
                 .authenticationProvider(authenticationProvider());

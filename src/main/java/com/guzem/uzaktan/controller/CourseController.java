@@ -74,23 +74,34 @@ public class CourseController {
                                @AuthenticationPrincipal UserDetails principal,
                                Model model) {
         CourseResponse course = courseService.findById(id);
-        
+
         if (course.getInstructorName() != null) {
             instructorService.findByName(course.getInstructorName())
                 .ifPresent(ins -> course.setInstructorImage(ins.getPhotoUrl()));
         }
-        
+
         model.addAttribute("course", course);
         // Video başlıklarını göstermek için (kilitli preview olarak)
         model.addAttribute("videos", courseVideoService.findByCourse(id));
 
+        boolean isTeacherOrAdmin = false;
         if (principal != null) {
             UserResponse user = userService.findByEmail(principal.getUsername());
+            isTeacherOrAdmin = principal.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER"));
+
             Optional<EnrollmentResponse> enrollmentOpt =
                     enrollmentService.findByUserAndCourse(user.getId(), id);
             boolean enrolled = enrollmentOpt.isPresent();
             boolean isActiveEnrolled = enrollmentOpt
                     .map(e -> e.getStatus() == EnrollmentStatus.ACTIVE).orElse(false);
+
+            // Eğitmen - kendi kursunu görebilir
+            if (isTeacherOrAdmin && !principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                if (course.getInstructorId() != null && course.getInstructorId().equals(user.getId())) {
+                    isActiveEnrolled = true; // Eğitmen kursunu view-only mode'da görebilir
+                }
+            }
 
             model.addAttribute("isEnrolled", enrolled);
             model.addAttribute("isActiveEnrolled", isActiveEnrolled);
@@ -98,10 +109,12 @@ public class CourseController {
             model.addAttribute("currentUser", user);
             model.addAttribute("hasReviewed", courseReviewService.hasUserReviewed(id, user.getId()));
             model.addAttribute("isInCart", cartService.isInCart(user.getId(), id));
+            model.addAttribute("isTeacherOrAdmin", isTeacherOrAdmin);
         } else {
             model.addAttribute("hasReviewed", false);
             model.addAttribute("isActiveEnrolled", false);
             model.addAttribute("isInCart", false);
+            model.addAttribute("isTeacherOrAdmin", false);
         }
 
         model.addAttribute("reviews", courseReviewService.getApprovedReviewsByCourse(id));
@@ -119,7 +132,8 @@ public class CourseController {
 
     /**
      * Aktif kayıtlı öğrencinin kurs video sayfası.
-     * URL: /kurslarim/{id}  (id = kurs id'si)
+     * URL: /egitimler/izle/{id}  (id = kurs id'si)
+     * Eğitmen kendi kursunu izleyebilir.
      */
     @GetMapping("/izle/{id}")
     @PreAuthorize("isAuthenticated()")
@@ -130,17 +144,34 @@ public class CourseController {
         UserResponse user = userService.findByEmail(principal.getUsername());
         CourseResponse course = courseService.findById(id);
 
-        Optional<EnrollmentResponse> enrollmentOpt =
-                enrollmentService.findByUserAndCourse(user.getId(), id);
-        boolean isActive = enrollmentOpt
-                .map(e -> e.getStatus() == EnrollmentStatus.ACTIVE || e.getStatus() == EnrollmentStatus.COMPLETED).orElse(false);
+        // Eğitmen/Admin kontrolü
+        boolean isTeacherOrAdmin = principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER"));
+
+        boolean isActive = false;
+        if (isTeacherOrAdmin) {
+            // Admin her kursa erişebilir, eğitmen kendi kursuna
+            if (principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                isActive = true;
+            } else if (course.getInstructorId() != null && course.getInstructorId().equals(user.getId())) {
+                isActive = true; // Eğitmen kendi kursu
+            }
+        } else {
+            // Öğrenci - kayıtlı olmalı
+            Optional<EnrollmentResponse> enrollmentOpt =
+                    enrollmentService.findByUserAndCourse(user.getId(), id);
+            isActive = enrollmentOpt
+                    .map(e -> e.getStatus() == EnrollmentStatus.ACTIVE || e.getStatus() == EnrollmentStatus.COMPLETED).orElse(false);
+        }
 
         if (!isActive) {
             redirectAttributes.addFlashAttribute("errorMessage", "Bu eğitime ait içeriklere erişmek için öncelikle kayıt olmanız gerekmektedir.");
             return "redirect:/egitimler/" + id;
         }
 
-        var videos = courseVideoService.findByCourseForStudent(id, user.getId());
+        var videos = isTeacherOrAdmin
+            ? courseVideoService.findByCourse(id)
+            : courseVideoService.findByCourseForStudent(id, user.getId());
 
         if (videos.isEmpty()) {
             redirectAttributes.addFlashAttribute("infoMessage", "Bu eğitime henüz video eklenmemiştir.");
