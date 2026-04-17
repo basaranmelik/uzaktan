@@ -44,7 +44,7 @@ public class CourseMapper {
                 .build();
     }
 
-    public CourseSummaryResponse toSummaryResponse(Course course, boolean enrolled) {
+    public CourseSummaryResponse toSummaryResponse(Course course, boolean enrolled, long enrolledCount) {
         return CourseSummaryResponse.builder()
                 .id(course.getId())
                 .title(course.getTitle())
@@ -60,6 +60,8 @@ public class CourseMapper {
                 .endDate(course.getEndDate())
                 .hours(course.getHours())
                 .enrolled(enrolled)
+                .quota(course.getQuota())
+                .enrolledCount(enrolledCount)
                 .build();
     }
 

@@ -238,6 +238,11 @@
                   <i class="bi bi-calendar3"></i>
                   <span th:text="${#temporals.format(course.startDate, 'dd.MM.yyyy')}">Tarih</span>
                 </div>
+                <div class="meta-item"
+                     th:if="${course.courseType != null and course.courseType.name() != 'ONLINE' and course.quota != null}">
+                  <i class="bi bi-people"></i>
+                  <span th:text="${course.quota - course.enrolledCount} + ' / ' + ${course.quota} + ' Kontenjan'">Kontenjan</span>
+                </div>
                 <span class="card-price"
                       th:text="${course.price == null or course.price.signum() == 0} ? 'Ücretsiz' : '₺' + ${#numbers.formatDecimal(course.price, 1, 'POINT', 0, 'COMMA')}">
                   ₺0

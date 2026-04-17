@@ -1096,6 +1096,8 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.4rem;
   padding-top: var(--space-md);
   border-top: 1px solid var(--border);
   font-size: 0.85rem;
@@ -1223,7 +1225,7 @@ p {
 /* ---------- Course Grid ---------- */
 .courses-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: var(--space-xl);
 }
 

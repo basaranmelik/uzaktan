@@ -27,4 +27,6 @@ public class CourseSummaryResponse {
     private LocalDate endDate;
     private Integer hours;
     private boolean enrolled;
+    private Integer quota;
+    private long enrolledCount;
 }

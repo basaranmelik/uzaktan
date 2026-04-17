@@ -54,28 +54,29 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "publishedCourses", key = "#page + '-' + #size")
     public Page<CourseSummaryResponse> findPublishedCourses(int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return courseRepository.findByStatus(CourseStatus.PUBLISHED, pageable)
-                .map(c -> courseMapper.toSummaryResponse(c, false));
+        Page<Course> coursePage = courseRepository.findByStatus(CourseStatus.PUBLISHED, pageable);
+        Map<Long, Long> counts = buildEnrollmentCountMap(coursePage.getContent().stream().map(Course::getId).toList());
+        return coursePage.map(c -> courseMapper.toSummaryResponse(c, false, counts.getOrDefault(c.getId(), 0L)));
     }
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "coursesByCategory", key = "#category + '-' + #page + '-' + #size")
     public Page<CourseSummaryResponse> findByCategory(CourseCategory category, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return courseRepository.findByStatusAndCategory(CourseStatus.PUBLISHED, category, pageable)
-                .map(c -> courseMapper.toSummaryResponse(c, false));
+        Page<Course> coursePage = courseRepository.findByStatusAndCategory(CourseStatus.PUBLISHED, category, pageable);
+        Map<Long, Long> counts = buildEnrollmentCountMap(coursePage.getContent().stream().map(Course::getId).toList());
+        return coursePage.map(c -> courseMapper.toSummaryResponse(c, false, counts.getOrDefault(c.getId(), 0L)));
     }
 
     @Override
     @Transactional(readOnly = true)
     public Page<CourseSummaryResponse> search(String keyword, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        return courseRepository.searchByKeyword(keyword, CourseStatus.PUBLISHED, pageable)
-                .map(c -> courseMapper.toSummaryResponse(c, false));
+        Page<Course> coursePage = courseRepository.searchByKeyword(keyword, CourseStatus.PUBLISHED, pageable);
+        Map<Long, Long> counts = buildEnrollmentCountMap(coursePage.getContent().stream().map(Course::getId).toList());
+        return coursePage.map(c -> courseMapper.toSummaryResponse(c, false, counts.getOrDefault(c.getId(), 0L)));
     }
 
     @Override
@@ -84,12 +85,12 @@ public class CourseServiceImpl implements CourseService {
         PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<Course> courses = courseRepository.findByStatus(CourseStatus.PUBLISHED, pageable);
 
-        // Tek sorguda kullanıcının kayıtlı olduğu kurs ID'lerini çek
         Set<Long> enrolledCourseIds = enrollmentRepository.findByUserIdWithCourse(userId).stream()
                 .map(e -> e.getCourse().getId())
                 .collect(Collectors.toSet());
 
-        return courses.map(c -> courseMapper.toSummaryResponse(c, enrolledCourseIds.contains(c.getId())));
+        Map<Long, Long> counts = buildEnrollmentCountMap(courses.getContent().stream().map(Course::getId).toList());
+        return courses.map(c -> courseMapper.toSummaryResponse(c, enrolledCourseIds.contains(c.getId()), counts.getOrDefault(c.getId(), 0L)));
     }
 
     @Override

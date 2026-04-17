@@ -142,6 +142,17 @@
             var lockIcon = firstLocked.querySelector('.lock-icon-overlay');
             if (lockIcon) lockIcon.remove();
         }
+
+        // İlerleme çubuğunu güncelle
+        var total = document.querySelectorAll('.playlist-item').length;
+        var watched = document.querySelectorAll('.playlist-item .watch-check').length;
+        if (total > 0) {
+            var pct = Math.round(watched * 100 / total);
+            var fill = document.querySelector('.izle-progress-fill');
+            if (fill) fill.style.width = pct + '%';
+            var label = document.querySelector('.izle-progress-info span:last-child');
+            if (label) label.textContent = pct + '%';
+        }
     }
 
     function handleAutoPlay() {

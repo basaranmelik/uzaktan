@@ -126,17 +126,14 @@
           </div>
         </div>
 
-        <!-- Kontenjan (Tüm Kurs Türleri) -->
-        <div class="form-row">
+        <!-- Kontenjan (Yüzyüze + Uzaktan Örgün) -->
+        <div class="form-row" id="field-quota" data-show-for="FACE_TO_FACE,REMOTE_FORMAL" style="display:none;">
           <div class="form-group">
-            <label id="quota-label" style="display:none;">Kontenjan *</label>
+            <label>Kontenjan *</label>
             <input type="number" th:field="*{quota}" class="form-control"
                    th:classappend="${#fields.hasErrors('quota')} ? ' is-invalid'"
-                   id="quota-input" min="1" placeholder="30">
+                   id="quota-input" min="1" placeholder="30" required>
             <div class="invalid-feedback" th:errors="*{quota}" th:if="${#fields.hasErrors('quota')}"></div>
-            <small id="quota-hint" style="color:var(--text-muted);display:none;">
-              <i class="bi bi-info-circle"></i> Online kurslar için 0 bırakabilirsiniz.
-            </small>
           </div>
           <div class="form-group"></div>
         </div>
@@ -292,22 +289,9 @@
       el.style.display = types.includes(selected) ? '' : 'none';
     });
 
-    // Update quota label and hint based on course type
-    const quotaLabel = document.getElementById('quota-label');
+    // Quota required only for non-ONLINE courses
     const quotaInput = document.getElementById('quota-input');
-    const quotaHint = document.getElementById('quota-hint');
-
-    if (selected === 'ONLINE') {
-      quotaLabel.style.display = 'none';
-      quotaInput.required = false;
-      quotaInput.placeholder = 'Opsiyonel (Online kurslar için)';
-      quotaHint.style.display = 'block';
-    } else {
-      quotaLabel.style.display = 'block';
-      quotaInput.required = true;
-      quotaInput.placeholder = '30';
-      quotaHint.style.display = 'none';
-    }
+    if (quotaInput) quotaInput.required = (selected !== 'ONLINE');
 
     // Update description field based on course type
     const descLabel = document.getElementById('desc-label');

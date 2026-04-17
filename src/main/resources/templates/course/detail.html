@@ -492,7 +492,7 @@
         <h1 class="cd-title" th:text="${course.title}">Kurs Başlığı</h1>
 
         <p class="cd-desc"
-           th:if="${course.courseType == null or course.courseType.name() == 'ONLINE'}"
+           th:if="${course.description != null and !#strings.isEmpty(course.description)}"
            th:text="${course.description}">Kurs açıklaması</p>
 
         <!-- Yıldız -->
@@ -700,13 +700,7 @@
         </h2>
       </div>
       <div class="cd-rich-content">
-        <ul class="cd-rich-content-list">
-          <li th:each="item : ${#strings.listSplit(course.manualCurriculum, '\n')}"
-              th:if="${!#strings.isEmpty(#strings.trim(item))}"
-              th:text="${#strings.trim(item)}">
-            Müfredat maddesi
-          </li>
-        </ul>
+        <p style="white-space:pre-line;" th:text="${course.manualCurriculum}"></p>
       </div>
     </div>
 
