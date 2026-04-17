@@ -117,9 +117,24 @@
             <label>Fiyat (₺) *</label>
             <input type="number" th:field="*{price}" class="form-control"
                    th:classappend="${#fields.hasErrors('price')} ? ' is-invalid'"
-                   step="0.01" min="0" placeholder="0" required>
+                   step="0.01" min="0" placeholder="0.00" required>
             <div class="invalid-feedback" th:errors="*{price}" th:if="${#fields.hasErrors('price')}"></div>
           </div>
+        </div>
+
+        <!-- Kontenjan (Tüm Kurs Türleri) -->
+        <div class="form-row">
+          <div class="form-group">
+            <label id="quota-label" style="display:none;">Kontenjan *</label>
+            <input type="number" th:field="*{quota}" class="form-control"
+                   th:classappend="${#fields.hasErrors('quota')} ? ' is-invalid'"
+                   id="quota-input" min="1" placeholder="30">
+            <div class="invalid-feedback" th:errors="*{quota}" th:if="${#fields.hasErrors('quota')}"></div>
+            <small id="quota-hint" style="color:var(--text-muted);display:none;">
+              <i class="bi bi-info-circle"></i> Online kurslar için 0 bırakabilirsiniz.
+            </small>
+          </div>
+          <div class="form-group"></div>
         </div>
 
         <div class="form-row">
@@ -156,13 +171,7 @@
             <label>Süre (Saat)</label>
             <input type="number" th:field="*{hours}" class="form-control" min="1" placeholder="40">
           </div>
-          <div class="form-group">
-            <label>Kontenjan *</label>
-            <input type="number" th:field="*{quota}" class="form-control"
-                   th:classappend="${#fields.hasErrors('quota')} ? ' is-invalid'"
-                   min="1" placeholder="30">
-            <div class="invalid-feedback" th:errors="*{quota}" th:if="${#fields.hasErrors('quota')}"></div>
-          </div>
+          <div class="form-group"></div>
         </div>
       </div>
 
@@ -272,11 +281,31 @@
 <script>
   function updateTypeFields() {
     const selected = document.querySelector('input[name="courseType"]:checked')?.value || 'ONLINE';
+
+    // Show/hide sections based on course type
     document.querySelectorAll('[data-show-for]').forEach(el => {
       const types = el.dataset.showFor.split(',');
       el.style.display = types.includes(selected) ? '' : 'none';
     });
+
+    // Update quota label and hint based on course type
+    const quotaLabel = document.getElementById('quota-label');
+    const quotaInput = document.getElementById('quota-input');
+    const quotaHint = document.getElementById('quota-hint');
+
+    if (selected === 'ONLINE') {
+      quotaLabel.style.display = 'none';
+      quotaInput.required = false;
+      quotaInput.placeholder = 'Opsiyonel (Online kurslar için)';
+      quotaHint.style.display = 'block';
+    } else {
+      quotaLabel.style.display = 'block';
+      quotaInput.required = true;
+      quotaInput.placeholder = '30';
+      quotaHint.style.display = 'none';
+    }
   }
+
   document.querySelectorAll('input[name="courseType"]').forEach(r =>
     r.addEventListener('change', updateTypeFields));
   updateTypeFields();
