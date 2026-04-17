@@ -14,6 +14,8 @@ public interface ZoomService {
 
     void cancelMeeting(Long meetingId, Long teacherUserId);
 
+    void startMeeting(Long meetingId, Long teacherUserId);
+
     void addRecordingUrl(Long meetingId, String recordingUrl, Long teacherUserId);
 
     List<ZoomMeetingResponse> findByCourse(Long courseId, Long teacherUserId);

@@ -114,10 +114,14 @@
             </button>
           </div>
           <div style="display:flex;gap:0.5rem;flex-wrap:wrap;flex-shrink:0;">
-            <a th:href="${m.startUrl}" target="_blank" class="btn btn-primary"
-               style="font-size:0.85rem;padding:0.4rem 1rem;">
-              <i class="bi bi-camera-video-fill"></i> Başlat
-            </a>
+            <form th:action="@{/egitmen/zoom/toplanti/{id}/baslat(id=${m.id})}" method="post"
+                  style="margin:0;">
+              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+              <button type="submit" class="btn btn-primary"
+                      style="font-size:0.85rem;padding:0.4rem 1rem;">
+                <i class="bi bi-camera-video-fill"></i> Başlat
+              </button>
+            </form>
             <a th:href="@{/egitmen/zoom/toplanti/{id}/duzenle(id=${m.id})}" class="btn btn-secondary"
                style="font-size:0.85rem;padding:0.4rem 1rem;">
               <i class="bi bi-pencil"></i> Düzenle

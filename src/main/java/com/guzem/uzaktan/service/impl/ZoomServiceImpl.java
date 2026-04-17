@@ -146,6 +146,22 @@ public class ZoomServiceImpl implements ZoomService {
 
     @Override
     @Transactional
+    public void startMeeting(Long meetingId, Long teacherUserId) {
+        ZoomMeeting meeting = findMeetingById(meetingId);
+        verifyTeacherOwnership(meeting, teacherUserId);
+
+        if (meeting.getStatus() == ZoomMeetingStatus.CANCELLED) {
+            throw new IllegalStateException("İptal edilmiş toplantı başlatılamaz.");
+        }
+
+        notifyEnrolledStudents(meeting.getCourse(), NotificationType.MEETING_STARTED,
+                "Ders Başladı!",
+                "\"" + meeting.getCourse().getTitle() + "\" kursunun \"" + meeting.getTopic() + "\" dersi başladı. Hemen katılın!",
+                "/zoom/toplanti/" + meetingId + "/katil");
+    }
+
+    @Override
+    @Transactional
     public void addRecordingUrl(Long meetingId, String recordingUrl, Long teacherUserId) {
         ZoomMeeting meeting = findMeetingById(meetingId);
         verifyTeacherOwnership(meeting, teacherUserId);

@@ -132,6 +132,18 @@ public class ZoomController {
         return "redirect:/egitmen/zoom/kurslarim/" + meeting.getCourseId();
     }
 
+    // ---- Öğretmen: toplantıyı başlat (bildirim gönder + yönlendir) ----
+
+    @PostMapping("/egitmen/zoom/toplanti/{id}/baslat")
+    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    public String startMeeting(@PathVariable Long id,
+                               @AuthenticationPrincipal UserDetails principal) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        ZoomMeetingResponse meeting = zoomService.findByIdForTeacher(id, userId);
+        zoomService.startMeeting(id, userId);
+        return "redirect:" + meeting.getStartUrl();
+    }
+
     // ---- Öğrenci: katıl ----
 
     @GetMapping("/zoom/toplanti/{id}/katil")

@@ -10,7 +10,8 @@ public enum NotificationType {
     COURSE_ENDED("Kurs Tamamlandı"),
     MEETING_SCHEDULED("Yeni Canlı Ders"),
     MEETING_CANCELLED("Canlı Ders İptal"),
-    MEETING_REMINDER("Canlı Ders Hatırlatma");
+    MEETING_REMINDER("Canlı Ders Hatırlatma"),
+    MEETING_STARTED("Ders Başladı");
 
     private final String displayName;
 
