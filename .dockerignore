@@ -1,0 +1,48 @@
+# Docker ignore file
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+*.code-workspace
+*.swp
+*.swo
+*~
+
+# Build
+target/
+build/
+dist/
+*.jar
+*.war
+
+# Test
+src/test/
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Runtime
+uploads/
+logs/
+*.log
+
+# Misc
+.env
+.env.docker
+.dockerignore
+docker-start.sh
+README.md
+LICENSE

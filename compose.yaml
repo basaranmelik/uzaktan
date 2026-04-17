@@ -1,10 +1,84 @@
+version: '3.8'
 
-# default sqlserver konfigürasyonları
 services:
   sqlserver:
-    image: 'mcr.microsoft.com/azure-sql-edge:latest'
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: uzaktan-sqlserver
     environment:
-      - 'ACCEPT_EULA=Y'
-      - 'MSSQL_SA_PASSWORD=verYs3cret'
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "verYs3cret"
+      MSSQL_PID: "Developer"
     ports:
-      - '1433:1433'
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - uzaktan-network
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "verYs3cret", "-Q", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: uzaktan-app
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: "docker"
+
+      # Database
+      SPRING_DATASOURCE_URL: "jdbc:sqlserver://sqlserver:1433;databaseName=GuzDB;encrypt=false;trustServerCertificate=false;loginTimeout=30;"
+      SPRING_DATASOURCE_USERNAME: "sa"
+      SPRING_DATASOURCE_PASSWORD: "verYs3cret"
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: "com.microsoft.sqlserver.jdbc.SQLServerDriver"
+
+      # JPA/Hibernate
+      SPRING_JPA_DATABASE_PLATFORM: "org.hibernate.dialect.SQLServerDialect"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
+      SPRING_JPA_SHOW_SQL: "false"
+      SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
+
+      # Logging
+      LOGGING_LEVEL_ROOT: "WARN"
+      LOGGING_LEVEL_COM_GUZEM: "INFO"
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB: "INFO"
+      LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_SECURITY: "INFO"
+
+      # File Storage
+      APP_UPLOAD_DIR: "/app/uploads"
+
+      # Application
+      SPRING_APPLICATION_NAME: "uzaktan"
+      SERVER_PORT: "8080"
+      SERVER_SERVLET_CONTEXT_PATH: "/"
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
+    networks:
+      - uzaktan-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  sqlserver_data:
+    driver: local
+
+networks:
+  uzaktan-network:
+    driver: bridge
