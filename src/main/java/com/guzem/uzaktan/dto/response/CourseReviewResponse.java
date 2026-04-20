@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class CourseReviewResponse {
     private Long id;
     private Long courseId;
+    private String courseTitle;
     private Long userId;
     private String userFullName;
     private Integer rating;

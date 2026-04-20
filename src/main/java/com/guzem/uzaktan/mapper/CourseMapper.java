@@ -25,7 +25,7 @@ public class CourseMapper {
                 .hours(course.getHours())
                 .module(course.getModule())
                 .category(course.getCategory())
-                .categoryDisplayName(course.getCategory().getDisplayName())
+                .categoryDisplayName(course.getCategory() != null ? course.getCategory().getDisplayName() : null)
                 .status(course.getStatus())
                 .level(course.getLevel())
                 .levelDisplayName(course.getLevel() != null ? course.getLevel().getDisplayName() : null)
@@ -33,6 +33,9 @@ public class CourseMapper {
                 .courseTypeDisplayName(course.getCourseType() != null ? course.getCourseType().getDisplayName() : null)
                 .location(course.getLocation())
                 .courseSchedule(course.getCourseSchedule())
+                .scheduleDays(course.getScheduleDays())
+                .scheduleStartTime(course.getScheduleStartTime())
+                .scheduleEndTime(course.getScheduleEndTime())
                 .manualCurriculum(course.getManualCurriculum())
                 .certificateDeadline(course.getCertificateDeadline())
                 .imagePath(course.getImagePath())
@@ -50,7 +53,7 @@ public class CourseMapper {
                 .title(course.getTitle())
                 .price(course.getPrice())
                 .category(course.getCategory())
-                .categoryDisplayName(course.getCategory().getDisplayName())
+                .categoryDisplayName(course.getCategory() != null ? course.getCategory().getDisplayName() : null)
                 .status(course.getStatus())
                 .courseType(course.getCourseType())
                 .courseTypeDisplayName(course.getCourseType() != null ? course.getCourseType().getDisplayName() : null)
@@ -80,6 +83,9 @@ public class CourseMapper {
                 .level(request.getLevel())
                 .location(request.getLocation())
                 .courseSchedule(request.getCourseSchedule())
+                .scheduleDays(request.getScheduleDays())
+                .scheduleStartTime(request.getScheduleStartTime())
+                .scheduleEndTime(request.getScheduleEndTime())
                 .manualCurriculum(request.getManualCurriculum())
                 .certificateDeadline(request.getCertificateDeadline())
                 .instructorName(request.getInstructorName())
@@ -102,6 +108,9 @@ public class CourseMapper {
         if (request.getLevel() != null)               course.setLevel(request.getLevel());
         if (request.getLocation() != null)            course.setLocation(request.getLocation());
         if (request.getCourseSchedule() != null)      course.setCourseSchedule(request.getCourseSchedule());
+        if (request.getScheduleDays() != null)        course.setScheduleDays(request.getScheduleDays());
+        if (request.getScheduleStartTime() != null)   course.setScheduleStartTime(request.getScheduleStartTime());
+        if (request.getScheduleEndTime() != null)     course.setScheduleEndTime(request.getScheduleEndTime());
         if (request.getManualCurriculum() != null)    course.setManualCurriculum(request.getManualCurriculum());
         if (request.getCertificateDeadline() != null) course.setCertificateDeadline(request.getCertificateDeadline());
         if (request.getInstructorName() != null)      course.setInstructorName(request.getInstructorName());

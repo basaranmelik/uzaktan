@@ -73,8 +73,14 @@ public class UserServiceImpl implements UserService {
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
             user.setEmail(request.getEmail());
         }
-        if (request.getPhoneNumber() != null) {
+        if (request.getBirthDate() != null) {
+            user.setBirthDate(request.getBirthDate());
+        }
+
+        if (com.guzem.uzaktan.util.PhoneUtils.isProvided(request.getPhoneNumber())) {
             user.setPhoneNumber(request.getPhoneNumber());
+        } else if (request.getPhoneNumber() != null) {
+            user.setPhoneNumber(null);
         }
 
         Address address = user.getAddress() != null ? user.getAddress() : new Address();

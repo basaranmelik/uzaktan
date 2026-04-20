@@ -1,5 +1,6 @@
 package com.guzem.uzaktan.controller.admin;
 
+import com.guzem.uzaktan.model.Role;
 import com.guzem.uzaktan.service.AssignmentService;
 import com.guzem.uzaktan.service.CertificateService;
 import com.guzem.uzaktan.service.CourseReviewService;
@@ -38,7 +39,7 @@ public class AdminDashboardController {
         model.addAttribute("totalCertificates", certificateService.findAll().size());
         model.addAttribute("totalAssignments", assignmentService.countAllAssignments());
         model.addAttribute("pendingSubmissions", assignmentService.countPendingSubmissions());
-        model.addAttribute("totalInstructors", instructorService.findAll().size());
+        model.addAttribute("totalInstructors", userService.findUsersByRole(Role.TEACHER).size());
         model.addAttribute("totalEnrollments", enrollmentService.countTotal());
         model.addAttribute("pendingEnrollments", enrollmentService.countByStatus(com.guzem.uzaktan.model.EnrollmentStatus.PENDING_PAYMENT));
         model.addAttribute("totalReviews", courseReviewService.countAllReviews());

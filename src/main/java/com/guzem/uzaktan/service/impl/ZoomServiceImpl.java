@@ -212,6 +212,15 @@ public class ZoomServiceImpl implements ZoomService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<ZoomMeetingResponse> getAllForStudent(Long studentUserId) {
+        return zoomMeetingRepository.findAllForStudent(studentUserId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public ZoomMeetingResponse findByIdForTeacher(Long meetingId, Long teacherUserId) {
         ZoomMeeting meeting = findMeetingById(meetingId);
         verifyTeacherOwnership(meeting, teacherUserId);

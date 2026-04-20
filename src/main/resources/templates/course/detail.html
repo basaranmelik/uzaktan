@@ -35,14 +35,14 @@
     }
     .cd-hero-inner {
       display: grid;
-      grid-template-columns: 1fr 380px;
+      grid-template-columns: 1fr 420px;
       gap: 3rem;
       align-items: stretch;
       position: relative;
       z-index: 2;
       padding-bottom: 3.5rem;
     }
-    @media (max-width: 900px) {
+    @media (max-width: 1024px) {
       .cd-hero-inner { grid-template-columns: 1fr; }
       .cd-sidebar { margin-top: 0; }
     }
@@ -83,10 +83,11 @@
     /* description */
     .cd-desc {
       color: rgba(255,255,255,0.6);
-      font-size: 1rem;
+      font-size: 1.125rem;
       line-height: 1.7;
       margin-bottom: 1.75rem;
       max-width: 640px;
+      text-align: justify;
     }
 
     /* meta pills */
@@ -499,11 +500,11 @@
         <div class="cd-stars">
           <span th:if="${course.reviewCount > 0}">
             <span style="color: var(--warm-500);">
-              <i th:class="${course.averageRating >= 1 ? 'bi-star-fill' : (course.averageRating >= 0.5 ? 'bi-star-half' : 'bi-star')}"></i>
-              <i th:class="${course.averageRating >= 2 ? 'bi-star-fill' : (course.averageRating >= 1.5 ? 'bi-star-half' : 'bi-star')}"></i>
-              <i th:class="${course.averageRating >= 3 ? 'bi-star-fill' : (course.averageRating >= 2.5 ? 'bi-star-half' : 'bi-star')}"></i>
-              <i th:class="${course.averageRating >= 4 ? 'bi-star-fill' : (course.averageRating >= 3.5 ? 'bi-star-half' : 'bi-star')}"></i>
-              <i th:class="${course.averageRating == 5 ? 'bi-star-fill' : (course.averageRating >= 4.5 ? 'bi-star-half' : 'bi-star')}"></i>
+              <i th:class="'bi ' + (${course.averageRating >= 1 ? 'bi-star-fill' : (course.averageRating >= 0.5 ? 'bi-star-half' : 'bi-star')})"></i>
+              <i th:class="'bi ' + (${course.averageRating >= 2 ? 'bi-star-fill' : (course.averageRating >= 1.5 ? 'bi-star-half' : 'bi-star')})"></i>
+              <i th:class="'bi ' + (${course.averageRating >= 3 ? 'bi-star-fill' : (course.averageRating >= 2.5 ? 'bi-star-half' : 'bi-star')})"></i>
+              <i th:class="'bi ' + (${course.averageRating >= 4 ? 'bi-star-fill' : (course.averageRating >= 3.5 ? 'bi-star-half' : 'bi-star')})"></i>
+              <i th:class="'bi ' + (${course.averageRating == 5 ? 'bi-star-fill' : (course.averageRating >= 4.5 ? 'bi-star-half' : 'bi-star')})"></i>
             </span>
             <strong style="color:#fff; margin-left:0.5rem;" th:text="${course.averageRating}">0.0</strong>
             <span style="color:rgba(255,255,255,0.5); font-size:0.82rem; margin-left:0.25rem;" th:text="'(' + ${course.reviewCount} + ' Yorum)'"></span>
@@ -540,13 +541,15 @@
       <!-- Sag: Sidebar -->
       <div class="cd-sidebar">
         <div style="height:4px;background:var(--gradient-primary);"></div>
-        <div style="aspect-ratio:16/9;overflow:hidden;">
+        <div style="aspect-ratio:16/9;overflow:hidden;position:relative;">
           <img th:if="${course.imagePath != null}"
                th:src="@{'/uploads/' + ${course.imagePath}}"
                alt="" style="width:100%;height:100%;object-fit:cover;">
           <img th:if="${course.imagePath == null}"
                th:src="@{/images/gazi-logo.png}"
                alt="" style="width:100%;height:100%;object-fit:contain;background:#f8f9fa;padding:1.5rem;">
+          <div style="position:absolute;bottom:0;left:0;right:0;padding:0.75rem 1rem;background:linear-gradient(transparent,rgba(0,0,0,0.72));color:#fff;font-weight:700;font-size:0.92rem;line-height:1.3;"
+               th:text="${course.title}"></div>
         </div>
 
 
@@ -579,9 +582,23 @@
               <span class="fl-value"
                     th:text="${course.quota - course.enrolledCount} + ' Kalan / ' + ${course.quota}">Kalan</span>
             </li>
-            <li th:if="${course.courseSchedule != null}">
-              <span class="fl-label"><i class="bi bi-clock"></i> Program</span>
-              <span class="fl-value" th:text="${course.courseSchedule}">—</span>
+            <li th:if="${course.scheduleDays != null and course.scheduleStartTime != null and course.scheduleEndTime != null}">
+              <span class="fl-label"><i class="bi bi-clock"></i> Ders Programı</span>
+              <span class="fl-value">
+                <span th:each="day,stat : ${#strings.listSplit(course.scheduleDays, ',')}" style="display:inline-block;">
+                  <span th:text="${day == 'MONDAY' ? 'Pazartesi' :
+                                  day == 'TUESDAY' ? 'Salı' :
+                                  day == 'WEDNESDAY' ? 'Çarşamba' :
+                                  day == 'THURSDAY' ? 'Perşembe' :
+                                  day == 'FRIDAY' ? 'Cuma' :
+                                  day == 'SATURDAY' ? 'Cumartesi' :
+                                  day == 'SUNDAY' ? 'Pazar' : day}"></span><span th:if="${!stat.last}">, </span>
+                </span>
+                <span style="display:block; margin-top:0.3rem; font-size:0.9rem;">
+                  <i class="bi bi-hourglass-split"></i>
+                  <span th:text="${course.scheduleStartTime} + ' - ' + ${course.scheduleEndTime}"></span>
+                </span>
+              </span>
             </li>
             <li th:if="${course.courseType != null and course.courseType.name() == 'FACE_TO_FACE' and course.location != null}">
               <span class="fl-label"><i class="bi bi-geo-alt-fill"></i> Konum</span>
@@ -634,10 +651,14 @@
 
           <!-- DURUM: Aktif kayitli -->
           <div th:if="${isEnrolled != null and isEnrolled and isActiveEnrolled != null and isActiveEnrolled}">
-            <div class="cd-enrolled-badge">
-              <i class="bi bi-check-circle-fill"></i> Bu kursa kayıtlısınız — Aktif
+            <div class="cd-enrolled-badge" th:style="${isAdmin != null and isAdmin} ? 'background:#f8f9fa; color:#495057; border-color:#dee2e6;' : ''">
+              <i th:class="${isAdmin != null and isAdmin} ? 'bi bi-shield-lock-fill' : 'bi bi-check-circle-fill'"></i>
+              <span th:text="${isAdmin != null and isAdmin} ? 'Yönetici Erişimi — İzleme Yetkisi' : 
+                            (${isTeacherOrAdmin != null and isTeacherOrAdmin} ? 'Eğitmen Erişimi — İzleme Yetkisi' : 'Bu kursa kayıtlısınız — Aktif')"></span>
             </div>
-            <a th:href="@{/egitimler/izle/{id}(id=${course.id})}" class="cd-cta-btn primary">
+            <!-- Video İzle / Eğitime Başla (Sadece Online veya Video İçeren Örgün Eğitimler İçin) -->
+            <a th:if="${course.courseType == null or course.courseType.name() == 'ONLINE' or (course.courseType.name() == 'REMOTE_FORMAL' and not #lists.isEmpty(videos))}" 
+               th:href="@{/egitimler/izle/{id}(id=${course.id})}" class="cd-cta-btn primary">
               <i class="bi bi-play-fill"></i> Eğitime Başla
             </a>
             <a th:href="@{/panom}" class="cd-cta-btn outline">Panoma Git</a>
@@ -656,12 +677,19 @@
             <div sec:authorize="hasRole('USER')">
               <!-- Sepette değil -->
               <div th:if="${!isInCart}">
-                <form th:action="@{/sepet/ekle}" method="post">
-                  <input type="hidden" name="courseId" th:value="${course.id}"/>
-                  <button type="submit" class="cd-cta-btn primary">
-                    <i class="bi bi-cart-plus"></i> Sepete Ekle
-                  </button>
-                </form>
+                <div th:if="${course.courseType != null and course.courseType.name() != 'ONLINE' and course.quota != null and course.quota <= course.enrolledCount}">
+                   <div class="cd-enrolled-badge" style="background:#fff5f5; color:#e03131; border-color:#fca5a5; justify-content:center;">
+                     <i class="bi bi-x-circle-fill"></i> Kontenjan Dolu
+                   </div>
+                </div>
+                <div th:if="${course.courseType == null or course.courseType.name() == 'ONLINE' or course.quota == null or course.quota > course.enrolledCount}">
+                  <form th:action="@{/sepet/ekle}" method="post">
+                    <input type="hidden" name="courseId" th:value="${course.id}"/>
+                    <button type="submit" class="cd-cta-btn primary">
+                      <i class="bi bi-cart-plus"></i> Sepete Ekle
+                    </button>
+                  </form>
+                </div>
               </div>
               <!-- Sepette -->
               <div th:if="${isInCart}">
@@ -700,12 +728,12 @@
         </h2>
       </div>
       <div class="cd-rich-content">
-        <p style="white-space:pre-line;" th:text="${course.manualCurriculum}"></p>
+        <p style="white-space:pre-line; text-align: justify;" th:text="${course.manualCurriculum}"></p>
       </div>
     </div>
 
-    <!-- Kurs Icerigi -->
-    <div th:if="${videos != null and !#lists.isEmpty(videos)}">
+    <!-- Kurs Icerigi (sadece Online kurslar) -->
+    <div th:if="${(course.courseType == null or course.courseType.name() == 'ONLINE') and videos != null and !#lists.isEmpty(videos)}">
 
       <!-- Aktif kayitli ogrenci banneri -->
       <div th:if="${isActiveEnrolled != null and isActiveEnrolled}" class="cd-start-banner">
@@ -763,8 +791,8 @@
       </div>
     </div>
 
-    <!-- Video yok -->
-    <div th:if="${videos == null or #lists.isEmpty(videos)}" class="cd-curriculum">
+    <!-- Video yok (sadece Online kurslar için) -->
+    <div th:if="${(course.courseType == null or course.courseType.name() == 'ONLINE') and (videos == null or #lists.isEmpty(videos))}" class="cd-curriculum">
       <div class="cd-empty">
         <i class="bi bi-film"></i>
         <p style="margin:0;">Bu kursa henüz içerik eklenmemiş.</p>

@@ -162,7 +162,7 @@
                  onchange="showPreview(this)">
           <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">
             Desteklenen formatlar: MP4, WebM, OGG, MOV, AVI &nbsp;·&nbsp;
-            Her video için başlık ve liste konumu belirleyebilirsiniz
+            Her video için başlık belirleyebilirsiniz.
           </div>
         </div>
 
@@ -323,7 +323,6 @@ function showPreview(input) {
 
   const currentCount = parseInt(form.dataset.currentCount || '0');
   const moduleCount = parseInt(form.dataset.moduleCount || '0');
-  const startIndex = currentCount + 1;
   const remaining = moduleCount > 0 ? moduleCount - currentCount : 999;
 
   // Limit kontrolü
@@ -336,11 +335,9 @@ function showPreview(input) {
     btn.disabled = false;
   }
 
-  const maxPos = startIndex + files.length - 1;
   list.innerHTML = files.map((f, i) => {
     const nameNoExt = f.name.includes('.') ? f.name.substring(0, f.name.lastIndexOf('.')) : f.name;
     const sizeMb = (f.size / (1024 * 1024)).toFixed(1);
-    const defaultPos = startIndex + i;
     return `
       <div style="padding:0.75rem 1rem;${i < files.length - 1 ? 'border-bottom:1px solid var(--gray-100);' : ''}">
         <div style="display:flex;align-items:center;gap:0.75rem;font-size:0.875rem;margin-bottom:0.5rem;">
@@ -352,12 +349,6 @@ function showPreview(input) {
           <input type="text" name="titles" value="${escapeHtml(nameNoExt)}" class="form-control"
                  placeholder="Video başlığı girin" maxlength="200" required
                  style="font-size:0.85rem;padding:0.4rem 0.65rem;flex:1;">
-          <div style="display:flex;align-items:center;gap:0.35rem;flex-shrink:0;">
-            <label style="font-size:0.75rem;color:var(--text-muted);white-space:nowrap;margin:0;">Sıra:</label>
-            <input type="number" name="orderIndices" value="${escapeHtml(defaultPos)}" min="1" max="${escapeHtml(maxPos)}"
-                   class="form-control"
-                   style="font-size:0.85rem;padding:0.4rem 0.5rem;width:72px;text-align:center;">
-          </div>
         </div>
       </div>`;
   }).join('');

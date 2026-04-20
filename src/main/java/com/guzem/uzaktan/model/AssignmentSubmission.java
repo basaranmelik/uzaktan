@@ -3,6 +3,7 @@ package com.guzem.uzaktan.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Nationalized;
 
 import java.time.LocalDateTime;
 
@@ -23,12 +24,14 @@ public class AssignmentSubmission {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "text_answer", columnDefinition = "TEXT")
+    @Nationalized
+    @Column(name = "text_answer", columnDefinition = "NVARCHAR(MAX)")
     private String textAnswer;
 
     @Column(name = "file_path", length = 500)
     private String filePath;
 
+    @Nationalized
     @Column(name = "original_file_name", length = 255)
     private String originalFileName;
 
@@ -40,7 +43,8 @@ public class AssignmentSubmission {
     @Column(name = "score")
     private Integer score;
 
-    @Column(name = "feedback", columnDefinition = "TEXT")
+    @Nationalized
+    @Column(name = "feedback", columnDefinition = "NVARCHAR(MAX)")
     private String feedback;
 
     @CreationTimestamp

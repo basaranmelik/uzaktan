@@ -68,7 +68,7 @@
         <thead>
           <tr>
             <th>Kullanıcı (Tarih)</th>
-            <th>Kurs (ID)</th>
+            <th>Kurs</th>
             <th>Puan & Yorum</th>
             <th>İşlem</th>
           </tr>
@@ -85,7 +85,7 @@
               </div>
             </td>
 
-            <td th:text="'Kurs ID: ' + ${rev.courseId}">Kurs</td>
+            <td th:text="${rev.courseTitle}">Kurs</td>
 
             <td>
                <div style="color:#fbbf24; font-size:0.9rem; margin-bottom:0.25rem;">

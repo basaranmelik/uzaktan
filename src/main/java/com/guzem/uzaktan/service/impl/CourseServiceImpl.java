@@ -270,7 +270,20 @@ public class CourseServiceImpl implements CourseService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public long countTotalStudentsByInstructorName(String instructorName) {
+        return courseRepository.countDistinctStudentsByInstructorName(instructorName);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countActiveCoursesByInstructorName(String instructorName) {
+        return courseRepository.countActiveCoursesByInstructorName(instructorName);
+    }
+
+    @Override
     @Transactional
+    @CacheEvict(value = "course", key = "#courseId")
     public void updateCourseRating(Long courseId) {
         Course course = loadCourse(courseId);
         List<CourseReview> approvedReviews = courseReviewRepository

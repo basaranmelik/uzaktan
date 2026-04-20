@@ -65,7 +65,6 @@
       <table class="admin-table">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Kurs</th>
             <th>Kategori</th>
             <th>Eğitmen</th>
@@ -80,8 +79,6 @@
           <tr th:each="course : ${courses.content}"
               th:classappend="${course.status.name() == 'CANCELLED'} ? ' row-cancelled'"
               class="course-row">
-            <td style="color:var(--text-muted);" th:text="${course.id}">1</td>
-
             <td style="max-width:220px;">
               <a th:href="@{/egitimler/{id}(id=${course.id})}"
                  th:text="${course.title}"

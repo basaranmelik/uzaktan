@@ -15,4 +15,6 @@ public class InstructorResponse {
     private String expertise;
     private String photoUrl;
     private LocalDateTime createdAt;
+    private long courseCount;
+    private long studentCount;
 }

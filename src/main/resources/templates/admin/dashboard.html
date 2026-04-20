@@ -175,6 +175,12 @@
           <p>Düzenle, yayınla</p>
         </a>
 
+        <a th:href="@{/admin/kategoriler}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#e67700;"><i class="bi bi-tags-fill"></i></div>
+          <h4>Kategoriler</h4>
+          <p>Ekle, düzenle</p>
+        </a>
+
         <a th:href="@{/admin/kullanicilar}" class="admin-shortcut fade-in">
           <div class="sc-icon" style="color:#862e9c;"><i class="bi bi-people-fill"></i></div>
           <h4>Kullanıcılar</h4>
@@ -205,6 +211,12 @@
           <p>Bekleyen Onaylar</p>
         </a>
 
+        <a th:href="@{/admin/odevler}" class="admin-shortcut fade-in">
+          <div class="sc-icon" style="color:#20c997;"><i class="bi bi-journal-text"></i></div>
+          <h4>Ödevler</h4>
+          <p>Tüm Sistem Ödevleri</p>
+        </a>
+
       </div>
 
       <!-- ── İstatistik Kartları ── -->
@@ -215,7 +227,7 @@
           <div class="admin-stat-icon asi-blue"><i class="bi bi-people-fill"></i></div>
           <div class="admin-stat-body">
             <div class="admin-stat-num" th:text="${totalUsers}">0</div>
-            <div class="admin-stat-lbl">Toplam Öğrenci</div>
+            <div class="admin-stat-lbl">Toplam Kullanıcı</div>
           </div>
         </div>
 

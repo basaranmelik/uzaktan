@@ -241,8 +241,8 @@
               </div>
               <h3 style="font-size:1.1rem; line-height:1.4; color:var(--primary-900); font-weight:700; margin-bottom:1rem; flex:1;" th:text="${enrollment.courseTitle}">Kurs Adı</h3>
               
-              <!-- İlerleme (Sadece Aktif veya Tamamlanmış ise) -->
-              <div th:if="${enrollment.status.name() == 'ACTIVE' or enrollment.status.name() == 'COMPLETED'}" style="margin-bottom:1rem;">
+              <!-- İlerleme (Sadece Online + Aktif veya Tamamlanmış ise) -->
+              <div th:if="${(enrollment.status.name() == 'ACTIVE' or enrollment.status.name() == 'COMPLETED') and (enrollment.courseType == null or enrollment.courseType.name() == 'ONLINE')}" style="margin-bottom:1rem;">
                 <div style="display:flex; justify-content:space-between; font-size:0.75rem; font-weight:700; color:var(--text-muted); margin-bottom:0.4rem;">
                   <span style="text-transform:uppercase; letter-spacing:0.5px;">İlerleme</span>
                   <span th:text="${enrollment.progressPercentage} + '%'">0%</span>
@@ -258,18 +258,55 @@
                  <i class="bi bi-wallet2"></i> İşleminiz onay bekliyor.
               </div>
 
+              <!-- Kurs Takvimi (Yüzyüze ve Uzaktan Örgün İçin) -->
+              <div th:if="${enrollment.courseType != null and enrollment.courseType.name() != 'ONLINE'}" style="margin-bottom:1rem; padding:0.75rem; background:#f8f9fa; border-radius:8px; border:1px solid #e9ecef; font-size:0.8rem; color:var(--text);">
+                 <div style="font-weight:600; margin-bottom:0.4rem; color:var(--primary-700);"><i class="bi bi-calendar-event"></i> Eğitim Takvimi</div>
+                 <div th:if="${enrollment.startDate != null and enrollment.endDate != null}" style="margin-bottom:0.2rem;">
+                   <i class="bi bi-calendar-range" style="color:var(--text-muted);"></i> 
+                   <span th:text="${#temporals.format(enrollment.startDate, 'dd.MM.yyyy')}"></span> - 
+                   <span th:text="${#temporals.format(enrollment.endDate, 'dd.MM.yyyy')}"></span>
+                 </div>
+                 <div th:if="${enrollment.scheduleDays != null and enrollment.scheduleDays != ''}" style="margin-bottom:0.2rem;">
+                   <i class="bi bi-calendar-week" style="color:var(--text-muted);"></i> 
+                   <span th:text="${enrollment.scheduleDays.replace('MONDAY','Pazartesi').replace('TUESDAY','Salı').replace('WEDNESDAY','Çarşamba').replace('THURSDAY','Perşembe').replace('FRIDAY','Cuma').replace('SATURDAY','Cumartesi').replace('SUNDAY','Pazar')}"></span>
+                 </div>
+                 <div th:if="${enrollment.scheduleStartTime != null and enrollment.scheduleEndTime != null}">
+                   <i class="bi bi-clock-history" style="color:var(--text-muted);"></i> Saat: 
+                   <span th:text="${enrollment.scheduleStartTime}"></span> - <span th:text="${enrollment.scheduleEndTime}"></span>
+                 </div>
+              </div>
+
               <!-- CTA Butonları -->
-              <div th:if="${enrollment.status.name() == 'ACTIVE'}">
+              <!-- Online: Eğitime Devam Et -->
+              <div th:if="${enrollment.status.name() == 'ACTIVE' and (enrollment.courseType == null or enrollment.courseType.name() == 'ONLINE')}">
                 <a th:href="@{/egitimler/izle/{id}(id=${enrollment.courseId})}" class="btn btn-primary btn-full shadow-sm" style="border-radius:10px; font-weight:600; font-size:0.9rem;">
                   <i class="bi bi-play-circle"></i> Eğitime Devam Et
                 </a>
               </div>
-              
-              <div th:if="${enrollment.status.name() == 'COMPLETED'}" style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
+
+              <!-- Uzaktan Örgün: Kayıtları İzle / Kayıt Yok -->
+              <div th:if="${enrollment.status.name() == 'ACTIVE' and enrollment.courseType != null and enrollment.courseType.name() == 'REMOTE_FORMAL'}">
+                <a th:if="${enrollment.hasVideos}" th:href="@{/egitimler/izle/{id}(id=${enrollment.courseId})}" class="btn btn-primary btn-full shadow-sm" style="border-radius:10px; font-weight:600; font-size:0.9rem;">
+                  <i class="bi bi-camera-video"></i> Kayıtları İzle
+                </a>
+                <button th:if="${!enrollment.hasVideos}" class="btn btn-secondary btn-full" style="border-radius:10px; font-weight:600; font-size:0.9rem; background:#e9ecef; border-color:#dee2e6; color:#6c757d; cursor:not-allowed;" disabled>
+                   <i class="bi bi-camera-video-off"></i> Derse ait kayıt yok
+                </button>
+              </div>
+
+              <!-- Online tamamlandı: Tekrar İzle + Sertifika -->
+              <div th:if="${enrollment.status.name() == 'COMPLETED' and (enrollment.courseType == null or enrollment.courseType.name() == 'ONLINE')}" style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
                 <a th:href="@{/egitimler/izle/{id}(id=${enrollment.courseId})}" class="btn" style="background:#f8f9fa; border:1px solid #dee2e6; color:var(--text); border-radius:10px; font-size:0.85rem; font-weight:600; display:flex; justify-content:center; align-items:center;">
                   <i class="bi bi-arrow-repeat" style="margin-right:0.3rem;"></i> Tekrar İzle
                 </a>
                 <a th:href="@{/profilim}" class="btn btn-primary shadow-sm" style="border-radius:10px; font-size:0.85rem; font-weight:600; display:flex; justify-content:center; align-items:center;">
+                   <i class="bi bi-award-fill" style="margin-right:0.3rem;"></i> Sertifika
+                </a>
+              </div>
+
+              <!-- Uzaktan/Yüzyüze tamamlandı: sadece Sertifika -->
+              <div th:if="${enrollment.status.name() == 'COMPLETED' and enrollment.courseType != null and enrollment.courseType.name() != 'ONLINE'}">
+                <a th:href="@{/profilim}" class="btn btn-primary btn-full shadow-sm" style="border-radius:10px; font-size:0.85rem; font-weight:600;">
                    <i class="bi bi-award-fill" style="margin-right:0.3rem;"></i> Sertifika
                 </a>
               </div>
@@ -286,42 +323,102 @@
       <!-- SAĞ KOLON: ZOOM + ÖDEVLER -->
       <div class="assignments-section" style="display:flex; flex-direction:column; gap:2rem;">
 
-        <!-- Yaklaşan Canlı Dersler -->
-        <div th:if="${upcomingMeetings != null and !#lists.isEmpty(upcomingMeetings)}"
-             class="ux-widget" style="border-top:4px solid #2b8a3e;">
+        <!-- Canlı Dersler -->
+        <div class="ux-widget" style="border-top:4px solid #2b8a3e;">
           <div class="widget-title" style="color:#2b8a3e;">
-            <i class="bi bi-camera-video-fill" style="color:#2b8a3e;"></i> Yaklaşan Canlı Dersler
+            <i class="bi bi-camera-video-fill" style="color:#2b8a3e;"></i> Canlı Derslerim
           </div>
-          <div class="task-list">
-            <a th:each="m : ${upcomingMeetings}"
-               th:href="@{/zoom/toplanti/{id}/katil(id=${m.id})}"
-               style="text-decoration:none;color:inherit;display:block;">
-              <div class="task-item" style="border-left:3px solid #2b8a3e;">
-                <div class="task-item-course" th:text="${m.courseTitle}" style="color:#2b8a3e;"></div>
-                <div class="task-item-title" th:text="${m.topic}">Ders</div>
+
+          <!-- Toplantı yok -->
+          <div th:if="${allMeetings == null or #lists.isEmpty(allMeetings)}"
+               style="text-align:center;padding:1.75rem 1rem;color:var(--text-muted);">
+            <div style="font-size:2.2rem;margin-bottom:0.5rem;opacity:0.3;"><i class="bi bi-camera-video-off"></i></div>
+            <div style="font-size:0.9rem;">Henüz planlanmış canlı dersiniz yok.</div>
+          </div>
+
+          <!-- Toplantı listesi -->
+          <div th:if="${allMeetings != null and !#lists.isEmpty(allMeetings)}" class="task-list">
+            <th:block th:each="m : ${allMeetings}">
+
+              <!-- Geçmiş ders (tıklanamaz) -->
+              <div th:if="${m.past}" class="task-item"
+                   style="border-left:3px solid #adb5bd;opacity:0.7;">
+                <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;color:#adb5bd;margin-bottom:0.3rem;"
+                     th:text="${m.courseTitle}"></div>
+                <div class="task-item-title" th:text="${m.topic}"></div>
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;">
-                  <div style="font-size:0.8rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:0.3rem;">
-                    <i class="bi bi-calendar-event"></i>
-                    <span th:text="${#temporals.format(m.scheduledAt, 'dd.MM HH:mm')}"></span>
+                  <div style="font-size:0.8rem;color:#adb5bd;display:flex;align-items:center;gap:0.3rem;">
+                    <i class="bi bi-calendar-x"></i>
+                    <span th:text="${#temporals.format(m.scheduledAt, 'dd.MM.yyyy HH:mm')}"></span>
                   </div>
-                  <span th:if="${m.live}"
-                        style="font-size:0.72rem;background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:20px;font-weight:700;">
-                    CANLI
-                  </span>
-                  <span th:unless="${m.live}"
-                        class="btn btn-primary shadow-sm"
-                        style="padding:0.3rem 0.8rem;font-size:0.75rem;border-radius:8px;pointer-events:none;background:#2b8a3e;border-color:#2b8a3e;">
-                    Katıl
+                  <span style="font-size:0.72rem;background:#f1f3f5;color:#868e96;padding:2px 10px;border-radius:20px;font-weight:700;">
+                    Sona Erdi
                   </span>
                 </div>
+                <!-- Kayıt linki varsa göster -->
+                <div th:if="${m.recordingUrl != null}" style="margin-top:0.6rem;">
+                  <a th:href="${m.recordingUrl}" target="_blank"
+                     style="font-size:0.8rem;color:#1a6fad;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:0.3rem;">
+                    <i class="bi bi-play-circle"></i> Kaydı İzle
+                  </a>
+                </div>
               </div>
-            </a>
+
+              <!-- Canlı ders (şu an aktif) -->
+              <a th:if="${m.live}" th:href="@{/zoom/toplanti/{id}/katil(id=${m.id})}"
+                 style="text-decoration:none;color:inherit;display:block;">
+                <div class="task-item"
+                     style="border-left:3px solid #e03131;background:linear-gradient(135deg,#fff5f5,#ffffff);">
+                  <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;color:#e03131;margin-bottom:0.3rem;"
+                       th:text="${m.courseTitle}"></div>
+                  <div class="task-item-title" th:text="${m.topic}"></div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;">
+                    <div style="font-size:0.8rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:0.3rem;">
+                      <i class="bi bi-calendar-event"></i>
+                      <span th:text="${#temporals.format(m.scheduledAt, 'dd.MM.yyyy HH:mm')}"></span>
+                    </div>
+                    <span style="font-size:0.72rem;background:#ffe3e3;color:#e03131;padding:2px 10px;border-radius:20px;font-weight:700;display:flex;align-items:center;gap:4px;">
+                      <span style="width:6px;height:6px;background:#e03131;border-radius:50%;display:inline-block;animation:pulse 1.2s infinite;"></span>
+                      CANLI
+                    </span>
+                  </div>
+                </div>
+              </a>
+
+              <!-- Yaklaşan ders -->
+              <a th:if="${!m.past and !m.live}" th:href="@{/zoom/toplanti/{id}/katil(id=${m.id})}"
+                 style="text-decoration:none;color:inherit;display:block;">
+                <div class="task-item" style="border-left:3px solid #2b8a3e;">
+                  <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;color:#2b8a3e;margin-bottom:0.3rem;"
+                       th:text="${m.courseTitle}"></div>
+                  <div class="task-item-title" th:text="${m.topic}"></div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;">
+                    <div style="font-size:0.8rem;font-weight:600;color:var(--text-muted);display:flex;align-items:center;gap:0.3rem;">
+                      <i class="bi bi-calendar-event"></i>
+                      <span th:text="${#temporals.format(m.scheduledAt, 'dd.MM.yyyy HH:mm')}"></span>
+                    </div>
+                    <span style="font-size:0.72rem;background:#d3f9d8;color:#2b8a3e;padding:2px 10px;border-radius:20px;font-weight:700;">
+                      Yaklaşan
+                    </span>
+                  </div>
+                </div>
+              </a>
+
+            </th:block>
+
             <a th:href="@{/zoom/derslerim}" class="btn"
                style="width:100%;background:#f0fdf4;color:#2b8a3e;border:1px solid #bbf7d0;border-radius:8px;font-size:0.85rem;font-weight:600;margin-top:0.5rem;text-align:center;">
-              Tüm Canlı Derslerime Git <i class="bi bi-arrow-right"></i>
+              Tüm Canlı Derslerim <i class="bi bi-arrow-right"></i>
             </a>
           </div>
         </div>
+
+        <style>
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+          }
+        </style>
         
         <!-- Bekleyen Ödevler -->
         <div class="ux-widget border-top border-primary border-4" style="border-top-color: var(--primary-600) !important; border-top-style: solid; border-top-width: 4px;">
@@ -332,15 +429,43 @@
              Şu an için bekleyen ödeviniz yok. Harika gidiyorsunuz!
           </div>
 
+          <!-- Süresi geçmiş ödevler -->
+          <div th:if="${overdueAssignments != null and !#lists.isEmpty(overdueAssignments)}" style="margin-bottom:1rem;">
+            <div style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#e03131;margin-bottom:0.5rem;display:flex;align-items:center;gap:0.4rem;">
+              <i class="bi bi-exclamation-triangle-fill"></i> Süresi Geçmiş
+            </div>
+            <div class="task-list">
+              <a th:each="a,i : ${overdueAssignments}" th:if="${i.index < 3}"
+                 th:href="@{/odevlerim/{id}(id=${a.id})}" style="text-decoration:none;color:inherit;display:block;">
+                <div class="task-item" style="border-left:3px solid #e03131;background:#fff5f5;">
+                  <div class="task-item-course" th:text="${a.courseTitle}" style="color:#e03131;">Kurs</div>
+                  <div class="task-item-title" th:text="${a.title}">Ödev</div>
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;">
+                    <div style="font-size:0.8rem;font-weight:600;color:#e03131;display:flex;align-items:center;gap:0.3rem;">
+                      <i class="bi bi-clock-history"></i>
+                      <span th:text="${#temporals.format(a.dueDate, 'dd.MM.yyyy HH:mm')}"></span>
+                    </div>
+                    <span style="font-size:0.72rem;background:#ffe3e3;color:#e03131;padding:2px 10px;border-radius:20px;font-weight:700;">Süre Doldu</span>
+                  </div>
+                </div>
+              </a>
+            </div>
+            <a th:if="${#lists.size(overdueAssignments) > 3}" th:href="@{/odevlerim}"
+               style="display:block;margin-top:0.5rem;text-align:center;font-size:0.8rem;font-weight:600;color:#e03131;text-decoration:none;padding:0.4rem;border-radius:8px;background:#fff5f5;border:1px solid #fca5a5;">
+              + <span th:text="${#lists.size(overdueAssignments) - 3}">0</span> süresi geçmiş ödev daha →
+            </a>
+          </div>
+
           <div th:if="${pendingAssignments != null and !#lists.isEmpty(pendingAssignments)}" class="task-list">
-            <a th:each="a : ${pendingAssignments}" th:href="@{/odevlerim/{id}(id=${a.id})}" style="text-decoration:none; color:inherit; display:block;">
+            <a th:each="a,i : ${pendingAssignments}" th:if="${i.index < 3}"
+               th:href="@{/odevlerim/{id}(id=${a.id})}" style="text-decoration:none; color:inherit; display:block;">
               <div class="task-item">
                 <div class="task-item-course" th:text="${a.courseTitle}">Kurs</div>
                 <div class="task-item-title" th:text="${a.title}">Ödev</div>
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.8rem;">
-                  <div style="font-size:0.8rem; font-weight:600; display:flex; align-items:center; gap:0.3rem;"
-                       th:style="${a.dueDate.isBefore(#temporals.createNow())} ? 'color:#e03131;' : 'color:var(--text-muted);'">
-                    <i class="bi bi-clock"></i> <span th:text="${#temporals.format(a.dueDate, 'dd.MM')}"></span>
+                  <div style="font-size:0.8rem;font-weight:600;color:var(--primary-600);display:flex;align-items:center;gap:0.3rem;">
+                    <i class="bi bi-clock"></i>
+                    <span th:text="${#temporals.format(a.dueDate, 'dd.MM.yyyy HH:mm')}"></span>
                   </div>
                   <span class="btn btn-primary shadow-sm" style="padding:0.3rem 0.8rem; font-size:0.75rem; border-radius:8px; pointer-events:none;">
                     Teslim Et
@@ -348,7 +473,11 @@
                 </div>
               </div>
             </a>
-            <a th:href="@{/odevlerim}" class="btn" style="width:100%; background:#f1f3f5; color:var(--text); border-radius:8px; font-size:0.85rem; font-weight:600; margin-top:0.5rem; text-align:center;">
+            <a th:href="@{/odevlerim}" class="btn"
+               style="width:100%; background:#f1f3f5; color:var(--text); border-radius:8px; font-size:0.85rem; font-weight:600; margin-top:0.5rem; text-align:center;">
+              <span th:if="${#lists.size(pendingAssignments) > 3}">
+                + <span th:text="${#lists.size(pendingAssignments) - 3}">0</span> ödev daha &nbsp;·&nbsp;
+              </span>
               Tüm Ödevlerime Git <i class="bi bi-arrow-right"></i>
             </a>
           </div>
@@ -363,7 +492,8 @@
           </div>
 
           <div th:if="${submissions != null and !#lists.isEmpty(submissions)}" class="task-list">
-            <a th:each="sub : ${submissions}" th:href="@{/odevlerim/{id}(id=${sub.assignmentId})}" style="text-decoration:none; color:inherit; display:block;">
+            <a th:each="sub,i : ${submissions}" th:if="${i.index < 4}"
+               th:href="@{/odevlerim/{id}(id=${sub.assignmentId})}" style="text-decoration:none; color:inherit; display:block;">
               <div class="task-item" style="padding: 1.25rem;">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem;">
                   <div style="flex:1;">
@@ -390,7 +520,11 @@
               </div>
             </a>
           </div>
-          <a th:href="@{/odevlerim}" class="btn" style="width:100%; background:#f1f3f5; color:var(--text); border-radius:8px; font-size:0.85rem; font-weight:600; margin-top:1rem; text-align:center;">
+          <a th:href="@{/odevlerim}" class="btn"
+             style="width:100%; background:#f1f3f5; color:var(--text); border-radius:8px; font-size:0.85rem; font-weight:600; margin-top:1rem; text-align:center;">
+            <span th:if="${#lists.size(submissions) > 4}">
+              + <span th:text="${#lists.size(submissions) - 4}">0</span> kayıt daha &nbsp;·&nbsp;
+            </span>
             Tüm Ödevlerime Git <i class="bi bi-arrow-right"></i>
           </a>
         </div>

@@ -1,23 +1,23 @@
 package com.guzem.uzaktan.model;
 
-public enum CourseCategory {
-    SOFTWARE_DEVELOPMENT("Yazılım Geliştirme"),
-    DATA_SCIENCE("Veri Bilimi ve Yapay Zeka"),
-    BUSINESS("İşletme ve Finans"),
-    DESIGN("Tasarım"),
-    MARKETING("Pazarlama"),
-    PERSONAL_DEVELOPMENT("Kişisel Gelişim"),
-    PHOTOGRAPHY_AND_VIDEO("Fotoğrafçılık ve Video"),
-    LANGUAGE_LEARNING("Dil Eğitimi"),
-    OTHER("Diğer");
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.Nationalized;
 
-    private final String displayName;
+@Entity
+@Table(name = "course_categories")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class CourseCategory {
 
-    CourseCategory(String displayName) {
-        this.displayName = displayName;
-    }
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
-    public String getDisplayName() {
-        return displayName;
-    }
+    @Nationalized
+    @Column(name = "display_name", nullable = false, unique = true, length = 100)
+    private String displayName;
 }

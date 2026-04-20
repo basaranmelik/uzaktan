@@ -25,4 +25,13 @@ public interface EmailService {
 
     /** Zoom toplantısı 30 dk öncesinde hatırlatma */
     void sendMeetingReminder(User student, ZoomMeeting meeting);
+
+    /** İletişim formundan gelen mesajı yöneticiye gönderir */
+    void sendContactEmail(com.guzem.uzaktan.dto.request.ContactRequest request);
+
+    /** Eğitmen tarafından kurs öğrencilerine gönderilen toplu duyuru */
+    void sendCourseAnnouncement(User student, String courseTitle, String subject, String messageText);
+
+    /** Kursa yeni ödev eklendiğinde öğrenciye bildirim */
+    void sendNewAssignmentNotification(User student, com.guzem.uzaktan.model.Assignment assignment);
 }

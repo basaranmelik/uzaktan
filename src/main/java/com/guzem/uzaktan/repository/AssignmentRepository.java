@@ -25,5 +25,10 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
             """)
     List<Assignment> findByEnrolledUserId(@Param("userId") Long userId);
 
+    @Query("SELECT a FROM Assignment a JOIN FETCH a.course WHERE a.dueDate < :now")
+    List<Assignment> findAllOverdue(@Param("now") LocalDateTime now);
+
     long count();
+
+    long countByCourseIdIn(List<Long> courseIds);
 }

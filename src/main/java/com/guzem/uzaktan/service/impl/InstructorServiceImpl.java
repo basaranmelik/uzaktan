@@ -5,6 +5,7 @@ import com.guzem.uzaktan.dto.request.InstructorUpdateRequest;
 import com.guzem.uzaktan.dto.response.InstructorResponse;
 import com.guzem.uzaktan.mapper.InstructorMapper;
 import com.guzem.uzaktan.model.Instructor;
+import com.guzem.uzaktan.repository.CourseRepository;
 import com.guzem.uzaktan.repository.InstructorRepository;
 import com.guzem.uzaktan.exception.ResourceNotFoundException;
 import com.guzem.uzaktan.service.FileStorageService;
@@ -29,13 +30,27 @@ public class InstructorServiceImpl implements InstructorService {
     private final InstructorRepository instructorRepository;
     private final InstructorMapper instructorMapper;
     private final FileStorageService fileStorageService;
+    private final CourseRepository courseRepository;
 
     @Override
     @Cacheable(value = "instructors")
     public List<InstructorResponse> findAll() {
         return instructorRepository.findAllByOrderByNameAsc()
                 .stream()
-                .map(instructorMapper::toResponse)
+                .map(instructor -> {
+                    long courseCount = courseRepository.countActiveCoursesByInstructorName(instructor.getName());
+                    long studentCount = courseRepository.countDistinctStudentsByInstructorName(instructor.getName());
+                    return InstructorResponse.builder()
+                            .id(instructor.getId())
+                            .name(instructor.getName())
+                            .bio(instructor.getBio())
+                            .expertise(instructor.getExpertise())
+                            .photoUrl(instructor.getPhotoUrl())
+                            .createdAt(instructor.getCreatedAt())
+                            .courseCount(courseCount)
+                            .studentCount(studentCount)
+                            .build();
+                })
                 .toList();
     }
 

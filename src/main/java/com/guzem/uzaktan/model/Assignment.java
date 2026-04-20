@@ -3,6 +3,7 @@ package com.guzem.uzaktan.model;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Nationalized;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
@@ -16,7 +17,11 @@ import java.util.Set;
 @Setter
 @Builder
 @Entity
-@Table(name = "assignment")
+@Table(name = "assignment",
+       indexes = {
+               @Index(name = "idx_assignment_due_date", columnList = "due_date"),
+               @Index(name = "idx_assignment_course_id", columnList = "course_id")
+       })
 public class Assignment {
 
     @Id
@@ -28,10 +33,12 @@ public class Assignment {
     private Integer version;
 
 
+    @Nationalized
     @Column(name = "title", nullable = false, length = 200)
     private String title;
 
-    @Column(name = "description", columnDefinition = "TEXT")
+    @Nationalized
+    @Column(name = "description", columnDefinition = "NVARCHAR(MAX)")
     private String description;
 
     @Column(name = "due_date", nullable = false)
@@ -43,6 +50,9 @@ public class Assignment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)
     private Course course;
+
+    @Column(name = "due_soon_notified_at")
+    private LocalDateTime dueSoonNotifiedAt;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

@@ -526,18 +526,21 @@
             </span>
           </div>
           <h4 class="home-featured-title" th:text="${course.title}">Kurs Başlığı</h4>
-          <div class="home-featured-footer">
-            <div class="home-featured-meta">
-              <span>Gazi Üniversitesi</span>
+
+          <div class="home-featured-footer" style="border-top:1px solid #eef2f7; padding-top:1rem; margin-top:1rem;">
+            <div class="home-featured-meta" style="font-size:0.8rem; color:var(--text-muted); display:flex; flex-direction:column; gap:2px;">
+              <span style="font-weight:600; color:var(--text-alt);">Gazi Üniversitesi</span>
               <span th:if="${course.startDate != null and course.endDate != null}"
-                    th:text="'Başlangıç-Bitiş ' + ${#temporals.format(course.startDate, 'dd.MM.yyyy')} + ' / ' + ${#temporals.format(course.endDate, 'dd.MM.yyyy')}">Tarih</span>
+                    th:text="'Tarih: ' + ${#temporals.format(course.startDate, 'dd.MM.yyyy')} + ' - ' + ${#temporals.format(course.endDate, 'dd.MM.yyyy')}">Tarih</span>
               <span th:if="${course.startDate != null and course.endDate == null}"
-                    th:text="'Başlangıç ' + ${#temporals.format(course.startDate, 'dd.MM.yyyy')}">Tarih</span>
+                    th:text="'Başlangıç: ' + ${#temporals.format(course.startDate, 'dd.MM.yyyy')}">Tarih</span>
             </div>
-            <span class="home-featured-price"
-                  th:text="${course.price == null or course.price.signum() == 0} ? 'Ücretsiz' : '₺' + ${#numbers.formatDecimal(course.price, 0, 'COMMA', 0, 'POINT')}">
-              ₺0
-            </span>
+            <div class="home-featured-price-row">
+              <span class="home-featured-price"
+                    th:text="${course.price == null or course.price.signum() == 0} ? 'Ücretsiz' : '₺' + ${#numbers.formatDecimal(course.price, 0, 'COMMA', 0, 'POINT')}">
+                ₺0
+              </span>
+            </div>
           </div>
         </div>
       </a>

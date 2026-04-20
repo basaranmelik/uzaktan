@@ -207,8 +207,8 @@ public class VideoController {
             return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("success", false));
         }
 
-        courseVideoService.markWatched(id, userId);
-        return ResponseEntity.ok(Map.of("success", true));
+        boolean success = courseVideoService.markWatched(id, userId);
+        return ResponseEntity.ok(Map.of("success", success));
     }
 
     @PostMapping("/{id}/progress")

@@ -33,4 +33,6 @@ public interface AssignmentManagementService {
     long countAllAssignments();
 
     long countPendingSubmissions();
+
+    List<AssignmentResponse> findAllAssignmentsForAdmin();
 }

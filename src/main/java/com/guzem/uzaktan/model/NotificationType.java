@@ -11,7 +11,9 @@ public enum NotificationType {
     MEETING_SCHEDULED("Yeni Canlı Ders"),
     MEETING_CANCELLED("Canlı Ders İptal"),
     MEETING_REMINDER("Canlı Ders Hatırlatma"),
-    MEETING_STARTED("Ders Başladı");
+    MEETING_STARTED("Ders Başladı"),
+    COURSE_ANNOUNCEMENT("Eğitmen Duyurusu"),
+    NEW_ASSIGNMENT("Yeni Ödev Yayınlandı");
 
     private final String displayName;
 

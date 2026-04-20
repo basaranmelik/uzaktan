@@ -18,6 +18,7 @@ public class SubmissionResponse {
     private String courseTitle;
     private Long userId;
     private String userFullName;
+    private String userEmail;
     private Long instructorId;
     private String textAnswer;
     private String filePath;

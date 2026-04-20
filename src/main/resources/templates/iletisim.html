@@ -4,6 +4,8 @@
   <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="_csrf" th:content="${_csrf.token}">
+  <meta name="_csrf_header" th:content="${_csrf.headerName}">
   <meta name="description" content="GUZEM ile iletişime geçin. Gazi Üniversitesi Uzaktan Eğitim Merkezi adres, telefon ve e-posta bilgileri.">
   <title>İletişim | Gazi Üniversitesi UZEM</title>
   
@@ -324,28 +326,28 @@
             <form id="contact-form">
                 <div class="form-row-2">
                     <div class="form-group-v2">
-                        <label for="fname">Ad</label>
-                        <input type="text" id="fname" placeholder="Adınız" maxlength="100" required>
+                        <label for="firstName">Ad</label>
+                        <input type="text" id="firstName" name="firstName" placeholder="Adınız" maxlength="100" required>
                     </div>
                     <div class="form-group-v2">
-                        <label for="lname">Soyad</label>
-                        <input type="text" id="lname" placeholder="Soyadınız" maxlength="100" required>
+                        <label for="lastName">Soyad</label>
+                        <input type="text" id="lastName" name="lastName" placeholder="Soyadınız" maxlength="100" required>
                     </div>
                 </div>
 
                 <div class="form-group-v2">
-                    <label for="cemail">E-posta Adresi</label>
-                    <input type="email" id="cemail" placeholder="ornek@email.com" maxlength="255" required>
+                    <label for="email">E-posta Adresi</label>
+                    <input type="email" id="email" name="email" placeholder="ornek@email.com" maxlength="255" required>
                 </div>
 
                 <div class="form-group-v2">
-                    <label for="cphone">Telefon Numarası (İsteğe Bağlı)</label>
-                    <input type="tel" id="cphone" placeholder="0 5xx xxx xx xx" maxlength="20">
+                    <label for="phone">Telefon Numarası</label>
+                    <input type="tel" id="phone" name="phone" placeholder="0 5xx xxx xx xx" maxlength="20" required>
                 </div>
 
                 <div class="form-group-v2">
-                    <label for="ctopic">Konu</label>
-                    <select id="ctopic" required>
+                    <label for="topic">Konu</label>
+                    <select id="topic" name="topic" required>
                         <option value="" disabled selected>Konu seçin...</option>
                         <option value="egitim">Eğitim Hakkında Bilgi</option>
                         <option value="kayit">Kayıt / Ödeme</option>
@@ -358,8 +360,8 @@
                 </div>
 
                 <div class="form-group-v2">
-                    <label for="cmsg">Mesajınız</label>
-                    <textarea id="cmsg" placeholder="Mesajınızı buraya yazın..." maxlength="2000" required></textarea>
+                    <label for="message">Mesajınız</label>
+                    <textarea id="message" name="message" placeholder="Mesajınızı buraya yazın..." maxlength="2000" required></textarea>
                 </div>
 
                 <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:20px;">
@@ -425,24 +427,66 @@
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('contact-form');
+        const formSuccess = document.getElementById('formSuccess');
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content;
+
         if (form) {
             form.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const btn = form.querySelector('.btn-submit');
                 const originalText = btn.innerHTML;
+                
+                // Form verilerini topla
+                const formData = {
+                    firstName: document.getElementById('firstName').value,
+                    lastName: document.getElementById('lastName').value,
+                    email: document.getElementById('email').value,
+                    phone: document.getElementById('phone').value,
+                    topic: document.getElementById('topic').value,
+                    message: document.getElementById('message').value
+                };
+
                 btn.textContent = 'Gönderiliyor...';
                 btn.disabled = true;
-                
-                setTimeout(() => {
+
+                fetch('/iletisim', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        [csrfHeader]: csrfToken
+                    },
+                    body: JSON.stringify(formData)
+                })
+                .then(response => response.json())
+                .then(data => {
                     btn.innerHTML = originalText;
                     btn.disabled = false;
-                    document.getElementById('formSuccess').style.display = 'block';
-                    form.reset();
                     
-                    setTimeout(() => {
-                        document.getElementById('formSuccess').style.display = 'none';
-                    }, 5000);
-                }, 1200);
+                    if (data.success) {
+                        formSuccess.style.display = 'block';
+                        formSuccess.style.background = '#e6fcf5';
+                        formSuccess.style.color = '#0a7a5a';
+                        formSuccess.style.borderColor = '#20c997';
+                        formSuccess.innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + data.message;
+                        form.reset();
+                        
+                        setTimeout(() => {
+                            formSuccess.style.display = 'none';
+                        }, 6000);
+                    } else {
+                        throw new Error(data.message);
+                    }
+                })
+                .catch(error => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    formSuccess.style.display = 'block';
+                    formSuccess.style.background = '#fff5f5';
+                    formSuccess.style.color = '#c92a2a';
+                    formSuccess.style.borderColor = '#ffa8a8';
+                    formSuccess.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> Hata: ' + (error.message || 'Mesaj gönderilemedi.');
+                });
             });
         }
     });

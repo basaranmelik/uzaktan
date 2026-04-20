@@ -147,6 +147,7 @@ public class ZoomController {
     // ---- Öğrenci: katıl ----
 
     @GetMapping("/zoom/toplanti/{id}/katil")
+    @PreAuthorize("isAuthenticated()")
     public String joinMeeting(@PathVariable Long id,
                               @AuthenticationPrincipal UserDetails principal,
                               Model model) {

@@ -52,4 +52,10 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT c FROM Course c WHERE c.id = :id")
     Optional<Course> findByIdForUpdate(@Param("id") Long id);
+
+    @Query("SELECT COUNT(c) FROM Course c WHERE c.instructorName = :name AND c.status IN (com.guzem.uzaktan.model.CourseStatus.PUBLISHED, com.guzem.uzaktan.model.CourseStatus.IN_PROGRESS)")
+    long countActiveCoursesByInstructorName(@Param("name") String name);
+
+    @Query("SELECT COUNT(DISTINCT e.user.id) FROM Enrollment e WHERE e.course.instructorName = :name")
+    long countDistinctStudentsByInstructorName(@Param("name") String name);
 }

@@ -19,10 +19,6 @@ public interface SubmissionService {
                               SubmissionCreateRequest request,
                               MultipartFile file);
 
-    SubmissionResponse updateSubmission(Long assignmentId, Long userId,
-                                        SubmissionCreateRequest request,
-                                        MultipartFile file);
-
     Optional<SubmissionResponse> findSubmission(Long assignmentId, Long userId);
 
     SubmissionResponse findSubmissionById(Long submissionId, Long requestingUserId);
@@ -30,4 +26,8 @@ public interface SubmissionService {
     List<SubmissionResponse> findAllSubmissionsForStudent(Long userId);
 
     List<AssignmentResponse> findPendingAssignmentsForStudent(Long userId);
+
+    List<AssignmentResponse> findOverdueAssignmentsForStudent(Long userId);
+
+    List<com.guzem.uzaktan.dto.response.UserResponse> findNotSubmittedStudents(Long courseId, Long assignmentId);
 }

@@ -42,6 +42,13 @@ public class CartServiceImpl implements CartService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kurs", "id", courseId));
 
+        if (course.getCourseType() != com.guzem.uzaktan.model.CourseType.ONLINE) {
+            long activeEnrollments = enrollmentRepository.countByCourseId(courseId);
+            if (course.getQuota() != null && activeEnrollments >= course.getQuota()) {
+                throw new IllegalStateException("Bu kursun kontenjanı maalesef dolmuştur.");
+            }
+        }
+
         cartItemRepository.save(CartItem.builder().user(user).course(course).build());
     }
 

@@ -234,29 +234,41 @@ public class CourseVideoServiceImpl implements CourseVideoService {
     }
 
     @Override
-    public void markWatched(Long videoId, Long userId) {
-        if (videoWatchRepository.existsByUserIdAndVideoIdAndCompletedTrue(userId, videoId)) {
-            return;
+    public boolean markWatched(Long videoId, Long userId) {
+        CourseVideo video = loadVideo(videoId);
+        VideoWatch watch = videoWatchRepository.findByUserIdAndVideoId(userId, videoId)
+                .orElse(null);
+
+        if (watch != null && watch.isCompleted()) {
+            return true;
         }
 
-        CourseVideo video = loadVideo(videoId);
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", userId));
-
-        VideoWatch watch = videoWatchRepository.findByUserIdAndVideoId(userId, videoId)
-                .orElseGet(() -> VideoWatch.builder().user(user).video(video).build());
-
-        boolean authentic = false;
+        long watchTime = watch != null ? watch.getWatchTimeSeconds() : 0;
         Integer duration = video.getDurationSeconds();
+
         if (duration != null && duration > 0) {
-            authentic = watch.getWatchTimeSeconds() >= duration * 0.5;
+            int requiredTime = (int) (duration * 0.80);
+            if (watchTime < requiredTime) {
+                return false;
+            }
+        } else {
+            if (watchTime < 10) {
+                return false;
+            }
+        }
+
+        if (watch == null) {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", userId));
+            watch = VideoWatch.builder().user(user).video(video).build();
         }
 
         watch.setCompleted(true);
-        watch.setAuthentic(authentic);
+        watch.setAuthentic(true);
         videoWatchRepository.save(watch);
 
         enrollmentService.recalculateProgress(userId, video.getCourse().getId());
+        return true;
     }
 
     @Override

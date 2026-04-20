@@ -8,6 +8,13 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.springframework.data.domain.Page;
+import com.guzem.uzaktan.dto.response.EnrollmentResponse;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 @Controller
 @RequestMapping("/admin/kayitlar")
 @RequiredArgsConstructor
@@ -20,7 +27,17 @@ public class AdminEnrollmentController {
     public String enrollments(@RequestParam(defaultValue = "0") int page,
                               @RequestParam(defaultValue = "25") int size,
                               Model model) {
-        model.addAttribute("enrollments", enrollmentService.findAllForAdmin(page, size));
+        Page<EnrollmentResponse> enrollments = enrollmentService.findAllForAdmin(page, size);
+
+        Map<String, List<EnrollmentResponse>> groupedEnrollments = enrollments.getContent().stream()
+                .collect(Collectors.groupingBy(
+                        EnrollmentResponse::getCourseTitle,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+        model.addAttribute("enrollments", enrollments);
+        model.addAttribute("groupedEnrollments", groupedEnrollments);
         return "admin/enrollments";
     }
 

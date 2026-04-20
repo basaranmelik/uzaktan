@@ -9,12 +9,38 @@
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <style>
-    .instructor-grid {
+    /* ── Stats strip ── */
+    .panel-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .panel-stat {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .panel-stat-icon {
+      width: 46px; height: 46px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem; flex-shrink: 0;
+    }
+    .panel-stat-body { min-width: 0; }
+    .panel-stat-value { font-size: 1.6rem; font-weight: 800; line-height: 1; color: var(--primary-800); }
+    .panel-stat-label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); margin-top: 0.2rem; text-transform: uppercase; letter-spacing: .04em; }
+
+    /* ── Course grid ── */
+    .pk-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
       gap: 1.5rem;
     }
-    .instructor-card {
+    .pk-card {
       background: var(--bg);
       border: 1px solid #ced4da;
       border-radius: 16px;
@@ -23,51 +49,47 @@
       flex-direction: column;
       transition: transform 0.2s, box-shadow 0.2s;
     }
-    .instructor-card:hover {
+    .pk-card:hover {
       transform: translateY(-4px);
       box-shadow: 0 8px 25px rgba(17,58,113,0.1);
     }
-    .card-banner {
+    .pk-banner {
       height: 160px;
       position: relative;
       overflow: hidden;
+      flex-shrink: 0;
     }
-    .card-banner img {
-      width: 100%; height: 100%; object-fit: cover;
+    .pk-banner img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
     }
-    .card-banner .no-img {
+    .pk-banner .pk-no-img {
       width: 100%; height: 100%;
       background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
       display: flex; align-items: center; justify-content: center;
       color: #fff; font-size: 2.5rem;
     }
-    .card-status {
+    .pk-status {
       position: absolute; top: 0.75rem; right: 0.75rem;
       padding: 0.3rem 0.75rem; border-radius: 20px;
       font-size: 0.75rem; font-weight: 700;
       backdrop-filter: blur(8px);
       border: 1px solid rgba(255,255,255,0.2);
     }
-    .card-content { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
-    .card-title { font-size: 1.15rem; font-weight: 800; color: var(--primary-900); margin-bottom: 0.75rem; line-height: 1.3; }
-    .card-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1.25rem; font-size: 0.82rem; color: var(--text-muted); }
-    .card-meta i { color: var(--primary-600); }
-    .card-actions {
+    .pk-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+    .pk-title { font-size: 1.15rem; font-weight: 800; color: var(--primary-900); margin: 0 0 0.75rem; line-height: 1.3; }
+    .pk-meta { display: flex; flex-wrap: wrap; gap: 0.75rem; font-size: 0.82rem; color: var(--text-muted); }
+    .pk-meta i { color: var(--primary-600); }
+    .pk-actions {
       display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;
       padding: 1rem 1.25rem; border-top: 1px solid var(--border);
-      background: var(--bg-alt);
-    }
-    .status-badge-inline {
-      display: inline-flex; align-items: center; gap: 0.3rem;
-      font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 4px;
-      margin-bottom: 0.5rem;
+      background: var(--bg-alt); flex-shrink: 0;
     }
   </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<section class="page-header" style="padding: calc(var(--nav-height) + var(--space-xl)) 0 var(--space-xl);">
+<section class="page-header">
   <div class="container">
     <div class="breadcrumb">
       <span class="current">Eğitmen Paneli</span>
@@ -80,38 +102,49 @@
 <section class="section">
   <div class="container">
 
-
-
     <!-- Özet Kartlar -->
-    <div class="stats-grid" style="margin-bottom:2.5rem;">
-      <div class="stat-card fade-in">
-        <div class="stat-icon"><i class="bi bi-collection-fill"></i></div>
-        <div class="stat-number" th:text="${courseCount}">0</div>
-        <div class="stat-label">Atanmış Kurs</div>
+    <div class="panel-stats">
+      <div class="panel-stat fade-in">
+        <div class="panel-stat-icon" style="background:#e7f5ff;color:#1971c2;"><i class="bi bi-collection-fill"></i></div>
+        <div class="panel-stat-body">
+          <div class="panel-stat-value" th:text="${courseCount}">0</div>
+          <div class="panel-stat-label">Atanmış Kurs</div>
+        </div>
       </div>
-      <div class="stat-card fade-in">
-        <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
-        <div class="stat-number" th:text="${totalStudents}">0</div>
-        <div class="stat-label">Toplam Öğrenci</div>
+      <div class="panel-stat fade-in">
+        <div class="panel-stat-icon" style="background:#ebfbee;color:#2b8a3e;"><i class="bi bi-people-fill"></i></div>
+        <div class="panel-stat-body">
+          <div class="panel-stat-value" th:text="${totalStudents}">0</div>
+          <div class="panel-stat-label">Toplam Öğrenci</div>
+        </div>
       </div>
-      <div class="stat-card fade-in">
-        <div class="stat-icon"><i class="bi bi-play-circle-fill"></i></div>
-        <div class="stat-number" th:text="${activeCourses}">0</div>
-        <div class="stat-label">Aktif Kurs</div>
+      <div class="panel-stat fade-in">
+        <div class="panel-stat-icon" style="background:#fff4e6;color:#e67700;"><i class="bi bi-play-circle-fill"></i></div>
+        <div class="panel-stat-body">
+          <div class="panel-stat-value" th:text="${activeCourses}">0</div>
+          <div class="panel-stat-label">Aktif Kurs</div>
+        </div>
       </div>
-      <div class="stat-card fade-in">
-        <div class="stat-icon"><i class="bi bi-journal-text"></i></div>
-        <div class="stat-number">—</div>
-        <div class="stat-label">Toplam Ödev</div>
+      <div class="panel-stat fade-in">
+        <div class="panel-stat-icon" style="background:#f3f0ff;color:#7048e8;"><i class="bi bi-journal-text"></i></div>
+        <div class="panel-stat-body">
+          <div class="panel-stat-value" th:text="${totalAssignments != null ? totalAssignments : '—'}">—</div>
+          <div class="panel-stat-label">Toplam Ödev</div>
+        </div>
       </div>
     </div>
 
     <!-- Hızlı Erişim -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
       <h3 style="margin:0;">Kurslarım</h3>
-      <a th:href="@{/egitmen/kurslarim}" class="btn btn-secondary" style="font-size:0.85rem;">
-        Tümünü Gör →
-      </a>
+      <div>
+        <a th:href="@{/egitmen/duyuru}" class="btn btn-primary" style="font-size:0.85rem; margin-right: 0.5rem; background: var(--primary-800);">
+          <i class="bi bi-megaphone-fill"></i> Duyuru Gönder
+        </a>
+        <a th:href="@{/egitmen/kurslarim}" class="btn btn-secondary" style="font-size:0.85rem;">
+          Tümünü Gör →
+        </a>
+      </div>
     </div>
 
     <!-- Kurs yoksa -->
@@ -123,53 +156,52 @@
     </div>
 
     <!-- Kurs Kartları (Grid) -->
-    <div th:if="${!#lists.isEmpty(courses)}" class="instructor-grid">
+    <div th:if="${!#lists.isEmpty(courses)}" class="pk-grid">
 
-      <div th:each="course : ${courses}" class="instructor-card fade-in">
+      <div th:each="course : ${courses}" class="pk-card">
         <!-- Banner / Image -->
-        <div class="card-banner">
+        <div class="pk-banner">
           <img th:if="${course.imagePath != null}" th:src="@{'/uploads/' + ${course.imagePath}}" alt="">
-          <div th:if="${course.imagePath == null}" class="no-img">
+          <div th:if="${course.imagePath == null}" class="pk-no-img">
             <i class="bi bi-laptop"></i>
           </div>
-          <span class="card-status"
+          <span class="pk-status"
                 th:text="${course.status.displayName}"
-                th:attr="style=${course.status.name() == 'PUBLISHED' ? 'background:rgba(43,138,62,0.9); color:#fff;' : 
-                               (course.status.name() == 'IN_PROGRESS' ? 'background:rgba(12,133,153,0.9); color:#fff;' : 
-                               (course.status.name() == 'DRAFT' ? 'background:rgba(232,89,12,0.9); color:#fff;' : 'background:rgba(134,142,150,0.9); color:#fff;'))}">
+                th:attr="style=${course.status.name() == 'PUBLISHED' ? 'background:rgba(43,138,62,0.9); color:#fff;' :
+                                (course.status.name() == 'IN_PROGRESS' ? 'background:rgba(12,133,153,0.9); color:#fff;' :
+                                (course.status.name() == 'DRAFT' ? 'background:rgba(232,89,12,0.9); color:#fff;' : 'background:rgba(134,142,150,0.9); color:#fff;'))}">
           </span>
         </div>
 
-        <div class="card-content">
-          <h4 class="card-title" th:text="${course.title}">Kurs Başlığı</h4>
-          
-          <div class="card-meta">
-            <div title="Öğrenci Sayısı">
+        <div class="pk-body">
+          <h4 class="pk-title" th:text="${course.title}">Kurs Başlığı</h4>
+          <div class="pk-meta">
+            <span title="Öğrenci Sayısı">
               <i class="bi bi-people-fill"></i>
               <span th:text="${course.enrolledCount}">0</span>
               <span th:if="${course.quota != null}">/<span th:text="${course.quota}">0</span></span>
-            </div>
-            <div th:if="${course.hours != null}" title="Süre">
+            </span>
+            <span th:if="${course.hours != null}" title="Süre">
               <i class="bi bi-clock-fill"></i> <span th:text="${course.hours}">0</span> Saat
-            </div>
-            <div th:if="${course.startDate != null}" title="Başlangıç">
+            </span>
+            <span th:if="${course.startDate != null}" title="Başlangıç">
               <i class="bi bi-calendar-event-fill"></i> <span th:text="${#temporals.format(course.startDate,'dd.MM.yyyy')}"></span>
-            </div>
+            </span>
           </div>
         </div>
 
-        <!-- Aksiyonlar (Grid 2 sütun) -->
-        <div class="card-actions">
+        <!-- Aksiyonlar -->
+        <div class="pk-actions">
           <a th:href="@{/egitmen/kurslarim/{id}/odevler(id=${course.id})}"
-             class="btn btn-primary" style="font-size:0.8rem; padding:0.5rem;">
+             class="btn btn-primary" style="font-size:0.85rem;">
             <i class="bi bi-journal-text"></i> Ödevler
           </a>
           <a th:href="@{/egitmen/zoom/kurslarim/{id}(id=${course.id})}"
-             class="btn btn-secondary" style="font-size:0.8rem; padding:0.5rem;">
+             class="btn btn-secondary" style="font-size:0.85rem;">
             <i class="bi bi-camera-video"></i> Zoom
           </a>
           <a th:href="@{/egitimler/izle/{id}(id=${course.id})}"
-             class="btn btn-primary" style="grid-column: span 2; font-size:0.8rem; padding:0.5rem;">
+             class="btn btn-primary" style="grid-column: span 2; font-size:0.85rem;">
             <i class="bi bi-play-circle-fill"></i> Videoları İzle
           </a>
         </div>

@@ -74,7 +74,6 @@
       <table class="admin-table">
         <thead>
           <tr>
-            <th>ID</th>
             <th>Kullanıcı</th>
             <th>Kurs</th>
             <th>Sertifika Kodu</th>
@@ -85,8 +84,6 @@
         </thead>
         <tbody>
           <tr th:each="cert : ${certificates}">
-            <td style="color:var(--text-muted);" th:text="${cert.id}">1</td>
-
             <td style="font-weight:700;" th:text="${cert.userName}">-</td>
 
             <td th:text="${cert.courseTitle}">-</td>

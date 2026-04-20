@@ -1,13 +1,22 @@
 package com.guzem.uzaktan.controller;
 
+import com.guzem.uzaktan.dto.request.AnnouncementRequest;
 import com.guzem.uzaktan.dto.request.AssignmentCreateRequest;
 import com.guzem.uzaktan.dto.request.AssignmentUpdateRequest;
 import com.guzem.uzaktan.dto.request.GradeSubmissionRequest;
 import com.guzem.uzaktan.dto.response.AssignmentResponse;
 import com.guzem.uzaktan.dto.response.CourseResponse;
+import com.guzem.uzaktan.dto.response.SubmissionResponse;
 import com.guzem.uzaktan.model.Role;
+import com.guzem.uzaktan.model.SubmissionStatus;
+import com.guzem.uzaktan.model.NotificationType;
+import com.guzem.uzaktan.model.User;
+import com.guzem.uzaktan.repository.AssignmentRepository;
+import com.guzem.uzaktan.repository.EnrollmentRepository;
 import com.guzem.uzaktan.service.AssignmentService;
 import com.guzem.uzaktan.service.CourseService;
+import com.guzem.uzaktan.service.EmailService;
+import com.guzem.uzaktan.service.NotificationService;
 import com.guzem.uzaktan.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +33,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 @Controller
 @RequestMapping("/egitmen")
 @RequiredArgsConstructor
@@ -33,6 +44,10 @@ public class TeacherController {
     private final CourseService courseService;
     private final AssignmentService assignmentService;
     private final UserService userService;
+    private final NotificationService notificationService;
+    private final EmailService emailService;
+    private final EnrollmentRepository enrollmentRepository;
+    private final AssignmentRepository assignmentRepository;
 
     // ---- Panel ----
 
@@ -40,10 +55,12 @@ public class TeacherController {
     public String panel(@AuthenticationPrincipal UserDetails principal, Model model) {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
         var courses = courseService.findByInstructor(userId);
+        var courseIds = courses.stream().map(CourseResponse::getId).toList();
         model.addAttribute("courses", courses);
         model.addAttribute("courseCount", courses.size());
         model.addAttribute("totalStudents", courseService.countTotalStudentsForInstructor(userId));
         model.addAttribute("activeCourses", courseService.countActiveCoursesForInstructor(userId));
+        model.addAttribute("totalAssignments", courseIds.isEmpty() ? 0 : assignmentRepository.countByCourseIdIn(courseIds));
         return "egitmen/panel";
     }
 
@@ -51,6 +68,61 @@ public class TeacherController {
     public String myCourses(@AuthenticationPrincipal UserDetails principal, Model model) {
         model.addAttribute("courses", courseService.findByInstructor(userService.findUserIdByEmail(principal.getUsername())));
         return "egitmen/kurslarim";
+    }
+
+    // ---- Duyuru (Announcement) Gönderimi ----
+
+    @GetMapping("/duyuru")
+    public String announcementForm(@AuthenticationPrincipal UserDetails principal, Model model) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        var courses = courseService.findByInstructor(userId);
+        model.addAttribute("courses", courses);
+        model.addAttribute("announcementRequest", new AnnouncementRequest());
+        return "egitmen/duyuru";
+    }
+
+    @PostMapping("/duyuru")
+    public String sendAnnouncement(@Valid @ModelAttribute("announcementRequest") AnnouncementRequest request,
+                                   BindingResult bindingResult,
+                                   @AuthenticationPrincipal UserDetails principal,
+                                   Model model,
+                                   RedirectAttributes redirectAttributes) {
+        Long userId = userService.findUserIdByEmail(principal.getUsername());
+        var courses = courseService.findByInstructor(userId);
+
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("courses", courses);
+            return "egitmen/duyuru";
+        }
+
+        List<Long> instructorCourseIds = courses.stream().map(CourseResponse::getId).toList();
+        
+        int totalSent = 0;
+        Long selectedCourseId = request.getCourseId();
+
+        if (selectedCourseId != null && instructorCourseIds.contains(selectedCourseId)) {
+            var enrollments = enrollmentRepository.findActiveEnrollmentsForCourse(selectedCourseId);
+            var courseInfo = courses.stream().filter(c -> c.getId().equals(selectedCourseId)).findFirst().orElse(null);
+            String courseTitle = courseInfo != null ? courseInfo.getTitle() : "Kurs";
+            
+            for (var enrollment : enrollments) {
+                User student = enrollment.getUser();
+                
+                // Sisteme bildirim kaydı at
+                notificationService.create(student, NotificationType.COURSE_ANNOUNCEMENT, request.getSubject(), request.getMessage(), "/egitimler/izle/" + selectedCourseId);
+                
+                // Arka planda e-posta gönder
+                emailService.sendCourseAnnouncement(student, courseTitle, request.getSubject(), request.getMessage());
+                
+                totalSent++;
+            }
+        } else {
+             redirectAttributes.addFlashAttribute("errorMessage", "Geçersiz kurs seçimi.");
+             return "redirect:/egitmen/panel";
+        }
+
+        redirectAttributes.addFlashAttribute("successMessage", totalSent + " öğrenciye duyuru başarıyla gönderildi.");
+        return "redirect:/egitmen/panel";
     }
 
     // ---- Ödev Yönetimi ----
@@ -155,8 +227,27 @@ public class TeacherController {
                               @AuthenticationPrincipal UserDetails principal,
                               Model model) {
         Long userId = userService.findUserIdByEmail(principal.getUsername());
-        model.addAttribute("assignment", assignmentService.findById(id, userId));
-        model.addAttribute("submissions", assignmentService.findSubmissionsByAssignment(id, userId));
+        AssignmentResponse assignment = assignmentService.findById(id, userId);
+        java.util.List<SubmissionResponse> submissions = assignmentService.findSubmissionsByAssignment(id, userId);
+
+        long gradedCount = submissions.stream()
+                .filter(s -> s.getStatus() == SubmissionStatus.GRADED)
+                .count();
+        double averageScore = submissions.stream()
+                .filter(s -> s.getScore() != null)
+                .mapToInt(SubmissionResponse::getScore)
+                .average()
+                .orElse(0.0);
+        java.util.List<com.guzem.uzaktan.dto.response.UserResponse> notSubmitted =
+                assignmentService.findNotSubmittedStudents(assignment.getCourseId(), id);
+        long enrolledCount = submissions.size() + notSubmitted.size();
+
+        model.addAttribute("assignment", assignment);
+        model.addAttribute("submissions", submissions);
+        model.addAttribute("notSubmittedStudents", notSubmitted);
+        model.addAttribute("enrolledCount", enrolledCount);
+        model.addAttribute("gradedCount", gradedCount);
+        model.addAttribute("averageScore", Math.round(averageScore * 10.0) / 10.0);
         return "egitmen/teslimler";
     }
 

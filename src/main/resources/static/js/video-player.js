@@ -41,9 +41,14 @@
         return !marked && Number.isFinite(duration) && duration > 0 && currentTime / duration >= 0.8;
     }
 
+    var lastMarkAttempt = 0;
     function checkWatchThreshold(currentTime, duration) {
         if (shouldMarkWatched(currentTime, duration)) {
-            markAsWatched();
+            var now = Date.now();
+            if (now - lastMarkAttempt > 15000) {
+                lastMarkAttempt = now;
+                markAsWatched();
+            }
         }
     }
 
@@ -88,7 +93,13 @@
             }
         })
             .then(r => {
+                const isJson = r.headers.get('content-type')?.includes('application/json');
                 if (!r.ok) {
+                    if (isJson) {
+                        return r.json().then(errData => {
+                            throw new Error(errData.message || 'Video işaretlenemedi.');
+                        });
+                    }
                     throw new Error('mark-watched-failed:' + r.status);
                 }
                 return r.json();
@@ -99,10 +110,10 @@
                     updateUIAsWatched();
                     return data;
                 }
-                throw new Error('mark-watched-unsuccessful');
+                // Hata mesajı olmadan sessizce dön
+                return { success: false };
             })
             .catch(() => {
-                showToast('Video tamamlandı bilgisi kaydedilemedi. Lütfen tekrar deneyin.', 'warning');
                 return { success: false };
             })
             .finally(() => {

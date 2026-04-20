@@ -243,6 +243,8 @@
                   <i class="bi bi-people"></i>
                   <span th:text="${course.quota - course.enrolledCount} + ' / ' + ${course.quota} + ' Kontenjan'">Kontenjan</span>
                 </div>
+              </div>
+              <div class="card-price-row">
                 <span class="card-price"
                       th:text="${course.price == null or course.price.signum() == 0} ? 'Ücretsiz' : '₺' + ${#numbers.formatDecimal(course.price, 1, 'POINT', 0, 'COMMA')}">
                   ₺0

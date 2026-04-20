@@ -47,5 +47,9 @@ public interface CourseService {
 
     long countActiveCoursesForInstructor(Long instructorId);
 
+    long countTotalStudentsByInstructorName(String instructorName);
+
+    long countActiveCoursesByInstructorName(String instructorName);
+
     void updateCourseRating(Long courseId);
 }

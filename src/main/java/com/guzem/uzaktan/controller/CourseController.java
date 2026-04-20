@@ -7,6 +7,7 @@ import com.guzem.uzaktan.dto.response.EnrollmentResponse;
 import com.guzem.uzaktan.dto.response.UserResponse;
 import com.guzem.uzaktan.model.CourseCategory;
 import com.guzem.uzaktan.model.EnrollmentStatus;
+import com.guzem.uzaktan.service.CourseCategoryService;
 import com.guzem.uzaktan.service.CourseReviewService;
 import com.guzem.uzaktan.service.CourseService;
 import com.guzem.uzaktan.service.CourseVideoService;
@@ -31,6 +32,7 @@ import java.util.Optional;
 public class CourseController {
 
     private final CourseService courseService;
+    private final CourseCategoryService categoryService;
     private final UserService userService;
     private final EnrollmentService enrollmentService;
     private final CourseVideoService courseVideoService;
@@ -41,18 +43,27 @@ public class CourseController {
     @GetMapping
     public String listCourses(
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "100") int size,
-            @RequestParam(required = false) CourseCategory category,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(required = false) String categoryName,
             @RequestParam(required = false) String keyword,
             @AuthenticationPrincipal UserDetails principal,
             Model model) {
 
         Page<CourseSummaryResponse> courses;
+        CourseCategory selectedCategory = null;
 
         if (keyword != null && !keyword.isBlank()) {
+            if (keyword.length() > 100) {
+                keyword = keyword.substring(0, 100);
+            }
             courses = courseService.search(keyword, page, size);
-        } else if (category != null) {
-            courses = courseService.findByCategory(category, page, size);
+        } else if (categoryName != null && !categoryName.isBlank()) {
+            try {
+                selectedCategory = categoryService.findByDisplayName(categoryName);
+                courses = courseService.findByCategory(selectedCategory, page, size);
+            } catch (Exception e) {
+                courses = courseService.findPublishedCourses(page, size);
+            }
         } else if (principal != null) {
             UserResponse user = userService.findByEmail(principal.getUsername());
             courses = courseService.findPublishedCoursesForUser(user.getId(), page, size);
@@ -61,8 +72,8 @@ public class CourseController {
         }
 
         model.addAttribute("courses", courses);
-        model.addAttribute("categories", CourseCategory.values());
-        model.addAttribute("selectedCategory", category);
+        model.addAttribute("categories", categoryService.findAll());
+        model.addAttribute("selectedCategory", selectedCategory);
         model.addAttribute("keyword", keyword);
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", courses.getTotalPages());
@@ -96,10 +107,12 @@ public class CourseController {
             boolean isActiveEnrolled = enrollmentOpt
                     .map(e -> e.getStatus() == EnrollmentStatus.ACTIVE).orElse(false);
 
-            // Eğitmen - kendi kursunu görebilir
-            if (isTeacherOrAdmin && !principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-                if (course.getInstructorId() != null && course.getInstructorId().equals(user.getId())) {
-                    isActiveEnrolled = true; // Eğitmen kursunu view-only mode'da görebilir
+            // Eğitmen/Admin Kontrolü
+            if (isTeacherOrAdmin) {
+                boolean isAdmin = principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+                if (isAdmin || (course.getInstructorId() != null && course.getInstructorId().equals(user.getId()))) {
+                    isActiveEnrolled = true;
+                    enrolled = true; // Butonların görünmesi için kayıtlı gibi davranıyoruz
                 }
             }
 
@@ -110,21 +123,23 @@ public class CourseController {
             model.addAttribute("hasReviewed", courseReviewService.hasUserReviewed(id, user.getId()));
             model.addAttribute("isInCart", cartService.isInCart(user.getId(), id));
             model.addAttribute("isTeacherOrAdmin", isTeacherOrAdmin);
+            model.addAttribute("isAdmin", principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")));
         } else {
             model.addAttribute("hasReviewed", false);
             model.addAttribute("isActiveEnrolled", false);
             model.addAttribute("isInCart", false);
             model.addAttribute("isTeacherOrAdmin", false);
+            model.addAttribute("isAdmin", false);
         }
 
         model.addAttribute("reviews", courseReviewService.getApprovedReviewsByCourse(id));
         model.addAttribute("reviewRequest", new CourseReviewRequest());
 
-        if (course.getInstructorId() != null) {
+        if (course.getInstructorName() != null) {
             model.addAttribute("instructorCourseCount",
-                    courseService.countActiveCoursesForInstructor(course.getInstructorId()));
+                    courseService.countActiveCoursesByInstructorName(course.getInstructorName()));
             model.addAttribute("instructorStudentCount",
-                    courseService.countTotalStudentsForInstructor(course.getInstructorId()));
+                    courseService.countTotalStudentsByInstructorName(course.getInstructorName()));
         }
 
         return "course/detail";
@@ -206,7 +221,7 @@ public class CourseController {
 
         try {
             courseReviewService.addReview(id, user.getId(), request);
-            redirectAttributes.addFlashAttribute("successMessage", "Yorumunuz alındı, yönetici onayından sonra yayınlanacaktır.");
+            redirectAttributes.addFlashAttribute("successMessage", "Yorumunuz başarıyla alındı.");
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }

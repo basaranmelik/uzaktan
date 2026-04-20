@@ -54,7 +54,7 @@
 
 <section class="section">
   <div class="container" style="max-width:740px;">
-    <form th:action="@{/admin/kurslar}" th:object="${courseCreateRequest}" method="post" enctype="multipart/form-data">
+    <form id="courseForm" th:action="@{/admin/kurslar}" th:object="${courseCreateRequest}" method="post" enctype="multipart/form-data">
 
       <!-- Kurs Türü -->
       <div class="form-section">
@@ -111,7 +111,7 @@
                     th:classappend="${#fields.hasErrors('category')} ? ' is-invalid'" required>
               <option value="">Seçiniz...</option>
               <option th:each="cat : ${categories}"
-                      th:value="${cat.name()}"
+                      th:value="${cat.displayName}"
                       th:text="${cat.displayName}"></option>
             </select>
             <div class="invalid-feedback" th:errors="*{category}" th:if="${#fields.hasErrors('category')}"></div>
@@ -148,7 +148,10 @@
                       th:text="${lvl.displayName}"></option>
             </select>
           </div>
-          <div class="form-group"></div>
+          <div class="form-group">
+            <label>Süre (Saat)</label>
+            <input type="number" th:field="*{hours}" class="form-control" min="1" placeholder="40">
+          </div>
         </div>
       </div>
 
@@ -168,10 +171,7 @@
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group">
-            <label>Süre (Saat)</label>
-            <input type="number" th:field="*{hours}" class="form-control" min="1" placeholder="40">
-          </div>
+          <div class="form-group"></div>
           <div class="form-group"></div>
         </div>
       </div>
@@ -179,12 +179,56 @@
       <!-- Ders Programı (Yüzyüze + Uzaktan Örgün) -->
       <div class="form-section" id="field-schedule" data-show-for="FACE_TO_FACE,REMOTE_FORMAL" style="display:none;">
         <div class="form-section-title"><i class="bi bi-clock"></i> Ders Programı</div>
+
         <div class="form-group">
-          <label>Ders Günleri &amp; Saatleri</label>
-          <input type="text" th:field="*{courseSchedule}" class="form-control"
-                 placeholder="Örn: Pazartesi-Çarşamba 14:00-16:00" maxlength="300">
-          <small style="color:var(--text-muted);">Öğrencilerin ders programını görebilmesi için doldurun.</small>
+          <label>Ders Günleri</label>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:0.75rem;">
+            <th:block th:each="day : ${T(java.lang.String).valueOf('MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY,SUNDAY').split(',')}">
+              <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; padding:0.5rem; border:1px solid var(--border); border-radius:8px; transition:all 0.15s; background:var(--bg-alt);"
+                     class="day-label">
+                <input type="checkbox" name="scheduleDaysArray"
+                       th:value="${day}"
+                       style="cursor:pointer;">
+                <span th:text="${day == 'MONDAY' ? 'Pazartesi' :
+                                day == 'TUESDAY' ? 'Salı' :
+                                day == 'WEDNESDAY' ? 'Çarşamba' :
+                                day == 'THURSDAY' ? 'Perşembe' :
+                                day == 'FRIDAY' ? 'Cuma' :
+                                day == 'SATURDAY' ? 'Cumartesi' :
+                                day == 'SUNDAY' ? 'Pazar' : day}">Gün</span>
+              </label>
+            </th:block>
+          </div>
+          <style>
+            .day-label {
+              border-color: var(--gray-200) !important;
+            }
+            .day-label:hover {
+              background: var(--primary-50) !important;
+              border-color: var(--primary-300) !important;
+            }
+            .day-label input:checked + span {
+              font-weight: 700;
+            }
+            .day-label input:checked {
+              accent-color: var(--primary-600);
+            }
+          </style>
         </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ders Başlangıç Saati</label>
+            <input type="time" th:field="*{scheduleStartTime}" class="form-control">
+          </div>
+          <div class="form-group">
+            <label>Ders Bitiş Saati</label>
+            <input type="time" th:field="*{scheduleEndTime}" class="form-control">
+          </div>
+        </div>
+
+        <!-- Hidden field for scheduleDays -->
+        <input type="hidden" name="scheduleDays" id="scheduleDays">
       </div>
 
       <!-- Manuel Müfredat (Yüzyüze + Uzaktan Örgün) -->
@@ -312,6 +356,18 @@
   document.querySelectorAll('input[name="courseType"]').forEach(r =>
     r.addEventListener('change', updateTypeFields));
   updateTypeFields();
+
+  // Update scheduleDays hidden field when form is submitted
+  function updateScheduleDays() {
+    const days = Array.from(document.querySelectorAll('input[name="scheduleDaysArray"]:checked'))
+      .map(cb => cb.value)
+      .join(',');
+    document.getElementById('scheduleDays').value = days;
+  }
+
+  document.getElementById('courseForm').addEventListener('submit', function(e) {
+    updateScheduleDays();
+  });
 </script>
 </body>
 </html>

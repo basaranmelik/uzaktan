@@ -2,27 +2,121 @@
 <html lang="tr" xmlns:th="http://www.thymeleaf.org">
 <head>
   <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title th:text="${assignment.title} + ' — Teslimler'">Teslimler</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .stat-strip {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    .stat-box {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .stat-box-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      color: var(--text-muted);
+    }
+    .stat-box-value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--primary-700);
+    }
+    .stat-box-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+    .progress-thin {
+      height: 5px;
+      border-radius: 10px;
+      background: var(--gray-100);
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+    .progress-thin-fill {
+      height: 100%;
+      border-radius: 10px;
+      background: var(--gradient-primary);
+      transition: width .4s ease;
+    }
+    .not-submitted-section {
+      margin-top: 2rem;
+      border: 1px solid #fca5a5;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .not-submitted-header {
+      background: #fef2f2;
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 700;
+      color: #991b1b;
+      font-size: 0.95rem;
+      border-bottom: 1px solid #fca5a5;
+    }
+    .all-submitted-banner {
+      margin-top: 2rem;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: 12px;
+      padding: 1.1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: #166534;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+  </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<section class="page-header">
+<section class="page-header admin-page-header">
   <div class="container">
     <div class="breadcrumb">
-      <a th:href="@{/egitmen/panel}">Eğitmen Paneli</a> <span class="separator">›</span>
+      <a th:href="@{/egitmen/panel}">Eğitmen Paneli</a>
+      <span class="separator">›</span>
       <a th:href="@{/egitmen/kurslarim/{id}/odevler(id=${assignment.courseId})}"
-         th:text="${assignment.courseTitle}">Kurs</a> <span class="separator">›</span>
-      <span class="current">Teslimler</span>
+         th:text="${assignment.courseTitle}">Kurs</a>
+      <span class="separator">›</span>
+      <span class="current" th:text="${assignment.title}">Ödev</span>
     </div>
-    <div>
-      <h1><i class="bi bi-inbox-fill"></i> Teslimler</h1>
-      <p style="margin:0;" th:text="${assignment.title}">Ödev</p>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <h1><i class="bi bi-inbox-fill"></i> Teslim İstatistikleri</h1>
+        <p style="margin:0;color:var(--text-muted);" th:text="${assignment.title}">Ödev adı</p>
+      </div>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+        <div style="font-size:0.82rem;color:var(--text-muted);">
+          Son Tarih:
+          <strong th:text="${#temporals.format(assignment.dueDate,'dd.MM.yyyy HH:mm')}"
+                  th:style="${assignment.dueDate.isBefore(#temporals.createNow())} ? 'color:#e03131;' : 'color:var(--primary-600);'">—</strong>
+          &nbsp;·&nbsp; Maks: <strong th:text="${assignment.maxScore}">0</strong> puan
+        </div>
+        <a th:if="${assignment.submissionCount > 0}"
+           th:href="@{/egitmen/odevler/{id}/teslimler-indir(id=${assignment.id})}"
+           class="btn btn-primary" style="font-size:0.82rem;padding:0.4rem 1rem;">
+          <i class="bi bi-file-earmark-zip-fill"></i> Tümünü İndir (.zip)
+        </a>
+      </div>
     </div>
   </div>
 </section>
@@ -30,38 +124,65 @@
 <section class="section">
   <div class="container">
 
-    <!-- Ödev bilgi çubuğu -->
-    <div style="background:var(--bg-alt);border:1px solid var(--border);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1.5rem;display:flex;flex-wrap:wrap;gap:1.25rem;font-size:0.875rem;">
-      <div style="display:flex;align-items:center;gap:6px;color:var(--text-alt);">
-        <i class="bi bi-trophy" style="color:var(--text-muted);"></i>
-        Maks Puan: <strong th:text="${assignment.maxScore}">0</strong>
+    <!-- ── İstatistik Kartları ── -->
+    <div class="stat-strip">
+
+      <!-- Kayıtlı Öğrenci -->
+      <div class="stat-box">
+        <div class="stat-box-label"><i class="bi bi-people"></i> Kayıtlı Öğrenci</div>
+        <div class="stat-box-value" th:text="${enrolledCount}">0</div>
+        <div class="stat-box-sub">aktif kayıtlı</div>
       </div>
-      <div th:if="${assignment.dueDate != null}"
-           style="display:flex;align-items:center;gap:6px;color:var(--text-alt);">
-        <i class="bi bi-calendar-check" style="color:var(--text-muted);"></i>
-        Son Tarih: <strong th:text="${#temporals.format(assignment.dueDate,'dd.MM.yyyy HH:mm')}">—</strong>
+
+      <!-- Teslim Oranı -->
+      <div class="stat-box">
+        <div class="stat-box-label"><i class="bi bi-inbox-fill"></i> Teslim Eden</div>
+        <div class="stat-box-value">
+          <span th:text="${assignment.submissionCount}">0</span>
+          <span style="font-size:1rem;color:var(--text-muted);font-weight:600;"
+                th:if="${enrolledCount > 0}"
+                th:text="' (' + ${#numbers.formatDecimal(assignment.submissionCount * 100.0 / enrolledCount, 1, 0)} + '%)'"></span>
+        </div>
+        <div class="progress-thin">
+          <div class="progress-thin-fill"
+               th:style="'width:' + (${enrolledCount > 0} ? ${#numbers.formatDecimal(assignment.submissionCount * 100.0 / enrolledCount, 1, 0)} : 0) + '%'"></div>
+        </div>
       </div>
-      <div style="display:flex;align-items:center;gap:6px;color:var(--text-alt);">
-        <i class="bi bi-inbox" style="color:var(--text-muted);"></i>
-        Teslim: <strong th:text="${assignment.submissionCount}">0</strong>
+
+      <!-- Notlandırılan -->
+      <div class="stat-box">
+        <div class="stat-box-label"><i class="bi bi-star-fill"></i> Notlandırılan</div>
+        <div class="stat-box-value" th:text="${gradedCount}">0</div>
+        <div class="stat-box-sub"
+             th:text="${assignment.pendingGradeCount > 0} ? ${assignment.pendingGradeCount} + ' bekliyor' : 'tümü notlandırıldı'">
+        </div>
       </div>
-      <div th:if="${assignment.pendingGradeCount > 0}"
-           style="display:flex;align-items:center;gap:6px;color:#e8590c;">
-        <i class="bi bi-hourglass-split"></i>
-        Bekleyen: <strong th:text="${assignment.pendingGradeCount}">0</strong>
+
+      <!-- Ortalama Puan -->
+      <div class="stat-box">
+        <div class="stat-box-label"><i class="bi bi-graph-up"></i> Ortalama Puan</div>
+        <div class="stat-box-value"
+             th:text="${gradedCount > 0} ? ${averageScore} + ' / ' + ${assignment.maxScore} : '—'">—</div>
+        <div class="stat-box-sub"
+             th:text="${gradedCount > 0} ? ${gradedCount} + ' notlandırılmış üzerinden' : 'henüz not girilmedi'">
+        </div>
       </div>
-      <div th:if="${assignment.submissionCount > 0}" style="margin-left:auto;">
-        <a th:href="@{/egitmen/odevler/{id}/teslimler-indir(id=${assignment.id})}"
-           class="btn btn-primary" style="font-size:0.82rem;padding:0.4rem 1rem;">
-          <i class="bi bi-file-earmark-zip-fill"></i> Tümünü İndir (.zip)
-        </a>
-      </div>
+
+    </div>
+
+    <!-- ── Teslim Edenler Tablosu ── -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+      <h3 style="margin:0;font-size:1.05rem;font-weight:700;color:var(--text);display:flex;align-items:center;gap:0.4rem;">
+        <i class="bi bi-check2-circle" style="color:#2b8a3e;"></i> Teslim Edenler
+        <span style="font-size:0.85rem;font-weight:600;background:#d3f9d8;color:#2b8a3e;padding:2px 10px;border-radius:20px;"
+              th:text="${assignment.submissionCount}">0</span>
+      </h3>
     </div>
 
     <div th:if="${#lists.isEmpty(submissions)}"
-         class="text-center" style="padding:4rem;color:var(--text-muted);">
-      <div style="font-size:3rem;margin-bottom:1rem;"><i class="bi bi-inbox"></i></div>
-      <p>Henüz teslim yapılmamış.</p>
+         style="padding:2.5rem;text-align:center;color:var(--text-muted);border:1px solid var(--border);border-radius:12px;">
+      <i class="bi bi-inbox" style="font-size:2.5rem;display:block;margin-bottom:0.75rem;opacity:0.4;"></i>
+      Henüz teslim yapılmamış.
     </div>
 
     <div th:if="${!#lists.isEmpty(submissions)}"
@@ -70,8 +191,8 @@
         <thead>
           <tr>
             <th>Öğrenci</th>
+            <th>E-posta</th>
             <th>Teslim Tarihi</th>
-            <th>İçerik</th>
             <th>Dosya</th>
             <th>Durum</th>
             <th>Not</th>
@@ -82,21 +203,16 @@
           <tr th:each="s : ${submissions}">
             <td>
               <div style="font-weight:700;" th:text="${s.userFullName}">Ad Soyad</div>
+              <div th:if="${s.textAnswer != null and !#strings.isEmpty(s.textAnswer)}"
+                   style="font-size:0.78rem;color:var(--text-muted);max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
+                   th:text="${s.textAnswer}"></div>
             </td>
-
+            <td style="font-size:0.82rem;color:var(--text-muted);"
+                th:text="${s.userEmail}">email</td>
             <td style="white-space:nowrap;font-size:0.82rem;color:var(--text-muted);">
               <span th:if="${s.submittedAt != null}"
                     th:text="${#temporals.format(s.submittedAt,'dd.MM.yyyy HH:mm')}">—</span>
             </td>
-
-            <td style="max-width:200px;">
-              <span th:if="${s.textAnswer != null and !#strings.isEmpty(s.textAnswer)}"
-                    style="font-size:0.82rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"
-                    th:text="${s.textAnswer}"></span>
-              <span th:if="${s.textAnswer == null or #strings.isEmpty(s.textAnswer)}"
-                    style="color:var(--text-muted);font-size:0.82rem;">—</span>
-            </td>
-
             <td>
               <a th:if="${s.hasFile}"
                  th:href="@{/dosyalar/teslimler/{id}(id=${s.id})}"
@@ -105,20 +221,18 @@
               </a>
               <span th:if="${!s.hasFile}" style="color:var(--text-muted);font-size:0.82rem;">—</span>
             </td>
-
             <td>
               <span class="status-badge"
                     th:text="${s.statusDisplayName}"
                     th:classappend="${s.status.name() == 'GRADED'} ? ' sb-green' : ' sb-orange'">
               </span>
             </td>
-
-            <td style="white-space:nowrap;font-weight:600;">
+            <td style="white-space:nowrap;font-weight:700;">
               <span th:if="${s.score != null}"
+                    th:style="${s.score < (s.assignmentMaxScore / 2)} ? 'color:#e03131;' : 'color:#2b8a3e;'"
                     th:text="${s.score} + ' / ' + ${s.assignmentMaxScore}">—</span>
               <span th:if="${s.score == null}" style="color:var(--text-muted);">—</span>
             </td>
-
             <td>
               <a th:href="@{/egitmen/teslimler/{id}/notlandir(id=${s.id})}"
                  class="action-btn ab-edit">
@@ -129,6 +243,46 @@
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <!-- ── Teslim Etmeyenler ── -->
+    <div th:if="${notSubmittedStudents != null and !#lists.isEmpty(notSubmittedStudents)}"
+         class="not-submitted-section">
+      <div class="not-submitted-header">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        Teslim Etmeyenler
+        <span style="margin-left:0.25rem;background:#fee2e2;color:#991b1b;padding:2px 10px;border-radius:20px;font-size:0.82rem;"
+              th:text="${#lists.size(notSubmittedStudents)}">0</span>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Ad Soyad</th>
+              <th>E-posta</th>
+              <th>Durum</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="u : ${notSubmittedStudents}">
+              <td style="font-weight:600;" th:text="${u.fullName}">Ad Soyad</td>
+              <td style="font-size:0.82rem;color:var(--text-muted);" th:text="${u.email}">email</td>
+              <td>
+                <span class="status-badge sb-gray">
+                  <i class="bi bi-clock-history"></i> Teslim Edilmedi
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div th:if="${notSubmittedStudents == null or #lists.isEmpty(notSubmittedStudents)}"
+         th:unless="${#lists.isEmpty(submissions)}"
+         class="all-submitted-banner">
+      <i class="bi bi-check-circle-fill" style="font-size:1.4rem;"></i>
+      Tüm kayıtlı öğrenciler ödevi teslim etti.
     </div>
 
   </div>

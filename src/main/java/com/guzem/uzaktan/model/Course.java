@@ -17,7 +17,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = {"videos", "enrollments", "assignments", "certificates", "reviews", "instructor"})
+@ToString(exclude = {"videos", "enrollments", "assignments", "certificates", "reviews", "instructor", "zoomMeetings"})
 @Builder
 @Entity
 @Table(name = "course")
@@ -57,8 +57,8 @@ public class Course {
     @Column(name = "module")
     private Integer module;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "category", nullable = false, length = 50)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
     private CourseCategory category;
 
     @Enumerated(EnumType.STRING)
@@ -73,6 +73,16 @@ public class Course {
     @Nationalized
     @Column(name = "course_schedule", length = 300)
     private String courseSchedule;
+
+    @Nationalized
+    @Column(name = "schedule_days", length = 100)
+    private String scheduleDays;
+
+    @Column(name = "schedule_start_time", length = 8)
+    private String scheduleStartTime;
+
+    @Column(name = "schedule_end_time", length = 8)
+    private String scheduleEndTime;
 
     @Nationalized
     @Column(name = "manual_curriculum", columnDefinition = "NVARCHAR(MAX)")
@@ -136,4 +146,8 @@ public class Course {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<CourseReview> reviews = new HashSet<>();
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<ZoomMeeting> zoomMeetings = new HashSet<>();
 }

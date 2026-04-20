@@ -27,6 +27,16 @@ public interface ZoomMeetingRepository extends JpaRepository<ZoomMeeting, Long> 
     List<ZoomMeeting> findUpcomingForStudent(@Param("userId") Long userId, @Param("now") LocalDateTime now);
 
     @Query("""
+            SELECT m FROM ZoomMeeting m JOIN FETCH m.course c
+            JOIN Enrollment e ON e.course.id = c.id
+            WHERE e.user.id = :userId
+              AND e.status = com.guzem.uzaktan.model.EnrollmentStatus.ACTIVE
+              AND m.status = com.guzem.uzaktan.model.ZoomMeetingStatus.SCHEDULED
+            ORDER BY m.scheduledAt DESC
+            """)
+    List<ZoomMeeting> findAllForStudent(@Param("userId") Long userId);
+
+    @Query("""
             SELECT m FROM ZoomMeeting m JOIN FETCH m.course
             WHERE m.scheduledAt >= :from AND m.scheduledAt < :to
               AND m.status = com.guzem.uzaktan.model.ZoomMeetingStatus.SCHEDULED

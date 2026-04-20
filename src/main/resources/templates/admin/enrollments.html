@@ -32,86 +32,90 @@
 
 
 
+    <div class="admin-search-bar">
+      <input type="text" id="enrollment-filter" placeholder="Kullanıcı e-postası veya kurs adı ara..." autocomplete="off">
+      <span style="font-size:0.82rem;color:var(--text-muted);" id="filter-count"></span>
+    </div>
+
     <div th:if="${enrollments.totalElements == 0}"
          class="text-center" style="padding:4rem;color:var(--text-muted);">
       <div style="font-size:3rem;margin-bottom:1rem;"><i class="bi bi-person-check"></i></div>
       <p>Henüz kayıt bulunmuyor.</p>
     </div>
 
-    <div th:if="${enrollments.totalElements > 0}" style="overflow-x:auto;border-radius:12px;border:1px solid var(--border);">
-      <table class="admin-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Kullanıcı</th>
-            <th>Kurs</th>
-            <th>Durum</th>
-            <th>İlerleme</th>
-            <th>Kayıt Tarihi</th>
-            <th>İşlem</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr th:each="e : ${enrollments.content}">
-            <td style="color:var(--text-muted);" th:text="${e.id}">1</td>
+    <div th:if="${enrollments.totalElements > 0}">
+      <div th:each="entry : ${groupedEnrollments}" class="enrollment-group" style="margin-bottom: 2.5rem;"
+           th:attr="data-course=${#strings.toLowerCase(entry.key)}">
+        <h3 style="margin-bottom: 1rem; color: var(--primary-700); border-bottom: 2px solid var(--border); padding-bottom: 0.5rem;"
+            th:text="${entry.key}">Kurs Adı</h3>
+        
+        <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border);">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Kullanıcı Mail</th>
+                <th>Durum</th>
+                <th>İlerleme</th>
+                <th>Kayıt Tarihi</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr th:each="e : ${entry.value}" class="enrollment-row"
+                  th:attr="data-email=${#strings.toLowerCase(e.userEmail)},data-status=${#strings.toLowerCase(e.status.displayName)}">
+                <td>
+                  <span style="font-weight:700;" th:text="${e.userEmail}">ornek@mail.com</span>
+                </td>
 
-            <td>
-              <span style="font-weight:700;" th:text="'Öğrenci ID: ' + ${e.userId}">kullanici</span>
-            </td>
+                <td>
+                  <span class="status-badge"
+                        th:text="${e.status.displayName}"
+                        th:classappend="${e.status.name() == 'ACTIVE'}            ? ' sb-green'  :
+                                       (${e.status.name() == 'COMPLETED'}         ? ' sb-blue'   :
+                                       (${e.status.name() == 'PENDING_PAYMENT'}   ? ' sb-orange' : ' sb-gray'))">
+                    —
+                  </span>
+                </td>
 
-            <td style="max-width:200px;">
-              <a th:href="@{/egitimler/{id}(id=${e.courseId})}"
-                 th:text="${e.courseTitle}"
-                 style="color:var(--primary-600);font-weight:500;text-decoration:none;"></a>
-            </td>
+                <td>
+                  <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <div style="background:var(--gray-100);border-radius:4px;height:6px;width:80px;overflow:hidden;">
+                      <div style="background:var(--gradient-primary);height:100%;border-radius:4px;"
+                           th:style="'width:' + ${e.progressPercentage} + '%'"></div>
+                    </div>
+                    <span style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;"
+                          th:text="${e.progressPercentage} + '%'">0%</span>
+                  </div>
+                </td>
 
-            <td>
-              <span class="status-badge"
-                    th:text="${e.status.displayName}"
-                    th:classappend="${e.status.name() == 'ACTIVE'}            ? ' sb-green'  :
-                                   (${e.status.name() == 'COMPLETED'}         ? ' sb-blue'   :
-                                   (${e.status.name() == 'PENDING_PAYMENT'}   ? ' sb-orange' : ' sb-gray'))">
-                —
-              </span>
-            </td>
+                <td style="white-space:nowrap;font-size:0.82rem;color:var(--text-muted);"
+                    th:text="${#temporals.format(e.enrollmentDate, 'dd.MM.yyyy')}">-</td>
 
-            <td>
-              <div style="display:flex;align-items:center;gap:0.5rem;">
-                <div style="background:var(--gray-100);border-radius:4px;height:6px;width:80px;overflow:hidden;">
-                  <div style="background:var(--gradient-primary);height:100%;border-radius:4px;"
-                       th:style="'width:' + ${e.progressPercentage} + '%'"></div>
-                </div>
-                <span style="font-size:0.8rem;color:var(--text-muted);white-space:nowrap;"
-                      th:text="${e.progressPercentage} + '%'">0%</span>
-              </div>
-            </td>
-
-            <td style="white-space:nowrap;font-size:0.82rem;color:var(--text-muted);"
-                th:text="${#temporals.format(e.enrollmentDate, 'dd.MM.yyyy')}">-</td>
-
-            <td>
-              <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
-                <!-- Aktifleştir -->
-                <form th:if="${e.status.name() == 'PENDING_PAYMENT'}"
-                      th:action="@{/admin/kayitlar/{id}/aktifle(id=${e.id})}" method="post">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                  <button type="submit" class="action-btn ab-success">
-                    <i class="bi bi-check-circle"></i> Aktifleştir
-                  </button>
-                </form>
-                <!-- Sil -->
-                <form th:action="@{/admin/kayitlar/{id}/sil(id=${e.id})}" method="post">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                  <button type="submit" class="action-btn ab-del"
-                          onclick="return confirm('Bu kaydı silmek istediğinize emin misiniz?')">
-                    <i class="bi bi-trash3"></i>
-                  </button>
-                </form>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                <td>
+                  <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+                    <!-- Aktifleştir -->
+                    <form th:if="${e.status.name() == 'PENDING_PAYMENT'}"
+                          th:action="@{/admin/kayitlar/{id}/aktifle(id=${e.id})}" method="post">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                      <button type="submit" class="action-btn ab-success" title="Aktifleştir">
+                        <i class="bi bi-check-circle"></i>
+                      </button>
+                    </form>
+                    <!-- Sil -->
+                    <form th:action="@{/admin/kayitlar/{id}/sil(id=${e.id})}" method="post">
+                      <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+                      <button type="submit" class="action-btn ab-del" title="Sil"
+                              onclick="return confirm('Bu kaydı silmek istediğinize emin misiniz?')">
+                        <i class="bi bi-trash3"></i>
+                      </button>
+                    </form>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- Sayfalama -->
@@ -134,5 +138,35 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
+<script>
+(function () {
+  const input = document.getElementById('enrollment-filter');
+  const countEl = document.getElementById('filter-count');
+  if (!input) return;
+
+  input.addEventListener('input', function () {
+    const q = this.value.trim().toLowerCase();
+    let visibleRows = 0;
+
+    document.querySelectorAll('.enrollment-group').forEach(group => {
+      const courseName = group.dataset.course || '';
+      const rows = group.querySelectorAll('.enrollment-row');
+      let groupVisible = 0;
+
+      rows.forEach(row => {
+        const email  = row.dataset.email  || '';
+        const status = row.dataset.status || '';
+        const match  = !q || email.includes(q) || courseName.includes(q) || status.includes(q);
+        row.style.display = match ? '' : 'none';
+        if (match) { groupVisible++; visibleRows++; }
+      });
+
+      group.style.display = groupVisible > 0 ? '' : 'none';
+    });
+
+    countEl.textContent = q ? visibleRows + ' sonuç' : '';
+  });
+})();
+</script>
 </body>
 </html>

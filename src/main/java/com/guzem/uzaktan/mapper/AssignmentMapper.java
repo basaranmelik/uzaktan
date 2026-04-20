@@ -48,6 +48,7 @@ public class AssignmentMapper {
                         ? s.getAssignment().getCourse().getInstructor().getId() : null)
                 .userId(s.getUser().getId())
                 .userFullName(s.getUser().getFirstName() + " " + s.getUser().getLastName())
+                .userEmail(s.getUser().getEmail())
                 .textAnswer(s.getTextAnswer())
                 .filePath(s.getFilePath())
                 .originalFileName(s.getOriginalFileName())

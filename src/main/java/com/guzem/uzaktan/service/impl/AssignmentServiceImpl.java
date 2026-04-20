@@ -10,6 +10,7 @@ import com.guzem.uzaktan.exception.DuplicateSubmissionException;
 import com.guzem.uzaktan.exception.ResourceNotFoundException;
 import com.guzem.uzaktan.exception.UnauthorizedActionException;
 import com.guzem.uzaktan.mapper.AssignmentMapper;
+import com.guzem.uzaktan.mapper.UserMapper;
 import com.guzem.uzaktan.model.*;
 import com.guzem.uzaktan.repository.*;
 import com.guzem.uzaktan.service.AssignmentService;
@@ -46,6 +47,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
     private final AssignmentMapper assignmentMapper;
+    private final UserMapper userMapper;
     private final FileStorageService fileStorageService;
     private final NotificationService notificationService;
     private final EmailService emailService;
@@ -60,6 +62,18 @@ public class AssignmentServiceImpl implements AssignmentService {
         checkTeacherOrAdmin(course, requestingUserId);
         Assignment assignment = assignmentMapper.toEntity(request, course);
         Assignment saved = assignmentRepository.save(assignment);
+
+        // Aktif öğrencilere bildirim ve mail gönder
+        List<Enrollment> activeEnrollments = enrollmentRepository.findActiveEnrollmentsForCourse(courseId);
+        for (Enrollment enrollment : activeEnrollments) {
+            User student = enrollment.getUser();
+            notificationService.create(student, NotificationType.NEW_ASSIGNMENT,
+                    "Yeni Ödev Yayınlandı",
+                    "\"" + course.getTitle() + "\" kursunda yeni bir ödev yayınlandı: " + saved.getTitle(),
+                    "/panom");
+            emailService.sendNewAssignmentNotification(student, saved);
+        }
+
         return assignmentMapper.toResponse(saved, 0, 0);
     }
 
@@ -123,6 +137,9 @@ public class AssignmentServiceImpl implements AssignmentService {
     public SubmissionResponse gradeSubmission(Long submissionId, GradeSubmissionRequest request, Long requestingUserId) {
         AssignmentSubmission submission = loadSubmission(submissionId);
         checkTeacherOrAdmin(submission.getAssignment().getCourse(), requestingUserId);
+        if (request.getScore() < 0) {
+            throw new IllegalArgumentException("Puan negatif olamaz.");
+        }
         if (request.getScore() > submission.getAssignment().getMaxScore()) {
             throw new IllegalArgumentException(
                     "Puan maksimum puanı (" + submission.getAssignment().getMaxScore() + ") aşamaz.");
@@ -195,50 +212,6 @@ public class AssignmentServiceImpl implements AssignmentService {
     }
 
     @Override
-    public SubmissionResponse updateSubmission(Long assignmentId, Long userId,
-                                               SubmissionCreateRequest request,
-                                               MultipartFile file) {
-        Assignment assignment = loadAssignment(assignmentId);
-
-        if (LocalDateTime.now().isAfter(assignment.getDueDate())) {
-            throw new IllegalArgumentException("Son teslim tarihi geçtiği için güncelleme yapılamaz.");
-        }
-
-        AssignmentSubmission submission = submissionRepository
-                .findByAssignmentIdAndUserId(assignmentId, userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Teslim", "assignmentId", assignmentId));
-
-        boolean hasFile = file != null && !file.isEmpty();
-        if (!hasFile && submission.getFilePath() == null) {
-            throw new IllegalArgumentException("Dosya yüklemeniz zorunludur.");
-        }
-
-        if (hasFile) {
-            if (submission.getFilePath() != null) {
-                fileStorageService.delete(submission.getFilePath());
-            }
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", userId));
-            String baseName = assignment.getCourse().getTitle()
-                    + "_" + assignment.getTitle()
-                    + "_" + user.getFirstName() + "_" + user.getLastName();
-            submission.setFilePath(storeSubmissionFile(file, assignmentId, assignment.getCourse().getTitle(), baseName));
-            submission.setOriginalFileName(java.nio.file.Paths.get(submission.getFilePath()).getFileName().toString());
-        }
-
-        if (request.getTextAnswer() != null) {
-            submission.setTextAnswer(request.getTextAnswer().isBlank() ? null : request.getTextAnswer());
-        }
-
-        submission.setStatus(SubmissionStatus.SUBMITTED);
-        submission.setScore(null);
-        submission.setFeedback(null);
-        submission.setGradedAt(null);
-
-        return assignmentMapper.toSubmissionResponse(submissionRepository.save(submission));
-    }
-
-    @Override
     @Transactional(readOnly = true)
     public Optional<SubmissionResponse> findSubmission(Long assignmentId, Long userId) {
         return submissionRepository.findByAssignmentIdAndUserId(assignmentId, userId)
@@ -279,6 +252,30 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional(readOnly = true)
+    public List<com.guzem.uzaktan.dto.response.UserResponse> findNotSubmittedStudents(Long courseId, Long assignmentId) {
+        return enrollmentRepository.findActiveUsersWithoutSubmission(courseId, assignmentId)
+                .stream()
+                .map(userMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AssignmentResponse> findOverdueAssignmentsForStudent(Long userId) {
+        List<Assignment> all = assignmentRepository.findByEnrolledUserId(userId);
+        Set<Long> submitted = submissionRepository.findByUserIdWithAssignment(userId)
+                .stream()
+                .map(s -> s.getAssignment().getId())
+                .collect(Collectors.toSet());
+        return all.stream()
+                .filter(a -> !submitted.contains(a.getId()))
+                .filter(a -> a.getDueDate().isBefore(LocalDateTime.now()))
+                .map(a -> assignmentMapper.toResponse(a, 0, 0))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public byte[] downloadSubmissionsZip(Long assignmentId, Long requestingUserId) throws IOException {
         Assignment assignment = loadAssignment(assignmentId);
         checkTeacherOrAdmin(assignment.getCourse(), requestingUserId);
@@ -310,6 +307,19 @@ public class AssignmentServiceImpl implements AssignmentService {
     @Transactional(readOnly = true)
     public long countPendingSubmissions() {
         return submissionRepository.countByStatus(SubmissionStatus.SUBMITTED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AssignmentResponse> findAllAssignmentsForAdmin() {
+        List<Assignment> assignments = assignmentRepository.findAll();
+        List<Long> assignmentIds = assignments.stream().map(Assignment::getId).toList();
+        Map<Long, Long> submissionCounts = buildSubmissionCountMap(assignmentIds);
+        
+        return assignments.stream().map(a -> {
+            long pendingCount = submissionRepository.countByCourseIdAndStatus(a.getCourse().getId(), SubmissionStatus.SUBMITTED);
+            return assignmentMapper.toResponse(a, submissionCounts.getOrDefault(a.getId(), 0L), pendingCount);
+        }).collect(Collectors.toList());
     }
 
     // ----------------------------------------------------------------

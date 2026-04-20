@@ -119,7 +119,7 @@
       </div>
     </div>
 
-    <form th:action="@{/admin/kurslar/{id}(id=${course.id})}"
+    <form id="courseForm" th:action="@{/admin/kurslar/{id}(id=${course.id})}"
           th:object="${courseUpdateRequest}" method="post" enctype="multipart/form-data">
 
       <!-- Kurs Türü -->
@@ -175,9 +175,9 @@
             <select th:field="*{category}" class="form-control">
               <option value="">— Değiştirme —</option>
               <option th:each="cat : ${categories}"
-                      th:value="${cat.name()}"
+                      th:value="${cat.displayName}"
                       th:text="${cat.displayName}"
-                      th:selected="${cat == course.category}"></option>
+                      th:selected="${cat.displayName == course.category?.displayName}"></option>
             </select>
           </div>
           <div class="form-group">
@@ -206,13 +206,23 @@
           <div class="form-group"></div>
         </div>
 
-        <div class="form-group">
-          <label>Fiyat (₺)</label>
-          <input type="number" th:field="*{price}" class="form-control"
-                 step="0.01" min="0" th:placeholder="${course.price}">
-          <div class="current-val">
-            <i class="bi bi-info-circle"></i> Mevcut:
-            <strong th:text="${course.price == null} ? '—' : (${course.price.signum() == 0} ? 'Ücretsiz' : '₺' + ${course.price})">—</strong>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fiyat (₺)</label>
+            <input type="number" th:field="*{price}" class="form-control"
+                   step="0.01" min="0" th:placeholder="${course.price}">
+            <div class="current-val">
+              <i class="bi bi-info-circle"></i> Mevcut:
+              <strong th:text="${course.price == null} ? '—' : (${course.price.signum() == 0} ? 'Ücretsiz' : '₺' + ${course.price})">—</strong>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Süre (Saat)</label>
+            <input type="number" th:field="*{hours}" class="form-control"
+                   min="1" th:placeholder="${course.hours}">
+            <div class="current-val" th:if="${course.hours != null}">
+              <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.hours}">—</strong>
+            </div>
           </div>
         </div>
       </div>
@@ -239,11 +249,7 @@
           </div>
         </div>
         <div class="form-row">
-          <div class="form-group">
-            <label>Süre (Saat)</label>
-            <input type="number" th:field="*{hours}" class="form-control"
-                   min="1" th:placeholder="${course.hours}">
-          </div>
+          <div class="form-group"></div>
           <div class="form-group">
             <label>Kontenjan</label>
             <input type="number" th:field="*{quota}" class="form-control"
@@ -258,14 +264,63 @@
       <!-- Ders Programı (Yüzyüze + Uzaktan Örgün) -->
       <div class="form-section" data-show-for="FACE_TO_FACE,REMOTE_FORMAL" style="display:none;">
         <div class="form-section-title"><i class="bi bi-clock"></i> Ders Programı</div>
+
         <div class="form-group">
-          <label>Ders Günleri &amp; Saatleri</label>
-          <input type="text" th:field="*{courseSchedule}" class="form-control"
-                 placeholder="Örn: Pazartesi-Çarşamba 14:00-16:00" maxlength="300">
-          <div class="current-val" th:if="${course.courseSchedule != null}">
-            <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.courseSchedule}">—</strong>
+          <label>Ders Günleri</label>
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:0.75rem;">
+            <th:block th:each="day : ${T(java.lang.String).valueOf('MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY,SUNDAY').split(',')}">
+              <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; padding:0.5rem; border:1px solid var(--border); border-radius:8px; transition:all 0.15s; background:var(--bg-alt);"
+                     class="day-label">
+                <input type="checkbox" name="scheduleDaysArray"
+                       th:value="${day}"
+                       th:checked="${course.scheduleDays != null and course.scheduleDays.contains(day)}"
+                       style="cursor:pointer;">
+                <span th:text="${day == 'MONDAY' ? 'Pazartesi' :
+                                day == 'TUESDAY' ? 'Salı' :
+                                day == 'WEDNESDAY' ? 'Çarşamba' :
+                                day == 'THURSDAY' ? 'Perşembe' :
+                                day == 'FRIDAY' ? 'Cuma' :
+                                day == 'SATURDAY' ? 'Cumartesi' :
+                                day == 'SUNDAY' ? 'Pazar' : day}">Gün</span>
+              </label>
+            </th:block>
+          </div>
+          <style>
+            .day-label {
+              border-color: var(--gray-200) !important;
+            }
+            .day-label:hover {
+              background: var(--primary-50) !important;
+              border-color: var(--primary-300) !important;
+            }
+            .day-label input:checked + span {
+              font-weight: 700;
+            }
+            .day-label input:checked {
+              accent-color: var(--primary-600);
+            }
+          </style>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ders Başlangıç Saati</label>
+            <input type="time" th:field="*{scheduleStartTime}" class="form-control">
+            <div class="current-val" th:if="${course.scheduleStartTime != null}">
+              <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.scheduleStartTime}">—</strong>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Ders Bitiş Saati</label>
+            <input type="time" th:field="*{scheduleEndTime}" class="form-control">
+            <div class="current-val" th:if="${course.scheduleEndTime != null}">
+              <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.scheduleEndTime}">—</strong>
+            </div>
           </div>
         </div>
+
+        <!-- Hidden field for scheduleDays -->
+        <input type="hidden" name="scheduleDays" id="scheduleDays" th:value="${course.scheduleDays}">
       </div>
 
       <!-- Manuel Müfredat (Yüzyüze + Uzaktan Örgün) -->
@@ -409,6 +464,18 @@
   document.querySelectorAll('input[name="courseType"]').forEach(r =>
     r.addEventListener('change', updateTypeFields));
   updateTypeFields();
+
+  // Update scheduleDays hidden field when form is submitted
+  function updateScheduleDays() {
+    const days = Array.from(document.querySelectorAll('input[name="scheduleDaysArray"]:checked'))
+      .map(cb => cb.value)
+      .join(',');
+    document.getElementById('scheduleDays').value = days;
+  }
+
+  document.getElementById('courseForm').addEventListener('submit', function(e) {
+    updateScheduleDays();
+  });
 </script>
 </body>
 </html>

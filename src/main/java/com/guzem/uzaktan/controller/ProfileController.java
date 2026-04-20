@@ -41,6 +41,7 @@ public class ProfileController {
         request.setLastName(user.getLastName());
         request.setEmail(user.getEmail());
         request.setPhoneNumber(user.getPhoneNumber() != null ? user.getPhoneNumber() : "+90 ");
+        request.setBirthDate(user.getBirthDate());
         request.setCity(user.getCity());
         request.setDistrict(user.getDistrict());
         request.setZipCode(user.getZipCode());

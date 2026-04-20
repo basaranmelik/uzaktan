@@ -21,7 +21,7 @@ public interface CourseVideoService {
 
     void delete(Long videoId);
 
-    void markWatched(Long videoId, Long userId);
+    boolean markWatched(Long videoId, Long userId);
 
     void recordProgress(Long videoId, Long userId, VideoProgressRequest req);
 

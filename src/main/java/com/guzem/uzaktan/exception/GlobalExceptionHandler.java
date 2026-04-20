@@ -114,7 +114,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public String handleGeneral(Exception ex, Model model) {
-        log.error("İşlenmeyen hata: {}", ex.getMessage(), ex);
+        log.warn("İşlenmeyen hata: {}", ex.getMessage());
         model.addAttribute("message", "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyiniz.");
         model.addAttribute("status", 500);
         return "error/500";

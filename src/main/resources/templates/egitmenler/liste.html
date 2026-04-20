@@ -53,13 +53,16 @@
         <div class="instructor-info">
           <h3 class="instructor-name" th:text="${instructor.name}">Eğitmen Adı</h3>
           <div class="instructor-expertise">
-            <i class="bi bi-patch-check-fill"></i>
             <span th:text="${instructor.expertise}">Uzmanlık Alanı</span>
           </div>
           <p class="instructor-bio" th:if="${instructor.bio != null and !instructor.bio.isEmpty()}"
              th:text="${#strings.abbreviate(instructor.bio, 120)}">
             Kısa biyografi...
           </p>
+          <div class="instructor-meta">
+            <span><i class="bi bi-journal-bookmark-fill"></i> <strong th:text="${instructor.courseCount}">0</strong> Kurs</span>
+            <span><i class="bi bi-people-fill"></i> <strong th:text="${instructor.studentCount}">0</strong> Öğrenci</span>
+          </div>
         </div>
       </div>
     </div>

@@ -24,5 +24,7 @@ public interface ZoomService {
 
     List<ZoomMeetingResponse> getUpcomingForStudent(Long studentUserId);
 
+    List<ZoomMeetingResponse> getAllForStudent(Long studentUserId);
+
     ZoomMeetingResponse findByIdForTeacher(Long meetingId, Long teacherUserId);
 }

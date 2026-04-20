@@ -57,6 +57,12 @@ public class CourseCreateRequest {
     @Size(max = 300, message = "Ders programı en fazla 300 karakter olabilir.")
     private String courseSchedule;
 
+    private String scheduleDays;
+
+    private String scheduleStartTime;
+
+    private String scheduleEndTime;
+
     @Size(max = 5000, message = "Manuel müfredat en fazla 5000 karakter olabilir.")
     private String manualCurriculum;
 

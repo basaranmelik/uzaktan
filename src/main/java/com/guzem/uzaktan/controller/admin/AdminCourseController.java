@@ -3,11 +3,11 @@ package com.guzem.uzaktan.controller.admin;
 import com.guzem.uzaktan.dto.request.CourseCreateRequest;
 import com.guzem.uzaktan.dto.request.CourseUpdateRequest;
 import com.guzem.uzaktan.dto.response.CourseResponse;
-import com.guzem.uzaktan.model.CourseCategory;
 import com.guzem.uzaktan.model.CourseLevel;
 import com.guzem.uzaktan.model.CourseStatus;
 import com.guzem.uzaktan.model.CourseType;
 import com.guzem.uzaktan.model.Role;
+import com.guzem.uzaktan.service.CourseCategoryService;
 import com.guzem.uzaktan.service.CourseService;
 import com.guzem.uzaktan.service.InstructorService;
 import com.guzem.uzaktan.service.UserService;
@@ -28,6 +28,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class AdminCourseController {
 
     private final CourseService courseService;
+    private final CourseCategoryService categoryService;
     private final UserService userService;
     private final InstructorService instructorService;
 
@@ -43,7 +44,7 @@ public class AdminCourseController {
     @GetMapping("/yeni")
     public String newCourseForm(Model model) {
         model.addAttribute("courseCreateRequest", new CourseCreateRequest());
-        model.addAttribute("categories", CourseCategory.values());
+        model.addAttribute("categories", categoryService.findAll());
         model.addAttribute("levels", CourseLevel.values());
         model.addAttribute("courseTypes", CourseType.values());
         model.addAttribute("teachers", userService.findUsersByRole(Role.TEACHER));
@@ -58,7 +59,7 @@ public class AdminCourseController {
                                Model model,
                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("categories", CourseCategory.values());
+            model.addAttribute("categories", categoryService.findAll());
             model.addAttribute("levels", CourseLevel.values());
             model.addAttribute("courseTypes", CourseType.values());
             model.addAttribute("teachers", userService.findUsersByRole(Role.TEACHER));
@@ -91,10 +92,13 @@ public class AdminCourseController {
         dto.setCourseType(course.getCourseType());
         dto.setLocation(course.getLocation());
         dto.setCourseSchedule(course.getCourseSchedule());
+        dto.setScheduleDays(course.getScheduleDays());
+        dto.setScheduleStartTime(course.getScheduleStartTime());
+        dto.setScheduleEndTime(course.getScheduleEndTime());
         dto.setManualCurriculum(course.getManualCurriculum());
         dto.setCertificateDeadline(course.getCertificateDeadline());
         model.addAttribute("courseUpdateRequest", dto);
-        model.addAttribute("categories", CourseCategory.values());
+        model.addAttribute("categories", categoryService.findAll());
         model.addAttribute("levels", CourseLevel.values());
         model.addAttribute("statuses", CourseStatus.values());
         model.addAttribute("courseTypes", CourseType.values());
@@ -112,7 +116,7 @@ public class AdminCourseController {
                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("course", courseService.findById(id));
-            model.addAttribute("categories", CourseCategory.values());
+            model.addAttribute("categories", categoryService.findAll());
             model.addAttribute("levels", CourseLevel.values());
             model.addAttribute("statuses", CourseStatus.values());
             model.addAttribute("courseTypes", CourseType.values());

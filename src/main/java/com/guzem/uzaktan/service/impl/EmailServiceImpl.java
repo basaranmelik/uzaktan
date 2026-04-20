@@ -1,5 +1,6 @@
 package com.guzem.uzaktan.service.impl;
 
+import com.guzem.uzaktan.dto.request.ContactRequest;
 import com.guzem.uzaktan.model.AssignmentSubmission;
 import com.guzem.uzaktan.model.User;
 import com.guzem.uzaktan.model.ZoomMeeting;
@@ -8,6 +9,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -26,24 +28,49 @@ public class EmailServiceImpl implements EmailService {
     @Value("${spring.mail.username}")
     private String fromAddress;
 
-    @Value("${app.mail.enabled:true}")
+    @Value("${app.mail.enabled:false}")
     private boolean mailEnabled;
+
+    @Value("${app.base-url:http://localhost:8080}")
+    private String baseUrl;
 
     private static final DateTimeFormatter TR_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
 
     // ---------------------------------------------------------------
+
+    // ─── Mail Tipleri ────────────────────────────────────────────────
+
+    /** Ödev kategorisi için ikon rengi */
+    private static final String COLOR_ASSIGNMENT = "#1a6fad";
+    /** Canlı ders kategorisi için ikon rengi */
+    private static final String COLOR_ZOOM       = "#0d7a5f";
+    /** Uyarı rengi */
+    private static final String COLOR_WARNING    = "#c92a2a";
+
+    // ─── Public Email Metodları ──────────────────────────────────────
 
     @Async
     @Override
     public void sendAssignmentSubmittedToTeacher(User teacher, AssignmentSubmission submission) {
         if (teacher == null || teacher.getEmail() == null) return;
         String subject = "Yeni Ödev Teslimi: " + submission.getAssignment().getTitle();
-        String body = section("Yeni Ödev Teslimi",
+
+        String details = row("Öğrenci",
+                submission.getUser().getFirstName() + " " + submission.getUser().getLastName()) +
+                row("Ödev", submission.getAssignment().getTitle()) +
+                row("Kurs", submission.getAssignment().getCourse().getTitle());
+
+        String body = buildEmail(
+                "Yeni Ödev Teslimi",
+                "📋",
+                COLOR_ASSIGNMENT,
                 "Merhaba " + teacher.getFirstName() + " " + teacher.getLastName() + ",",
-                "<b>" + submission.getUser().getFirstName() + " " + submission.getUser().getLastName() + "</b>" +
-                " adlı öğrenciniz <b>\"" + submission.getAssignment().getTitle() + "\"</b> ödevini teslim etti.",
-                "Kurs: " + submission.getAssignment().getCourse().getTitle(),
-                null, null);
+                "<b>" + submission.getUser().getFirstName() + " " + submission.getUser().getLastName()
+                        + "</b> adlı öğrenciniz <b>\""
+                        + submission.getAssignment().getTitle() + "\"</b> ödevini teslim etti.",
+                details,
+                null,
+                null);
         send(teacher.getEmail(), subject, body);
     }
 
@@ -53,17 +80,28 @@ public class EmailServiceImpl implements EmailService {
         User student = submission.getUser();
         if (student.getEmail() == null) return;
         String subject = "Ödeviniz Notlandırıldı: " + submission.getAssignment().getTitle();
+
         String scoreText = submission.getScore() != null
                 ? submission.getScore() + " / " + submission.getAssignment().getMaxScore() + " puan"
-                : "-";
-        String feedbackHtml = submission.getFeedback() != null && !submission.getFeedback().isBlank()
-                ? "<p style=\"margin-top:12px;\"><b>Geri bildirim:</b><br>" + escapeHtml(submission.getFeedback()) + "</p>"
-                : "";
-        String body = section("Ödeviniz Notlandırıldı",
+                : "—";
+
+        String details = row("Ödev", submission.getAssignment().getTitle()) +
+                row("Notunuz", scoreText) +
+                row("Kurs", submission.getAssignment().getCourse().getTitle());
+
+        String extra = submission.getFeedback() != null && !submission.getFeedback().isBlank()
+                ? feedbackBox("Öğretmen Geri Bildirimi", escapeHtml(submission.getFeedback()))
+                : null;
+
+        String body = buildEmail(
+                "Ödeviniz Notlandırıldı",
+                "✅",
+                "#0d7a5f",
                 "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
-                "<b>\"" + submission.getAssignment().getTitle() + "\"</b> ödeviniz notlandırıldı.",
-                "Aldığınız puan: <b>" + scoreText + "</b>",
-                feedbackHtml, null);
+                "Ödeviniz notlandırıldı. Aşağıda detayları görebilirsiniz.",
+                details,
+                extra,
+                null);
         send(student.getEmail(), subject, body);
     }
 
@@ -72,11 +110,21 @@ public class EmailServiceImpl implements EmailService {
     public void sendAssignmentDueReminder(User student, String assignmentTitle, String courseTitle, LocalDateTime dueDate) {
         if (student.getEmail() == null) return;
         String subject = "Hatırlatma: \"" + assignmentTitle + "\" ödevi yarın son gün!";
-        String body = section("Ödev Son Teslim Günü Yaklaşıyor",
+
+        String details = row("Ödev", assignmentTitle) +
+                row("Kurs", courseTitle) +
+                row("Son Tarih", "<b style=\"color:#c92a2a;\">" + dueDate.format(TR_FORMAT) + "</b>");
+
+        String extra = alertBox("Henüz ödevinizi teslim etmediniz. Lütfen son tarihe dikkat edin.");
+
+        String body = buildEmail(
+                "Ödev Son Teslim Günü Yarın!",
+                "⏰",
+                COLOR_WARNING,
                 "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
-                "<b>\"" + assignmentTitle + "\"</b> ödevinin son teslim tarihi yarına kadar.",
-                "Kurs: " + courseTitle + " &nbsp;|&nbsp; Son tarih: <b>" + dueDate.format(TR_FORMAT) + "</b>",
-                "<p style=\"color:#e03131;margin-top:8px;\">Henüz teslim yapmadınız. Lütfen ödevinizi zamanında yükleyin.</p>",
+                "<b>\"" + assignmentTitle + "\"</b> ödevinin son teslim tarihi <b>yarın</b>.",
+                details,
+                extra,
                 null);
         send(student.getEmail(), subject, body);
     }
@@ -86,16 +134,24 @@ public class EmailServiceImpl implements EmailService {
     public void sendMeetingScheduled(User student, ZoomMeeting meeting) {
         if (student.getEmail() == null) return;
         String subject = "Yeni Canlı Ders: " + meeting.getTopic();
-        String passwordHtml = meeting.getPassword() != null && !meeting.getPassword().isBlank()
-                ? "<p>Toplantı şifresi: <b><code>" + meeting.getPassword() + "</code></b></p>"
-                : "";
-        String body = section("Yeni Canlı Ders Planlandı",
+
+        String details = row("Konu", meeting.getTopic()) +
+                row("Kurs", meeting.getCourse().getTitle()) +
+                row("Tarih &amp; Saat", meeting.getScheduledAt().format(TR_FORMAT)) +
+                row("Süre", meeting.getDurationMinutes() + " dakika") +
+                (meeting.getPassword() != null && !meeting.getPassword().isBlank()
+                        ? row("Toplantı Şifresi", "<code style=\"background:#f1f3f5;padding:2px 6px;border-radius:4px;font-family:monospace;\">"
+                                + meeting.getPassword() + "</code>")
+                        : "");
+
+        String body = buildEmail(
+                "Yeni Canlı Ders Planlandı",
+                "🎥",
+                COLOR_ZOOM,
                 "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
-                "<b>\"" + meeting.getCourse().getTitle() + "\"</b> kursunuza yeni bir canlı ders eklendi.",
-                "Konu: <b>" + meeting.getTopic() + "</b><br>" +
-                "Tarih: <b>" + meeting.getScheduledAt().format(TR_FORMAT) + "</b><br>" +
-                "Süre: <b>" + meeting.getDurationMinutes() + " dakika</b>",
-                passwordHtml,
+                "<b>\"" + meeting.getCourse().getTitle() + "\"</b> kursunuza yeni bir canlı ders planlandı.",
+                details,
+                null,
                 meeting.getJoinUrl());
         send(student.getEmail(), subject, body);
     }
@@ -105,12 +161,20 @@ public class EmailServiceImpl implements EmailService {
     public void sendMeetingCancelled(User student, ZoomMeeting meeting) {
         if (student.getEmail() == null) return;
         String subject = "Canlı Ders İptal Edildi: " + meeting.getTopic();
-        String body = section("Canlı Ders İptal Edildi",
+
+        String details = row("İptal Edilen Ders", meeting.getTopic()) +
+                row("Kurs", meeting.getCourse().getTitle()) +
+                row("Planlanan Tarih", meeting.getScheduledAt().format(TR_FORMAT));
+
+        String body = buildEmail(
+                "Canlı Ders İptal Edildi",
+                "❌",
+                COLOR_WARNING,
                 "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
                 "<b>\"" + meeting.getCourse().getTitle() + "\"</b> kursundaki canlı ders iptal edildi.",
-                "İptal edilen ders: <b>" + meeting.getTopic() + "</b><br>" +
-                "Planlanan tarih: <b>" + meeting.getScheduledAt().format(TR_FORMAT) + "</b>",
-                "<p style=\"color:var(--text-muted);\">Yeni bir ders planlandığında bilgilendirileceksiniz.</p>",
+                details,
+                "<p style=\"margin:16px 0 0;font-size:0.9rem;color:#868e96;\">"
+                        + "Yeni bir ders planlandığında tekrar bilgilendirileceksiniz.</p>",
                 null);
         send(student.getEmail(), subject, body);
     }
@@ -120,22 +184,95 @@ public class EmailServiceImpl implements EmailService {
     public void sendMeetingReminder(User student, ZoomMeeting meeting) {
         if (student.getEmail() == null) return;
         String subject = "30 Dakika Sonra Canlı Ders: " + meeting.getTopic();
-        String passwordHtml = meeting.getPassword() != null && !meeting.getPassword().isBlank()
-                ? "<p>Toplantı şifresi: <b><code>" + meeting.getPassword() + "</code></b></p>"
-                : "";
-        String body = section("Canlı Ders 30 Dakika Sonra Başlıyor",
+
+        String details = row("Konu", meeting.getTopic()) +
+                row("Kurs", meeting.getCourse().getTitle()) +
+                row("Başlangıç Saati", "<b>" + meeting.getScheduledAt().format(TR_FORMAT) + "</b>") +
+                (meeting.getPassword() != null && !meeting.getPassword().isBlank()
+                        ? row("Toplantı Şifresi", "<code style=\"background:#f1f3f5;padding:2px 6px;border-radius:4px;font-family:monospace;\">"
+                                + meeting.getPassword() + "</code>")
+                        : "");
+
+        String body = buildEmail(
+                "Ders 30 Dakika Sonra Başlıyor",
+                "🔔",
+                COLOR_ZOOM,
                 "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
-                "<b>\"" + meeting.getTopic() + "\"</b> dersi 30 dakika sonra başlıyor!",
-                "Kurs: " + meeting.getCourse().getTitle() + "<br>" +
-                "Saat: <b>" + meeting.getScheduledAt().format(TR_FORMAT) + "</b>",
-                passwordHtml,
+                "<b>\"" + meeting.getTopic() + "\"</b> dersiniz <b>30 dakika içinde</b> başlıyor!",
+                details,
+                null,
                 meeting.getJoinUrl());
         send(student.getEmail(), subject, body);
     }
 
-    // ---------------------------------------------------------------
-    // Yardımcı metodlar
-    // ---------------------------------------------------------------
+    @Async
+    @Override
+    public void sendContactEmail(ContactRequest request) {
+        String subject = "İletişim Formu: " + request.getTopic();
+        
+        String details = row("Ad Soyad", request.getFirstName() + " " + request.getLastName()) +
+                row("E-posta", request.getEmail()) +
+                row("Telefon", request.getPhone() != null ? request.getPhone() : "—") +
+                row("Konu", request.getTopic()) +
+                row("Tarih", LocalDateTime.now().format(TR_FORMAT));
+
+        String body = buildEmail(
+                "Yeni İletişim Mesajı",
+                "✉️",
+                "#113a71",
+                "Yeni Bir Mesajınız Var,",
+                "Web sitesi üzerindeki iletişim formundan yeni bir başvuru aldınız. Detaylar aşağıdadır:",
+                details,
+                messageBox("Ziyaretçi Mesajı", escapeHtml(request.getMessage())),
+                null);
+        
+        send(fromAddress, subject, body); // Yöneticiye gönder
+    }
+
+    @Async
+    @Override
+    public void sendCourseAnnouncement(User student, String courseTitle, String subject, String messageText) {
+        if (student.getEmail() == null) return;
+        
+        String details = row("Kurs", courseTitle) +
+                row("Tarih", LocalDateTime.now().format(TR_FORMAT));
+
+        String body = buildEmail(
+                "Eğitmen Duyurusu",
+                "📢",
+                "#113a71",
+                "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
+                "<b>" + courseTitle + "</b> kursu için eğitmeniniz tarafından yeni bir duyuru yayınlandı:",
+                details,
+                messageBox("Duyuru: " + escapeHtml(subject), escapeHtml(messageText).replace("\n", "<br>")),
+                null);
+                
+        send(student.getEmail(), subject, body);
+    }
+
+    @Async
+    @Override
+    public void sendNewAssignmentNotification(User student, com.guzem.uzaktan.model.Assignment assignment) {
+        if (student.getEmail() == null) return;
+        String subject = "Yeni Ödev Yayınlandı: " + assignment.getTitle();
+
+        String details = row("Ödev", assignment.getTitle()) +
+                row("Kurs", assignment.getCourse().getTitle()) +
+                row("Son Teslim Tarihi", assignment.getDueDate().format(TR_FORMAT));
+
+        String body = buildEmail(
+                "Yeni Ödev Yayınlandı",
+                "📝",
+                COLOR_ASSIGNMENT,
+                "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
+                "<b>\"" + assignment.getCourse().getTitle() + "\"</b> kursunuzda yeni bir ödev yayınlandı.",
+                details,
+                null,
+                baseUrl + "/panom");
+        send(student.getEmail(), subject, body);
+    }
+
+    // ─── Gönderim ────────────────────────────────────────────────────
 
     private void send(String to, String subject, String htmlBody) {
         if (!mailEnabled) {
@@ -144,81 +281,226 @@ public class EmailServiceImpl implements EmailService {
         }
         try {
             MimeMessage msg = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(msg, false, "UTF-8");
+            // multipart=true → inline attachment desteği
+            MimeMessageHelper helper = new MimeMessageHelper(msg, true, "UTF-8");
             helper.setFrom(fromAddress);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlBody, true);
+
+            // Gazi logosunu inline olarak göm (cid:gazi-logo)
+            ClassPathResource logo = new ClassPathResource("static/images/gazi-logo.png");
+            if (logo.exists()) {
+                helper.addInline("gazi-logo", logo);
+            }
+
             mailSender.send(msg);
         } catch (Exception e) {
             log.warn("E-posta gönderilemedi [{}] → {}: {}", subject, to, e.getMessage());
         }
     }
 
+    // ─── HTML Şablon Yapılandırıcıları ───────────────────────────────
+
     /**
-     * Basit HTML e-posta şablonu.
+     * Ana email template'i. Responsive ve email-client uyumlu tablo tabanlı yapı.
      *
-     * @param title       Büyük başlık
-     * @param greeting    Selamlama satırı
-     * @param mainText    Ana paragraf (HTML olabilir)
-     * @param detailText  İkincil detay satırı (HTML olabilir, null ise atlanır)
-     * @param extraHtml   Ek HTML bloğu (null ise atlanır)
-     * @param joinUrl     Zoom katılım linki (null ise buton gösterilmez)
+     * @param title      Kart başlığı
+     * @param icon       Emoji ikon (Mail istemcilerinde gösterilir)
+     * @param accentColor Başlık altı şerit rengi
+     * @param greeting   Selamlama
+     * @param mainText   Ana mesaj (HTML destekler)
+     * @param detailRows {@link #row(String, String)} ile oluşturulan bilgi satırları
+     * @param extraHtml  Ek HTML bloğu (null olabilir)
+     * @param ctaUrl     CTA butonu linki (null ise gösterilmez)
      */
-    private String section(String title, String greeting, String mainText,
-                            String detailText, String extraHtml, String joinUrl) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("<!DOCTYPE html><html lang=\"tr\"><head><meta charset=\"UTF-8\"></head><body style=\"")
-          .append("margin:0;padding:0;background:#f1f3f5;font-family:'Segoe UI',Arial,sans-serif;\">");
+    private String buildEmail(String title, String icon, String accentColor,
+                               String greeting, String mainText,
+                               String detailRows, String extraHtml, String ctaUrl) {
 
-        sb.append("<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#f1f3f5;padding:32px 0;\">")
-          .append("<tr><td align=\"center\">");
+        String logoUrl = "cid:gazi-logo";
 
-        sb.append("<table width=\"600\" cellpadding=\"0\" cellspacing=\"0\" style=\"")
-          .append("background:#ffffff;border-radius:12px;overflow:hidden;")
-          .append("box-shadow:0 2px 12px rgba(0,0,0,0.08);max-width:600px;\">");
+        return "<!DOCTYPE html>" +
+        "<html lang=\"tr\" xmlns=\"http://www.w3.org/1999/xhtml\">" +
+        "<head>" +
+        "  <meta charset=\"UTF-8\">" +
+        "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
+        "  <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">" +
+        "  <title>" + title + "</title>" +
+        "</head>" +
+        "<body style=\"margin:0;padding:0;background-color:#eef2f7;font-family:'Segoe UI',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;\">" +
 
-        // Header
-        sb.append("<tr><td style=\"background:#1c7ed6;padding:28px 36px;\">")
-          .append("<h2 style=\"margin:0;color:#ffffff;font-size:1.25rem;\">")
-          .append("🎓 Gazi Üniversitesi — Uzaktan Öğrenme</h2>")
-          .append("</td></tr>");
+        // Dış wrapper
+        "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"background-color:#eef2f7;\">" +
+        "<tr><td align=\"center\" style=\"padding:40px 16px;\">" +
 
-        // Body
-        sb.append("<tr><td style=\"padding:32px 36px;\">")
-          .append("<h3 style=\"margin:0 0 20px;color:#212529;font-size:1.15rem;\">").append(title).append("</h3>")
-          .append("<p style=\"margin:0 0 12px;color:#495057;\">").append(greeting).append("</p>")
-          .append("<p style=\"margin:0 0 12px;color:#212529;\">").append(mainText).append("</p>");
+        // İç kart
+        "<table role=\"presentation\" width=\"600\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" " +
+        "  style=\"max-width:600px;width:100%;background:#ffffff;border-radius:16px;" +
+        "  box-shadow:0 4px 24px rgba(11,42,91,0.12);overflow:hidden;\">" +
 
-        if (detailText != null) {
-            sb.append("<div style=\"background:#f8f9fa;border-radius:8px;padding:14px 18px;")
-              .append("margin:16px 0;color:#495057;font-size:0.95rem;\">")
-              .append(detailText).append("</div>");
-        }
+        // ── Header ──────────────────────────────────────────────────────
+        "<tr>" +
+        "<td style=\"background:linear-gradient(135deg,#0b2a5b 0%,#113a71 60%,#1a6fad 100%);" +
+        "  padding:0;\">" +
 
-        if (extraHtml != null) {
-            sb.append(extraHtml);
-        }
+        "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" +
+        "<tr>" +
+        // Logo
+        "<td style=\"padding:24px 32px 20px;\" width=\"64\">" +
+        "  <img src=\"" + logoUrl + "\" alt=\"Gazi\" width=\"56\" height=\"56\" " +
+        "    style=\"display:block;border-radius:8px;object-fit:contain;background:#fff;padding:6px;\">" +
+        "</td>" +
+        // Başlık metni
+        "<td style=\"padding:24px 32px 20px 0;vertical-align:middle;\">" +
+        "  <div style=\"color:#bbe3fa;font-size:11px;font-weight:700;letter-spacing:0.08em;" +
+        "    text-transform:uppercase;margin-bottom:4px;\">GAZİ ÜNİVERSİTESİ</div>" +
+        "  <div style=\"color:#ffffff;font-size:16px;font-weight:700;line-height:1.3;" +
+        "    letter-spacing:-0.01em;\">GUZEM Uzaktan Eğitim ve Araştırma Merkezi</div>" +
+        "</td>" +
+        "</tr>" +
+        "</table>" +
 
-        if (joinUrl != null) {
-            sb.append("<div style=\"margin-top:24px;\">")
-              .append("<a href=\"").append(joinUrl).append("\" ")
-              .append("style=\"background:#1c7ed6;color:#ffffff;padding:12px 28px;")
-              .append("border-radius:8px;text-decoration:none;font-weight:600;font-size:0.95rem;\">")
-              .append("Derse Katıl →</a></div>");
-        }
+        // Altın şerit
+        "<div style=\"height:3px;background:linear-gradient(90deg,#998F4D,#c5b86a,#998F4D);\"></div>" +
+        "</td>" +
+        "</tr>" +
 
-        sb.append("</td></tr>");
+        // ── Başlık bandı ────────────────────────────────────────────────
+        "<tr>" +
+        "<td style=\"background:#f8fafc;padding:24px 32px;border-bottom:1px solid #e8edf3;\">" +
+        "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" +
+        "<tr>" +
+        // İkon kutusu
+        "<td width=\"52\" style=\"vertical-align:middle;\">" +
+        "  <div style=\"width:44px;height:44px;border-radius:12px;background:" + accentColor + "1a;" +
+        "    display:flex;align-items:center;justify-content:center;" +
+        "    font-size:22px;line-height:44px;text-align:center;\">" +
+        "  " + icon +
+        "  </div>" +
+        "</td>" +
+        // Başlık
+        "<td style=\"vertical-align:middle;padding-left:14px;\">" +
+        "  <div style=\"font-size:20px;font-weight:700;color:#0b2a5b;line-height:1.3;\">" + title + "</div>" +
+        "  <div style=\"width:40px;height:3px;background:" + accentColor + ";border-radius:2px;margin-top:6px;\"></div>" +
+        "</td>" +
+        "</tr>" +
+        "</table>" +
+        "</td>" +
+        "</tr>" +
 
-        // Footer
-        sb.append("<tr><td style=\"background:#f8f9fa;padding:18px 36px;")
-          .append("border-top:1px solid #dee2e6;color:#868e96;font-size:0.8rem;\">")
-          .append("Bu e-posta Gazi Üniversitesi Uzaktan Öğrenme Platformu tarafından otomatik olarak gönderilmiştir. ")
-          .append("Lütfen bu e-postayı yanıtlamayın.")
-          .append("</td></tr>");
+        // ── İçerik ──────────────────────────────────────────────────────
+        "<tr>" +
+        "<td style=\"padding:32px 32px 0;\">" +
 
-        sb.append("</table></td></tr></table></body></html>");
-        return sb.toString();
+        // Selamlama
+        "<p style=\"margin:0 0 8px;font-size:15px;color:#495057;font-weight:500;\">" + greeting + "</p>" +
+
+        // Ana metin
+        "<p style=\"margin:0 0 24px;font-size:15px;color:#212529;line-height:1.7;\">" + mainText + "</p>" +
+
+        // Detay bilgi tablosu
+        (detailRows != null && !detailRows.isBlank() ?
+            "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" " +
+            "  style=\"background:#f4f7fc;border-radius:12px;border:1px solid #dce6f0;overflow:hidden;margin-bottom:24px;\">" +
+            detailRows +
+            "</table>"
+        : "") +
+
+        // Ekstra HTML
+        (extraHtml != null ? extraHtml : "") +
+
+        // CTA Butonu
+        (ctaUrl != null ?
+            "<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\" style=\"margin:24px 0;\">" +
+            "<tr><td style=\"border-radius:10px;background:" + accentColor + ";\">" +
+            "  <a href=\"" + ctaUrl + "\" target=\"_blank\" " +
+            "    style=\"display:inline-block;padding:14px 36px;color:#ffffff;font-size:15px;" +
+            "    font-weight:700;text-decoration:none;border-radius:10px;letter-spacing:0.02em;" +
+            "    font-family:'Segoe UI',Helvetica,Arial,sans-serif;\">" +
+            "    🎥&nbsp;&nbsp;Derse Katıl" +
+            "  </a>" +
+            "</td></tr></table>"
+        : "") +
+
+        "</td>" +
+        "</tr>" +
+
+        // ── Ayırıcı ─────────────────────────────────────────────────────
+        "<tr><td style=\"height:32px;\"></td></tr>" +
+
+        // ── Footer ──────────────────────────────────────────────────────
+        "<tr>" +
+        "<td style=\"background:#f4f7fc;padding:24px 32px;" +
+        "  border-top:2px solid #dce6f0;\">" +
+
+        "<table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" border=\"0\">" +
+        "<tr>" +
+        "<td>" +
+        // Üniversite bilgisi
+        "<div style=\"font-size:13px;color:#0b2a5b;font-weight:700;margin-bottom:8px;\">" +
+        "  Gazi Üniversitesi &mdash; GUZEM" +
+        "</div>" +
+        "<div style=\"font-size:12px;color:#6b7280;line-height:1.6;\">" +
+        "  Bu e-posta <b>GUZEM Öğrenme Platformu</b> tarafından otomatik olarak gönderilmiştir.<br>" +
+        "  Gazi Üniversitesi Uzaktan Eğitim ve Araştırma Merkezi (GUZEM)" +
+        "</div>" +
+        "</td>" +
+        "</tr>" +
+        "</table>" +
+
+        "</td>" +
+        "</tr>" +
+
+        "</table>" + // iç kart kapanış
+
+        // Platform damgası
+        "<p style=\"text-align:center;margin:20px 0 0;font-size:11px;color:#adb5bd;\">" +
+        "  &copy; Gazi &Uuml;niversitesi GUZEM &bull; Uzaktan &Ouml;ğrenme Platformu" +
+        "</p>" +
+
+        "</td></tr>" +
+        "</table>" + // dış wrapper kapanış
+
+        "</body></html>";
+    }
+
+    /** Detay satırı — buildEmail'deki tablo içinde kullanılır */
+    private String row(String label, String value) {
+        return "<tr>" +
+               "<td style=\"padding:10px 16px;font-size:13px;font-weight:600;color:#5c7089;" +
+               "  white-space:nowrap;border-bottom:1px solid #e8edf3;width:35%;\">" + label + "</td>" +
+               "<td style=\"padding:10px 16px;font-size:13px;color:#212529;" +
+               "  border-bottom:1px solid #e8edf3;\">" + value + "</td>" +
+               "</tr>";
+    }
+
+    /** Mesaj kutusu (mavi/soft gri temalı) */
+    private String messageBox(String title, String text) {
+        return "<div style=\"background:#f8fafc;border-left:4px solid #113a71;border-radius:0 8px 8px 0;" +
+               "  padding:14px 18px;margin:0 0 24px;\">" +
+               "<div style=\"font-size:12px;font-weight:700;color:#113a71;text-transform:uppercase;" +
+               "  letter-spacing:0.06em;margin-bottom:6px;\">" + title + "</div>" +
+               "<div style=\"font-size:13px;color:#212529;line-height:1.6;\">" + text + "</div>" +
+               "</div>";
+    }
+
+    /** Geri bildirim kutusu (yeşil temalı) */
+    private String feedbackBox(String title, String text) {
+        return "<div style=\"background:#f0faf6;border-left:4px solid #0d7a5f;border-radius:0 8px 8px 0;" +
+               "  padding:14px 18px;margin:0 0 24px;\">" +
+               "<div style=\"font-size:12px;font-weight:700;color:#0d7a5f;text-transform:uppercase;" +
+               "  letter-spacing:0.06em;margin-bottom:6px;\">" + title + "</div>" +
+               "<div style=\"font-size:13px;color:#212529;line-height:1.6;\">" + text + "</div>" +
+               "</div>";
+    }
+
+    /** Uyarı kutusu */
+    private String alertBox(String text) {
+        return "<div style=\"background:#fff5f5;border-left:4px solid #c92a2a;border-radius:0 8px 8px 0;" +
+               "  padding:14px 18px;margin:0 0 24px;\">" +
+               "<div style=\"font-size:13px;color:#c92a2a;font-weight:600;\">" + text + "</div>" +
+               "</div>";
     }
 
     private String escapeHtml(String text) {

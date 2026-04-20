@@ -8,7 +8,11 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "video_watches",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "video_id"}))
+       uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "video_id"}),
+       indexes = {
+               @Index(name = "idx_videowatch_user_id", columnList = "user_id"),
+               @Index(name = "idx_videowatch_video_id", columnList = "video_id")
+       })
 @Getter
 @Setter
 @NoArgsConstructor
