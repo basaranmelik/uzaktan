@@ -1,0 +1,72 @@
+services:
+
+  # ── SQL Server ──────────────────────────────────────────────────────────────
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: guzem-db
+    environment:
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: "GaziUzaktan2024!"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD
+        - /opt/mssql-tools18/bin/sqlcmd
+        - -S
+        - localhost
+        - -U
+        - sa
+        - -P
+        - "GaziUzaktan2024!"
+        - -Q
+        - "SELECT 1"
+        - -C
+        - -l
+        - "5"
+      interval: 15s
+      timeout: 10s
+      retries: 12
+      start_period: 45s
+    restart: unless-stopped
+
+  # ── Spring Boot App ─────────────────────────────────────────────────────────
+  app:
+    build: .
+    container_name: guzem-app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Veritabanı — DB servis adı "db" olduğu için host değişiyor
+      SPRING_DATASOURCE_URL: "jdbc:sqlserver://db:1433;databaseName=master;encrypt=true;trustServerCertificate=true;"
+      SPRING_DATASOURCE_USERNAME: sa
+      DB_PASSWORD: "GaziUzaktan2024!"
+
+      # Uygulama
+      APP_BASE_URL: "http://localhost:8080"
+
+      # Dosya yükleme dizini — container içinde /app/uploads
+      JAVA_TOOL_OPTIONS: "-Dapp.upload.dir=/app/uploads"
+
+      # Mail (devre dışı — kullanmak istersen MAIL_ENABLED=true yap)
+      MAIL_USERNAME: "noreply@gazi.edu.tr"
+      MAIL_PASSWORD: ""
+      MAIL_ENABLED: "false"
+
+      # Zoom (kullanmak istersen buraya API bilgilerini gir)
+      ZOOM_ACCOUNT_ID: ""
+      ZOOM_CLIENT_ID: ""
+      ZOOM_CLIENT_SECRET: ""
+    ports:
+      - "8080:8080"
+    volumes:
+      - app-uploads:/app/uploads
+    restart: unless-stopped
+
+volumes:
+  sqlserver-data:
+  app-uploads:
