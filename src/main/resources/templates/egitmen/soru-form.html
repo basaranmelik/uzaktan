@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yeni Soru | Gazi Üniversitesi</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .form-section {
+      border: 1px solid var(--border); border-radius: 12px;
+      padding: 1.5rem; margin-bottom: 1.5rem; background: var(--bg);
+    }
+    .form-section-title {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.8px; color: var(--text-muted); margin: 0 0 1.25rem 0;
+      padding-bottom: 0.75rem; border-bottom: 1px solid var(--gray-100);
+      display: flex; align-items: center; gap: 6px;
+    }
+    .form-section-title i { font-size: 0.9rem; }
+
+    /* Şık girişleri */
+    .option-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+    .option-letter {
+      background: var(--primary-600);
+      color: #fff;
+      width: 34px; height: 34px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.82rem; font-weight: 800;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .option-group .form-control { flex: 1; }
+
+    /* Doğru cevap seçici */
+    .correct-selector {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .correct-selector label {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1.1rem;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .correct-selector label:hover {
+      border-color: var(--primary-600);
+      color: var(--primary-600);
+    }
+    .correct-selector input[type="radio"] { display: none; }
+    .correct-selector input[type="radio"]:checked + label {
+      background: #ebfbee;
+      border-color: #2b8a3e;
+      color: #2b8a3e;
+    }
+
+    /* Önizleme */
+    .preview-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      background: var(--bg);
+      margin-bottom: 1.5rem;
+    }
+    .preview-card.hidden { display: none; }
+    .preview-q { font-weight: 700; font-size: 1rem; margin-bottom: 1rem; color: var(--primary-900); line-height: 1.5; }
+    .preview-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+    @media (max-width: 600px) { .preview-options { grid-template-columns: 1fr; } }
+    .preview-opt {
+      display: flex; align-items: flex-start; gap: 0.5rem;
+      padding: 0.5rem 0.75rem; border-radius: 8px;
+      font-size: 0.85rem; background: var(--bg-alt); color: var(--text-muted); line-height: 1.4;
+    }
+    .preview-opt.correct { background: #ebfbee; color: #2b8a3e; font-weight: 600; border: 1px solid #b2f2bb; }
+    .preview-opt-letter { font-weight: 800; font-size: 0.78rem; min-width: 18px; flex-shrink: 0; }
+    .preview-explanation {
+      margin-top: 0.75rem; padding: 0.6rem 0.85rem;
+      background: #fff9db; border: 1px solid #ffe066; border-radius: 8px;
+      font-size: 0.82rem; color: #664d03; line-height: 1.5;
+    }
+    .preview-explanation i { margin-right: 0.3rem; }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/egitmen/panel}">Eğitmen Paneli</a> <span class="separator">›</span>
+      <a th:href="@{/egitmen/kurslarim}">Kurslarım</a> <span class="separator">›</span>
+      <a th:href="@{/egitmen/kurslarim/{id}/soru-bankasi(id=${course.id})}"
+         th:text="${course.title}">Kurs</a> <span class="separator">›</span>
+      <span class="current">Yeni Soru</span>
+    </div>
+    <h1><i class="bi bi-plus-circle-fill"></i> Yeni Soru Oluştur</h1>
+    <p style="margin:0;" th:text="${course.title}">Kurs Adı</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container" style="max-width:780px;">
+
+    <!-- Canlı Önizleme -->
+    <div class="preview-card hidden" id="previewCard">
+      <div class="form-section-title"><i class="bi bi-eye-fill"></i> Canlı Önizleme</div>
+      <div class="preview-q" id="previewQ">Soru metni</div>
+      <div class="preview-options">
+        <div class="preview-opt" id="previewA"><span class="preview-opt-letter">A)</span> <span>—</span></div>
+        <div class="preview-opt" id="previewB"><span class="preview-opt-letter">B)</span> <span>—</span></div>
+        <div class="preview-opt" id="previewC"><span class="preview-opt-letter">C)</span> <span>—</span></div>
+        <div class="preview-opt" id="previewD"><span class="preview-opt-letter">D)</span> <span>—</span></div>
+        <div class="preview-opt" id="previewE" style="grid-column:span 2;"><span class="preview-opt-letter">E)</span> <span>—</span></div>
+      </div>
+      <div class="preview-explanation hidden" id="previewExpl"><i class="bi bi-lightbulb-fill"></i> <span></span></div>
+    </div>
+
+    <form th:action="@{/egitmen/kurslarim/{id}/soru-bankasi(id=${course.id})}"
+          th:object="${questionCreateRequest}" method="post" id="questionForm">
+
+      <!-- Soru Metni -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-chat-left-text-fill"></i> Soru Metni</div>
+        <div class="form-group">
+          <label>Soru *</label>
+          <textarea th:field="*{questionText}" class="form-control" rows="4"
+                    th:classappend="${#fields.hasErrors('questionText')} ? ' is-invalid'"
+                    placeholder="Sorunuzu buraya yazın..." maxlength="5000" required id="inputQ"></textarea>
+          <div class="invalid-feedback" th:errors="*{questionText}" th:if="${#fields.hasErrors('questionText')}"></div>
+          <div style="text-align:right;font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;">
+            <span id="qCharCount">0</span>/5000
+          </div>
+        </div>
+      </div>
+
+      <!-- Şıklar -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-list-check"></i> Şıklar</div>
+
+        <div class="option-group">
+          <div class="option-letter">A</div>
+          <input type="text" th:field="*{optionA}" class="form-control" id="inputA"
+                 th:classappend="${#fields.hasErrors('optionA')} ? ' is-invalid'"
+                 placeholder="A şıkkı..." maxlength="500" required>
+        </div>
+        <div th:if="${#fields.hasErrors('optionA')}" class="invalid-feedback" th:errors="*{optionA}" style="display:block;margin-bottom:0.5rem;margin-left:46px;"></div>
+
+        <div class="option-group">
+          <div class="option-letter">B</div>
+          <input type="text" th:field="*{optionB}" class="form-control" id="inputB"
+                 th:classappend="${#fields.hasErrors('optionB')} ? ' is-invalid'"
+                 placeholder="B şıkkı..." maxlength="500" required>
+        </div>
+        <div th:if="${#fields.hasErrors('optionB')}" class="invalid-feedback" th:errors="*{optionB}" style="display:block;margin-bottom:0.5rem;margin-left:46px;"></div>
+
+        <div class="option-group">
+          <div class="option-letter">C</div>
+          <input type="text" th:field="*{optionC}" class="form-control" id="inputC"
+                 th:classappend="${#fields.hasErrors('optionC')} ? ' is-invalid'"
+                 placeholder="C şıkkı..." maxlength="500" required>
+        </div>
+        <div th:if="${#fields.hasErrors('optionC')}" class="invalid-feedback" th:errors="*{optionC}" style="display:block;margin-bottom:0.5rem;margin-left:46px;"></div>
+
+        <div class="option-group">
+          <div class="option-letter">D</div>
+          <input type="text" th:field="*{optionD}" class="form-control" id="inputD"
+                 th:classappend="${#fields.hasErrors('optionD')} ? ' is-invalid'"
+                 placeholder="D şıkkı..." maxlength="500" required>
+        </div>
+        <div th:if="${#fields.hasErrors('optionD')}" class="invalid-feedback" th:errors="*{optionD}" style="display:block;margin-bottom:0.5rem;margin-left:46px;"></div>
+
+        <div class="option-group">
+          <div class="option-letter">E</div>
+          <input type="text" th:field="*{optionE}" class="form-control" id="inputE"
+                 th:classappend="${#fields.hasErrors('optionE')} ? ' is-invalid'"
+                 placeholder="E şıkkı..." maxlength="500" required>
+        </div>
+        <div th:if="${#fields.hasErrors('optionE')}" class="invalid-feedback" th:errors="*{optionE}" style="display:block;margin-bottom:0.5rem;margin-left:46px;"></div>
+      </div>
+
+      <!-- Doğru Cevap -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-check-circle-fill"></i> Doğru Cevap</div>
+        <div class="form-group">
+          <label>Doğru şıkkı seçin *</label>
+          <div class="correct-selector">
+            <span th:each="opt : ${T(com.guzem.uzaktan.model.course.CorrectOption).values()}">
+              <input type="radio" th:field="*{correctOption}" th:value="${opt}" th:id="${'opt_' + opt.name()}">
+              <label th:for="${'opt_' + opt.name()}" th:text="${opt.displayName}">A</label>
+            </span>
+          </div>
+          <div class="invalid-feedback" th:errors="*{correctOption}" th:if="${#fields.hasErrors('correctOption')}"
+               style="display:block;margin-top:0.5rem;"></div>
+        </div>
+      </div>
+
+      <!-- Açıklama -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-lightbulb-fill"></i> Açıklama (İsteğe Bağlı)</div>
+        <div class="form-group">
+          <label>Doğru cevabın açıklaması</label>
+          <textarea th:field="*{explanation}" class="form-control" rows="3" id="inputExpl"
+                    placeholder="Doğru cevabı neden bu şık olduğunu açıklayın..." maxlength="5000"></textarea>
+          <div style="text-align:right;font-size:0.75rem;color:var(--text-muted);margin-top:0.25rem;">
+            <span id="explCharCount">0</span>/5000
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:1rem;">
+        <button type="submit" class="btn btn-primary btn-lg">
+          <i class="bi bi-check-lg"></i> Soruyu Kaydet
+        </button>
+        <a th:href="@{/egitmen/kurslarim/{id}/soru-bankasi(id=${course.id})}"
+           class="btn btn-secondary btn-lg">İptal</a>
+      </div>
+    </form>
+
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+<script>
+  (function () {
+    const fields = { Q: 'inputQ', A: 'inputA', B: 'inputB', C: 'inputC', D: 'inputD', E: 'inputE' };
+    const previewCard = document.getElementById('previewCard');
+    const previewQ = document.getElementById('previewQ');
+    const previewExpl = document.getElementById('previewExpl');
+    const qCharCount = document.getElementById('qCharCount');
+    const explCharCount = document.getElementById('explCharCount');
+    const inputQ = document.getElementById('inputQ');
+    const inputExpl = document.getElementById('inputExpl');
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str;
+      return div.innerHTML;
+    }
+
+    function updatePreview() {
+      const qText = inputQ.value.trim();
+      if (!qText) {
+        previewCard.classList.add('hidden');
+        return;
+      }
+      previewCard.classList.remove('hidden');
+      previewQ.textContent = qText;
+
+      const selected = document.querySelector('input[name="correctOption"]:checked');
+      const correctVal = selected ? selected.value : '';
+
+      ['A', 'B', 'C', 'D', 'E'].forEach(function (letter) {
+        const el = document.getElementById('preview' + letter);
+        const val = document.getElementById('input' + letter).value || '—';
+        el.querySelector('span:last-child').textContent = val;
+        el.classList.toggle('correct', correctVal === letter);
+      });
+
+      const explText = inputExpl.value.trim();
+      if (explText) {
+        previewExpl.classList.remove('hidden');
+        previewExpl.querySelector('span').textContent = explText;
+      } else {
+        previewExpl.classList.add('hidden');
+      }
+    }
+
+    // Karakter sayaçları
+    inputQ.addEventListener('input', function () {
+      qCharCount.textContent = this.value.length;
+      updatePreview();
+    });
+    inputExpl.addEventListener('input', function () {
+      explCharCount.textContent = this.value.length;
+      updatePreview();
+    });
+
+    // Şık ve radio değişikliklerinde önizleme güncelle
+    Object.keys(fields).forEach(function (key) {
+      document.getElementById(fields[key]).addEventListener('input', updatePreview);
+    });
+    document.querySelectorAll('input[name="correctOption"]').forEach(function (radio) {
+      radio.addEventListener('change', updatePreview);
+    });
+
+    // Başlangıçta sayaçları güncelle
+    qCharCount.textContent = inputQ.value.length;
+    explCharCount.textContent = inputExpl.value.length;
+    updatePreview();
+  })();
+</script>
+</body>
+</html>

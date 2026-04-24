@@ -23,7 +23,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = {"videos", "enrollments", "assignments", "certificates", "reviews", "instructor", "instructors", "zoomMeetings"})
+@ToString(exclude = {"videos", "enrollments", "assignments", "certificates", "reviews", "instructor", "instructors", "zoomMeetings", "questions"})
 @Builder
 @Entity
 @Table(name = "course")
@@ -165,4 +165,8 @@ public class Course {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<ZoomMeeting> zoomMeetings = new HashSet<>();
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<Question> questions = new HashSet<>();
 }

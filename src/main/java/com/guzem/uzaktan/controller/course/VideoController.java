@@ -48,13 +48,15 @@ public class VideoController {
                              Model model) {
         CourseVideoResponse video = courseVideoService.findById(id);
 
-        // Eğitmen/Admin için kurs sahibi kontrolü, öğrenci için kayıt kontrolü
-        boolean isTeacherOrAdmin = principal.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER"));
+        // Eğitmen/Admin/Firma için kurs sahibi kontrolü, öğrenci için kayıt kontrolü
+        boolean isPrivileged = principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER") || a.getAuthority().equals("ROLE_FIRM"));
 
-        if (isTeacherOrAdmin) {
-            // Admin her kursu görebilir, eğitmen kendi kursunu görebilir
-            if (!principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+        if (isPrivileged) {
+            // Admin ve Firma her kursu görebilir, eğitmen kendi kursunu görebilir
+            boolean isAdminOrFirm = principal.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_FIRM"));
+            if (!isAdminOrFirm) {
                 CourseResponse course = courseService.findById(video.getCourseId());
                 if (course.getInstructorId() == null || !course.getInstructorId().equals(currentUserId)) {
                     throw new ResourceNotFoundException("Video", "id", id);
@@ -67,11 +69,11 @@ public class VideoController {
             }
         }
 
-        if (!isTeacherOrAdmin && !courseVideoService.canAccessVideo(id, currentUserId)) {
+        if (!isPrivileged && !courseVideoService.canAccessVideo(id, currentUserId)) {
             return "redirect:/egitimler/" + video.getCourseId();
         }
 
-        List<CourseVideoResponse> allVideos = isTeacherOrAdmin
+        List<CourseVideoResponse> allVideos = isPrivileged
             ? courseVideoService.findByCourse(video.getCourseId())
             : courseVideoService.findByCourseForStudent(video.getCourseId(), currentUserId);
 
@@ -92,7 +94,7 @@ public class VideoController {
         model.addAttribute("prevVideo", currentIndex > 0 ? allVideos.get(currentIndex - 1) : null);
         model.addAttribute("nextVideo", currentIndex < allVideos.size() - 1 ? allVideos.get(currentIndex + 1) : null);
         model.addAttribute("alreadyWatched", currentVideo.isWatched());
-        model.addAttribute("isTeacherOrAdmin", isTeacherOrAdmin);
+        model.addAttribute("isTeacherOrAdmin", isPrivileged);
 
         // Gerçek TCP bağlantı adresi — kullanıcı tarafından manipüle edilemez
         model.addAttribute("clientIp", request.getRemoteAddr());
@@ -109,18 +111,18 @@ public class VideoController {
             @RequestHeader(value = HttpHeaders.RANGE, required = false) String rangeHeader) throws java.io.IOException {
         CourseVideoResponse video = courseVideoService.findById(id);
 
-        // Eğitmen/Admin kontrol
-        boolean isTeacherOrAdmin = principal.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER"));
+        // Eğitmen/Admin/Firma kontrol
+        boolean isPrivileged = principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER") || a.getAuthority().equals("ROLE_FIRM"));
 
-        if (!isTeacherOrAdmin) {
+        if (!isPrivileged) {
             if (!enrollmentService.isActiveEnrollment(currentUserId, video.getCourseId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
             if (!courseVideoService.canAccessVideo(id, currentUserId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
-        } else if (!principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+        } else if (!principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_FIRM"))) {
             // Eğitmen - kendi kursunu kontrol et
             CourseResponse course = courseService.findById(video.getCourseId());
             if (course.getInstructorId() == null || !course.getInstructorId().equals(currentUserId)) {
@@ -190,11 +192,11 @@ public class VideoController {
                                                             @ModelAttribute("currentUserId") Long currentUserId) {
         CourseVideoResponse video = courseVideoService.findById(id);
 
-        // Eğitmen/Admin için tracking yapılmaz
-        boolean isTeacherOrAdmin = principal.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER"));
+        // Eğitmen/Admin/Firma için tracking yapılmaz
+        boolean isPrivileged = principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER") || a.getAuthority().equals("ROLE_FIRM"));
 
-        if (isTeacherOrAdmin) {
+        if (isPrivileged) {
             return ResponseEntity.ok(Map.of("success", true)); // Tracking yapılmaz
         }
 
@@ -217,11 +219,11 @@ public class VideoController {
                                                                @RequestBody VideoProgressRequest req) {
         CourseVideoResponse video = courseVideoService.findById(id);
 
-        // Eğitmen/Admin için tracking yapılmaz
-        boolean isTeacherOrAdmin = principal.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER"));
+        // Eğitmen/Admin/Firma için tracking yapılmaz
+        boolean isPrivileged = principal.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER") || a.getAuthority().equals("ROLE_FIRM"));
 
-        if (isTeacherOrAdmin) {
+        if (isPrivileged) {
             return ResponseEntity.ok(Map.of("ok", true)); // Tracking yapılmaz
         }
 

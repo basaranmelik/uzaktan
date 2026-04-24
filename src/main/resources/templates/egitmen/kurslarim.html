@@ -90,6 +90,10 @@
                    class="action-btn ab-edit">
                   <i class="bi bi-journal-text"></i> Ödevler
                 </a>
+                <a th:href="@{/egitmen/kurslarim/{id}/soru-bankasi(id=${course.id})}"
+                   class="action-btn ab-view">
+                  <i class="bi bi-patch-question"></i> Sorular
+                </a>
                 <a th:href="@{/egitmen/zoom/kurslarim/{id}(id=${course.id})}"
                    class="action-btn ab-zoom">
                   <i class="bi bi-camera-video"></i> Zoom

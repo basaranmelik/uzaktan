@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${course.title} + ' — Soru Bankası'">Soru Bankası</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .sb-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .sb-stat {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1rem 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+    .sb-stat-icon {
+      width: 42px; height: 42px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.15rem; flex-shrink: 0;
+    }
+    .sb-stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1; color: var(--primary-800); }
+    .sb-stat-label { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-top: 0.15rem; text-transform: uppercase; letter-spacing: .04em; }
+
+    /* Soru kartları */
+    .q-list { display: flex; flex-direction: column; gap: 1rem; }
+
+    .q-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      transition: box-shadow 0.2s;
+    }
+    .q-card:hover { box-shadow: 0 4px 20px rgba(17,58,113,0.08); }
+
+    .q-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      padding: 1.25rem 1.5rem 0.75rem;
+      gap: 1rem;
+    }
+    .q-number {
+      background: var(--primary-600);
+      color: #fff;
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 800;
+      flex-shrink: 0;
+    }
+    .q-text {
+      flex: 1;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--primary-900);
+      line-height: 1.5;
+      word-break: break-word;
+    }
+    .q-actions {
+      display: flex; gap: 0.35rem; flex-shrink: 0;
+    }
+
+    /* Şıklar grid */
+    .q-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem 1rem;
+      padding: 0 1.5rem 1rem;
+      margin-left: 44px;
+    }
+    @media (max-width: 600px) {
+      .q-options { grid-template-columns: 1fr; margin-left: 0; }
+      .q-card-header { flex-wrap: wrap; }
+    }
+
+    .q-option {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: var(--bg-alt);
+      border: 1px solid transparent;
+      line-height: 1.4;
+    }
+    .q-option.correct {
+      background: #ebfbee;
+      border-color: #b2f2bb;
+      color: #2b8a3e;
+      font-weight: 600;
+    }
+    .q-option-letter {
+      font-weight: 800;
+      font-size: 0.78rem;
+      min-width: 18px;
+      flex-shrink: 0;
+    }
+
+    /* Açıklama */
+    .q-explanation {
+      margin: 0 1.5rem 1rem;
+      margin-left: calc(44px + 1.5rem);
+      padding: 0.75rem 1rem;
+      background: #fff9db;
+      border: 1px solid #ffe066;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: #664d03;
+      line-height: 1.5;
+    }
+    .q-explanation i { margin-right: 0.35rem; }
+
+    @media (max-width: 600px) {
+      .q-explanation { margin-left: 1.5rem; }
+    }
+
+    /* Arama kutusu */
+    .sb-search {
+      position: relative;
+      max-width: 360px;
+    }
+    .sb-search input {
+      width: 100%;
+      padding: 0.6rem 1rem 0.6rem 2.4rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 0.88rem;
+      background: var(--bg);
+      transition: border-color 0.2s;
+    }
+    .sb-search input:focus {
+      outline: none;
+      border-color: var(--primary-600);
+    }
+    .sb-search i {
+      position: absolute;
+      left: 0.85rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/egitmen/panel}">Eğitmen Paneli</a> <span class="separator">›</span>
+      <a th:href="@{/egitmen/kurslarim}">Kurslarım</a> <span class="separator">›</span>
+      <span class="current" th:text="${course.title}">Kurs</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <h1><i class="bi bi-patch-question-fill"></i> Soru Bankası</h1>
+        <p style="margin:0;" th:text="${course.title}">Kurs Adı</p>
+      </div>
+      <a th:href="@{/egitmen/kurslarim/{id}/soru-bankasi/yeni(id=${course.id})}"
+         class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Yeni Soru Ekle
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    <!-- İstatistik -->
+    <div class="sb-stats">
+      <div class="sb-stat">
+        <div class="sb-stat-icon" style="background:#e7f5ff;color:#1971c2;">
+          <i class="bi bi-patch-question-fill"></i>
+        </div>
+        <div>
+          <div class="sb-stat-value" th:text="${#lists.size(questions)}">0</div>
+          <div class="sb-stat-label">Toplam Soru</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Arama -->
+    <div th:if="${!#lists.isEmpty(questions)}"
+         style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+      <div class="sb-search">
+        <i class="bi bi-search"></i>
+        <input type="text" id="questionSearch" placeholder="Sorularda ara...">
+      </div>
+      <div style="font-size:0.85rem;color:var(--text-muted);">
+        <span id="visibleCount" th:text="${#lists.size(questions)}">0</span> soru gösteriliyor
+      </div>
+    </div>
+
+    <!-- Soru yoksa -->
+    <div th:if="${#lists.isEmpty(questions)}"
+         class="text-center" style="padding:4rem;color:var(--text-muted);">
+      <div style="font-size:3rem;margin-bottom:1rem;"><i class="bi bi-patch-question"></i></div>
+      <p>Bu kursa henüz soru eklenmemiş.</p>
+      <a th:href="@{/egitmen/kurslarim/{id}/soru-bankasi/yeni(id=${course.id})}"
+         class="btn btn-primary" style="margin-top:1rem;">
+        İlk Soruyu Ekle →
+      </a>
+    </div>
+
+    <!-- Soru Listesi -->
+    <div th:if="${!#lists.isEmpty(questions)}" class="q-list" id="questionList">
+
+      <div th:each="q, stat : ${questions}" class="q-card" th:data-search="${q.questionText}">
+
+        <!-- Soru başlığı + aksiyonlar -->
+        <div class="q-card-header">
+          <div class="q-number" th:text="${stat.count}">1</div>
+          <div class="q-text" th:text="${q.questionText}">Soru metni buraya gelecek</div>
+          <div class="q-actions">
+            <a th:href="@{/egitmen/sorular/{id}/duzenle(id=${q.id})}"
+               class="action-btn ab-edit" title="Düzenle">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <form th:action="@{/egitmen/sorular/{id}/sil(id=${q.id})}" method="post" style="margin:0;">
+              <button type="submit" class="action-btn ab-del" title="Sil"
+                      onclick="return confirm('Bu soruyu silmek istediğinize emin misiniz?')">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Şıklar -->
+        <div class="q-options">
+          <div class="q-option" th:classappend="${q.correctOption.name() == 'A'} ? ' correct'">
+            <span class="q-option-letter">A)</span>
+            <span th:text="${q.optionA}">Şık A</span>
+          </div>
+          <div class="q-option" th:classappend="${q.correctOption.name() == 'B'} ? ' correct'">
+            <span class="q-option-letter">B)</span>
+            <span th:text="${q.optionB}">Şık B</span>
+          </div>
+          <div class="q-option" th:classappend="${q.correctOption.name() == 'C'} ? ' correct'">
+            <span class="q-option-letter">C)</span>
+            <span th:text="${q.optionC}">Şık C</span>
+          </div>
+          <div class="q-option" th:classappend="${q.correctOption.name() == 'D'} ? ' correct'">
+            <span class="q-option-letter">D)</span>
+            <span th:text="${q.optionD}">Şık D</span>
+          </div>
+          <div class="q-option" th:classappend="${q.correctOption.name() == 'E'} ? ' correct'"
+               style="grid-column: span 2;">
+            <span class="q-option-letter">E)</span>
+            <span th:text="${q.optionE}">Şık E</span>
+          </div>
+        </div>
+
+        <!-- Açıklama -->
+        <div th:if="${q.explanation != null and !#strings.isEmpty(q.explanation)}" class="q-explanation">
+          <i class="bi bi-lightbulb-fill"></i>
+          <span th:text="${q.explanation}">Açıklama metni</span>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+<script>
+  // Soru arama
+  const searchInput = document.getElementById('questionSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      const term = this.value.toLowerCase();
+      const cards = document.querySelectorAll('.q-card');
+      let visible = 0;
+      cards.forEach(function (card) {
+        const text = card.getAttribute('data-search').toLowerCase();
+        const match = text.includes(term);
+        card.style.display = match ? '' : 'none';
+        if (match) visible++;
+      });
+      const countEl = document.getElementById('visibleCount');
+      if (countEl) countEl.textContent = visible;
+    });
+  }
+</script>
+</body>
+</html>

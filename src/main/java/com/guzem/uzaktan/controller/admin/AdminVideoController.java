@@ -105,9 +105,9 @@ public class AdminVideoController {
 
     private void ensureCanManageCourse(Long courseId, Long currentUserId, UserDetails principal) {
         var course = courseService.findById(courseId);
-        boolean isAdmin = principal.getAuthorities().stream()
-                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
-        if (isAdmin) {
+        boolean isAdminOrFirm = principal.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()) || "ROLE_FIRM".equals(a.getAuthority()));
+        if (isAdminOrFirm) {
             return;
         }
         if (course.getInstructorId() == null || !course.getInstructorId().equals(currentUserId)) {

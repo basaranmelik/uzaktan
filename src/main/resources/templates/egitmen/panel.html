@@ -191,17 +191,21 @@
         </div>
 
         <!-- Aksiyonlar -->
-        <div class="pk-actions">
+        <div class="pk-actions" style="grid-template-columns: 1fr 1fr;">
           <a th:href="@{/egitmen/kurslarim/{id}/odevler(id=${course.id})}"
              class="btn btn-primary" style="font-size:0.85rem;">
             <i class="bi bi-journal-text"></i> Ödevler
+          </a>
+          <a th:href="@{/egitmen/kurslarim/{id}/soru-bankasi(id=${course.id})}"
+             class="btn btn-secondary" style="font-size:0.85rem;">
+            <i class="bi bi-patch-question-fill"></i> Soru Bankası
           </a>
           <a th:href="@{/egitmen/zoom/kurslarim/{id}(id=${course.id})}"
              class="btn btn-secondary" style="font-size:0.85rem;">
             <i class="bi bi-camera-video"></i> Zoom
           </a>
           <a th:href="@{/egitimler/izle/{id}(id=${course.id})}"
-             class="btn btn-primary" style="grid-column: span 2; font-size:0.85rem;">
+             class="btn btn-primary" style="font-size:0.85rem;">
             <i class="bi bi-play-circle-fill"></i> Videoları İzle
           </a>
         </div>
