@@ -2,7 +2,7 @@ package com.guzem.uzaktan.controller.admin;
 
 import com.guzem.uzaktan.dto.request.InstructorCreateRequest;
 import com.guzem.uzaktan.dto.request.InstructorUpdateRequest;
-import com.guzem.uzaktan.service.InstructorService;
+import com.guzem.uzaktan.service.instructor.InstructorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;

@@ -1,6 +1,6 @@
 package com.guzem.uzaktan.security;
 
-import com.guzem.uzaktan.service.UserService;
+import com.guzem.uzaktan.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent;

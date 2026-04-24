@@ -1,6 +1,6 @@
 package com.guzem.uzaktan.scheduler;
 
-import com.guzem.uzaktan.service.CourseService;
+import com.guzem.uzaktan.service.course.CourseService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;

@@ -1,6 +1,6 @@
 package com.guzem.uzaktan.controller.admin;
 
-import com.guzem.uzaktan.service.CourseReviewService;
+import com.guzem.uzaktan.service.course.CourseReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;

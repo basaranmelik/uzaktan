@@ -1,10 +1,10 @@
 package com.guzem.uzaktan.config;
 
-import com.guzem.uzaktan.model.CourseCategory;
-import com.guzem.uzaktan.model.Role;
-import com.guzem.uzaktan.model.User;
-import com.guzem.uzaktan.repository.CourseCategoryRepository;
-import com.guzem.uzaktan.repository.UserRepository;
+import com.guzem.uzaktan.model.course.CourseCategory;
+import com.guzem.uzaktan.model.common.Role;
+import com.guzem.uzaktan.model.common.User;
+import com.guzem.uzaktan.repository.course.CourseCategoryRepository;
+import com.guzem.uzaktan.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.ApplicationArguments;

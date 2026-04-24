@@ -122,6 +122,14 @@
     <form id="courseForm" th:action="@{/admin/kurslar/{id}(id=${course.id})}"
           th:object="${courseUpdateRequest}" method="post" enctype="multipart/form-data">
 
+      <!-- Genel Hata Mesajı -->
+      <div th:if="${errorMessage}"
+           style="display:flex;align-items:center;gap:0.65rem;padding:1rem 1.25rem;margin-bottom:1.25rem;
+                  background:#fff5f5;border:1px solid #fca5a5;border-radius:10px;color:#991b1b;font-weight:600;font-size:0.9rem;">
+        <i class="bi bi-exclamation-triangle-fill" style="font-size:1.1rem;flex-shrink:0;"></i>
+        <span th:text="${errorMessage}"></span>
+      </div>
+
       <!-- Kurs Türü -->
       <div class="form-section">
         <div class="form-section-title"><i class="bi bi-ui-checks-grid"></i> Kurs Türü</div>
@@ -323,18 +331,131 @@
         <input type="hidden" name="scheduleDays" id="scheduleDays" th:value="${course.scheduleDays}">
       </div>
 
-      <!-- Manuel Müfredat (Yüzyüze + Uzaktan Örgün) -->
-      <div class="form-section" data-show-for="FACE_TO_FACE,REMOTE_FORMAL" style="display:none;">
-        <div class="form-section-title"><i class="bi bi-list-check"></i> Müfredat</div>
-        <div class="form-group">
-          <label>Müfredat Maddeleri</label>
-          <textarea th:field="*{manualCurriculum}" class="form-control" rows="8"
-                    placeholder="Her satıra bir madde yazın"></textarea>
-          <div class="current-val" th:if="${course.manualCurriculum != null}">
-            <i class="bi bi-info-circle"></i> Her satır kurs detayında ayrı madde olarak gösterilir.
-          </div>
-        </div>
+      <!-- Müfredat Modülleri — Tüm Kurs Tipleri -->
+      <div class="form-section" id="field-manual-curriculum">
+        <div class="form-section-title"><i class="bi bi-list-check"></i> Kurs Müfredatı</div>
+        <p style="font-size:0.82rem;color:var(--text-muted);margin:-0.5rem 0 1.25rem;">
+          <i class="bi bi-info-circle"></i> Her modül bir bölümü temsil eder. Modül başlığı + açıklama + konular ekleyin.
+        </p>
+
+        <!-- Hidden field — JSON olarak gönderilir -->
+        <input type="hidden" name="manualCurriculum" id="manualCurriculumJson">
+
+        <div id="curriculum-builder"></div>
+
+        <button type="button" id="add-module-btn"
+                style="margin-top:0.75rem;display:inline-flex;align-items:center;gap:0.5rem;padding:0.55rem 1.1rem;border:1.5px dashed var(--primary-400);border-radius:8px;background:var(--primary-50);color:var(--primary-700);font-weight:600;font-size:0.88rem;cursor:pointer;transition:all 0.15s;"
+                onmouseover="this.style.background='var(--primary-100)'" onmouseout="this.style.background='var(--primary-50)'">
+          <i class="bi bi-plus-circle"></i> Modül Ekle
+        </button>
       </div>
+
+      <style>
+        .cm-module { border:1px solid var(--border);border-radius:10px;background:var(--bg-alt);margin-bottom:1rem;overflow:hidden; }
+        .cm-module-head { display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1rem;background:var(--bg);border-bottom:1px solid var(--border); }
+        .cm-module-num { display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;border-radius:50%;background:var(--primary-600);color:#fff;font-size:0.75rem;font-weight:700;flex-shrink:0; }
+        .cm-module-head input { flex:1;border:none;background:transparent;font-size:0.95rem;font-weight:600;color:var(--text);outline:none;padding:0; }
+        .cm-module-head input::placeholder { color:var(--text-muted);font-weight:400; }
+        .cm-module-body { padding:1rem; }
+        .cm-desc { width:100%;border:1px solid var(--border);border-radius:7px;padding:0.6rem 0.85rem;font-size:0.87rem;background:var(--bg);color:var(--text);resize:vertical;font-family:inherit;transition:border-color 0.15s;margin-bottom:0.85rem;box-sizing:border-box; }
+        .cm-desc:focus { outline:none;border-color:var(--primary-400); }
+        .cm-topics { display:flex;flex-direction:column;gap:0.5rem; }
+        .cm-topic-row { display:flex;gap:0.4rem;align-items:center; }
+        .cm-topic-input { flex:1;border:1px solid var(--border);border-radius:7px;padding:0.45rem 0.75rem;font-size:0.85rem;background:var(--bg);color:var(--text);outline:none;transition:border-color 0.15s; }
+        .cm-topic-input:focus { border-color:var(--primary-400); }
+        .cm-topic-remove { background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;padding:0.25rem;transition:color 0.15s; }
+        .cm-topic-remove:hover { color:#dc2626; }
+        .cm-add-topic { font-size:0.8rem;color:var(--primary-600);font-weight:600;background:none;border:none;cursor:pointer;padding:0.35rem 0;display:inline-flex;align-items:center;gap:0.3rem;margin-top:0.25rem; }
+        .cm-add-topic:hover { color:var(--primary-800); }
+        .cm-delete-module { background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.1rem;padding:0.25rem 0.5rem;border-radius:6px;transition:all 0.15s;margin-left:auto; }
+        .cm-delete-module:hover { background:#fee2e2;color:#dc2626; }
+      </style>
+
+      <script th:inline="javascript">
+        (function() {
+          const builder = document.getElementById('curriculum-builder');
+          const jsonField = document.getElementById('manualCurriculumJson');
+
+          function escHtml(str) {
+            return String(str||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+          }
+
+          function addTopic(topicsDiv, val) {
+            const row = document.createElement('div');
+            row.className = 'cm-topic-row';
+            row.innerHTML = '<input class="cm-topic-input" type="text" placeholder="Konu başlığı...">' +
+                            '<button type="button" class="cm-topic-remove" title="Sil"><i class="bi bi-x-lg"></i></button>';
+            if (val) row.querySelector('.cm-topic-input').value = val;
+            row.querySelector('.cm-topic-remove').onclick = function() { row.remove(); };
+            topicsDiv.appendChild(row);
+            return row.querySelector('.cm-topic-input');
+          }
+
+          function renumberModules() {
+            builder.querySelectorAll('.cm-module-num').forEach(function(n, i) {
+              n.textContent = String(i + 1).padStart(2, '0');
+            });
+          }
+
+          function addModule(data) {
+            data = data || {};
+            const idx = builder.querySelectorAll('.cm-module').length + 1;
+            const card = document.createElement('div');
+            card.className = 'cm-module';
+            const safeTitle = escHtml(data.title || '');
+            const safeDesc = escHtml(data.description || '');
+            card.innerHTML =
+              '<div class="cm-module-head">' +
+                '<div class="cm-module-num">' + String(idx).padStart(2,'0') + '</div>' +
+                '<input class="cm-title-input" type="text" placeholder="Modül başlığı..." value="' + safeTitle + '">' +
+                '<button type="button" class="cm-delete-module" title="Modülü Sil"><i class="bi bi-trash3"></i></button>' +
+              '</div>' +
+              '<div class="cm-module-body">' +
+                '<textarea class="cm-desc" rows="2" placeholder="Modül açıklaması (isteğe bağlı)...">' + safeDesc + '</textarea>' +
+                '<div class="cm-topics"></div>' +
+                '<button type="button" class="cm-add-topic"><i class="bi bi-plus-sm"></i> Konu Ekle</button>' +
+              '</div>';
+            card.querySelector('.cm-delete-module').onclick = function() { card.remove(); renumberModules(); };
+            const topicsDiv = card.querySelector('.cm-topics');
+            card.querySelector('.cm-add-topic').onclick = function() { addTopic(topicsDiv, '').focus(); };
+            var topics = data.topics || [];
+            topics.forEach(function(t) { addTopic(topicsDiv, t); });
+            if (!topics.length) addTopic(topicsDiv, '');
+            builder.appendChild(card);
+          }
+
+          document.getElementById('add-module-btn').onclick = function() { addModule({}); };
+
+          // Form gönderiminde JSON oluştur
+          document.getElementById('courseForm').addEventListener('submit', function() {
+            var modules = [];
+            builder.querySelectorAll('.cm-module').forEach(function(card) {
+              var title = card.querySelector('.cm-title-input').value.trim();
+              var description = card.querySelector('.cm-desc').value.trim();
+              var topics = Array.from(card.querySelectorAll('.cm-topic-input'))
+                .map(function(i) { return i.value.trim(); }).filter(function(v) { return v; });
+              if (title) modules.push({ title: title, description: description, topics: topics });
+            });
+            jsonField.value = JSON.stringify(modules);
+          }, true);
+
+          // Mevcut veriyi yükle
+          var existing = /*[[${course.manualCurriculum}]]*/ null;
+          if (existing && typeof existing === 'string' && existing.trim().startsWith('[')) {
+            try {
+              var parsed = JSON.parse(existing);
+              if (Array.isArray(parsed) && parsed.length > 0) {
+                parsed.forEach(function(m) { addModule(m); });
+              } else {
+                addModule({});
+              }
+            } catch(e) { addModule({}); }
+          } else {
+            addModule({});
+          }
+        })();
+      </script>
+
 
       <!-- Konum (Sadece Yüzyüze) -->
       <div class="form-section" data-show-for="FACE_TO_FACE" style="display:none;">
@@ -386,33 +507,175 @@
 
       <!-- Eğitmen -->
       <div class="form-section">
-        <div class="form-section-title"><i class="bi bi-person-workspace"></i> Eğitmen Bilgisi</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Eğitmen Adı (görüntülenen)</label>
-            <select th:field="*{instructorName}" class="form-control">
-              <option value="">— Değiştirme —</option>
-              <option th:each="ins : ${instructors}"
-                      th:value="${ins.name}"
-                      th:text="${ins.name}"
-                      th:selected="${course.instructorName != null and course.instructorName == ins.name}"></option>
-            </select>
-            <div class="current-val" th:if="${course.instructorName != null}">
-              <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.instructorName}">—</strong>
+        <div class="form-section-title"><i class="bi bi-person-workspace"></i> Eğitmenler</div>
+
+        <div class="form-group">
+          <label>Eğitmenler <span style="color:var(--text-muted);font-weight:400;">(birden fazla seçilebilir)</span></label>
+          <div th:if="${course.instructorName != null}" class="current-val" style="margin-bottom:0.5rem;">
+            <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.instructorName}">—</strong>
+          </div>
+          <div class="ims-wrap" id="imsWrap">
+            <div class="ims-trigger" id="imsTrigger" tabindex="0" role="button">
+              <div class="ims-tags" id="imsTags"><span class="ims-ph">Eğitmen seçin...</span></div>
+              <i class="bi bi-chevron-down ims-arrow" id="imsArrow"></i>
+            </div>
+            <div class="ims-drop" id="imsDrop">
+              <div class="ims-search-wrap">
+                <i class="bi bi-search"></i>
+                <input type="text" class="ims-search-input" id="imsSearch" placeholder="Eğitmen ara..." autocomplete="off">
+              </div>
+              <div class="ims-list" id="imsList">
+                <th:block th:each="ins : ${instructors}">
+                  <div class="ims-item"
+                       th:data-id="${ins.id}"
+                       th:data-name="${ins.name}"
+                       th:classappend="${courseUpdateRequest.instructorIds != null and courseUpdateRequest.instructorIds.contains(ins.id)} ? ' ims-selected'">
+                    <input type="checkbox" name="instructorIds" th:value="${ins.id}" th:id="'chk-' + ${ins.id}"
+                           th:checked="${courseUpdateRequest.instructorIds != null and courseUpdateRequest.instructorIds.contains(ins.id)}">
+                    <label th:for="'chk-' + ${ins.id}" th:text="${ins.name}"></label>
+                  </div>
+                </th:block>
+              </div>
             </div>
           </div>
-          <div class="form-group">
-            <label>Sistem Kullanıcısı (Öğretmen)</label>
-            <select th:field="*{instructorId}" class="form-control">
-              <option value="">— Değiştirme —</option>
-              <option th:each="t : ${teachers}"
-                      th:value="${t.id}"
-                      th:text="${t.firstName + ' ' + t.lastName + ' (' + t.email + ')'}"
-                      th:selected="${course.instructorId != null and course.instructorId == t.id}"></option>
-            </select>
-          </div>
+          <small style="color:var(--text-muted);margin-top:0.4rem;display:block;">
+            <i class="bi bi-info-circle"></i> Seçilen eğitmenler kurs sayfasında görüntülenecektir. İlk seçilen ana eğitmen olarak atanır.
+          </small>
+        </div>
+
+        <div class="form-group" style="margin-top:0.75rem;">
+          <label>Sistem Kullanıcısı (Öğretmen) <span style="color:var(--text-muted);font-weight:400;">(opsiyonel)</span></label>
+          <select th:field="*{instructorId}" class="form-control">
+            <option value="">— Değiştirme —</option>
+            <option th:each="t : ${teachers}"
+                    th:value="${t.id}"
+                    th:text="${t.firstName + ' ' + t.lastName + ' (' + t.email + ')'}"
+                    th:selected="${course.instructorId != null and course.instructorId == t.id}"></option>
+          </select>
         </div>
       </div>
+
+      <style>
+        .ims-wrap { position:relative; }
+        .ims-trigger {
+          min-height:42px; padding:0.45rem 2.5rem 0.45rem 0.75rem;
+          border:1px solid var(--border); border-radius:8px;
+          background:var(--bg); cursor:pointer;
+          display:flex; align-items:center; flex-wrap:wrap; gap:0.4rem;
+          position:relative; transition:border-color 0.15s; user-select:none;
+        }
+        .ims-trigger:focus, .ims-wrap.open .ims-trigger { border-color:var(--primary-400); outline:none; }
+        .ims-arrow { position:absolute; right:0.75rem; top:50%; transform:translateY(-50%); color:var(--text-muted); transition:transform 0.2s; pointer-events:none; }
+        .ims-wrap.open .ims-arrow { transform:translateY(-50%) rotate(180deg); }
+        .ims-ph { color:var(--text-muted); font-size:0.9rem; }
+        .ims-tag {
+          display:inline-flex; align-items:center; gap:0.3rem;
+          background:var(--primary-100); color:var(--primary-700);
+          padding:0.2rem 0.55rem; border-radius:20px; font-size:0.82rem; font-weight:600;
+        }
+        .ims-tag-remove { background:none; border:none; cursor:pointer; color:var(--primary-500); padding:0 0 0 0.15rem; font-size:0.9rem; line-height:1; display:flex; align-items:center; }
+        .ims-tag-remove:hover { color:var(--primary-800); }
+        .ims-drop {
+          position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:200;
+          background:var(--bg); border:1px solid var(--border); border-radius:10px;
+          box-shadow:0 4px 24px rgba(0,0,0,0.08); display:none; overflow:hidden;
+        }
+        .ims-wrap.open .ims-drop { display:block; }
+        .ims-search-wrap {
+          display:flex; align-items:center; gap:0.5rem;
+          padding:0.6rem 0.85rem; border-bottom:1px solid var(--gray-100);
+        }
+        .ims-search-wrap i { color:var(--text-muted); flex-shrink:0; }
+        .ims-search-input { border:none; outline:none; flex:1; font-size:0.9rem; background:transparent; color:var(--text); }
+        .ims-list { max-height:240px; overflow-y:auto; }
+        .ims-item {
+          display:flex; align-items:center; gap:0.65rem;
+          padding:0.6rem 0.85rem; cursor:pointer; transition:background 0.12s;
+        }
+        .ims-item:hover { background:var(--primary-50); }
+        .ims-item.ims-selected { background:var(--primary-50); }
+        .ims-item input[type=checkbox] { accent-color:var(--primary-600); width:16px; height:16px; cursor:pointer; flex-shrink:0; pointer-events:none; }
+        .ims-item label { font-size:0.9rem; color:var(--text); cursor:pointer; margin:0; flex:1; }
+        .ims-item.ims-selected label { font-weight:600; color:var(--primary-700); }
+        .ims-empty { padding:1.25rem; text-align:center; color:var(--text-muted); font-size:0.88rem; }
+      </style>
+      <script>
+        (function() {
+          var wrap = document.getElementById('imsWrap');
+          var trigger = document.getElementById('imsTrigger');
+          var tagsEl = document.getElementById('imsTags');
+          var search = document.getElementById('imsSearch');
+          var list = document.getElementById('imsList');
+          var emptyEl = null;
+
+          function getItems() { return Array.from(list.querySelectorAll('.ims-item')); }
+
+          function renderTags() {
+            var selected = getItems().filter(function(i) { return i.querySelector('input').checked; });
+            tagsEl.innerHTML = '';
+            if (!selected.length) {
+              tagsEl.innerHTML = '<span class="ims-ph">Eğitmen seçin...</span>';
+              return;
+            }
+            selected.forEach(function(item) {
+              var id = item.dataset.id;
+              var name = item.dataset.name;
+              var tag = document.createElement('span');
+              tag.className = 'ims-tag';
+              tag.innerHTML = name + '<button type="button" class="ims-tag-remove" aria-label="Kaldır"><i class="bi bi-x"></i></button>';
+              tag.querySelector('.ims-tag-remove').addEventListener('click', function(e) {
+                e.stopPropagation();
+                var cb = list.querySelector('input[value="' + id + '"]');
+                if (cb) { cb.checked = false; cb.closest('.ims-item').classList.remove('ims-selected'); }
+                renderTags();
+              });
+              tagsEl.appendChild(tag);
+            });
+          }
+
+          getItems().forEach(function(item) {
+            item.addEventListener('click', function(e) {
+              var cb = item.querySelector('input');
+              if (e.target !== cb) cb.checked = !cb.checked;
+              item.classList.toggle('ims-selected', cb.checked);
+              renderTags();
+            });
+          });
+
+          trigger.addEventListener('click', function() {
+            wrap.classList.toggle('open');
+            if (wrap.classList.contains('open')) { setTimeout(function(){ search.focus(); }, 50); }
+          });
+
+          trigger.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); wrap.classList.toggle('open'); }
+            if (e.key === 'Escape') wrap.classList.remove('open');
+          });
+
+          search.addEventListener('input', function() {
+            var q = this.value.toLowerCase();
+            var any = false;
+            getItems().forEach(function(item) {
+              var match = item.dataset.name.toLowerCase().includes(q);
+              item.style.display = match ? '' : 'none';
+              if (match) any = true;
+            });
+            if (emptyEl) emptyEl.remove();
+            if (!any) {
+              emptyEl = document.createElement('div');
+              emptyEl.className = 'ims-empty';
+              emptyEl.textContent = 'Sonuç bulunamadı.';
+              list.appendChild(emptyEl);
+            } else { emptyEl = null; }
+          });
+
+          document.addEventListener('click', function(e) {
+            if (!wrap.contains(e.target)) wrap.classList.remove('open');
+          });
+
+          renderTags();
+        })();
+      </script>
 
       <!-- Butonlar -->
       <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">

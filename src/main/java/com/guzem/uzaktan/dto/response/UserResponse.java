@@ -1,6 +1,6 @@
 package com.guzem.uzaktan.dto.response;
 
-import com.guzem.uzaktan.model.Role;
+import com.guzem.uzaktan.model.common.Role;
 import lombok.Builder;
 import lombok.Getter;
 

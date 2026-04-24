@@ -3,14 +3,9 @@ package com.guzem.uzaktan.controller.admin;
 import com.guzem.uzaktan.dto.request.CourseCreateRequest;
 import com.guzem.uzaktan.dto.request.CourseUpdateRequest;
 import com.guzem.uzaktan.dto.response.CourseResponse;
-import com.guzem.uzaktan.model.CourseLevel;
-import com.guzem.uzaktan.model.CourseStatus;
-import com.guzem.uzaktan.model.CourseType;
-import com.guzem.uzaktan.model.Role;
-import com.guzem.uzaktan.service.CourseCategoryService;
-import com.guzem.uzaktan.service.CourseService;
-import com.guzem.uzaktan.service.InstructorService;
-import com.guzem.uzaktan.service.UserService;
+import com.guzem.uzaktan.dto.response.InstructorResponse;
+import com.guzem.uzaktan.model.course.CourseStatus;
+import com.guzem.uzaktan.service.course.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -24,13 +19,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/admin/kurslar")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('ADMIN', 'FIRM')")
 public class AdminCourseController {
 
     private final CourseService courseService;
-    private final CourseCategoryService categoryService;
-    private final UserService userService;
-    private final InstructorService instructorService;
 
     @GetMapping
     public String courses(@RequestParam(defaultValue = "0") int page,
@@ -44,11 +36,6 @@ public class AdminCourseController {
     @GetMapping("/yeni")
     public String newCourseForm(Model model) {
         model.addAttribute("courseCreateRequest", new CourseCreateRequest());
-        model.addAttribute("categories", categoryService.findAll());
-        model.addAttribute("levels", CourseLevel.values());
-        model.addAttribute("courseTypes", CourseType.values());
-        model.addAttribute("teachers", userService.findUsersByRole(Role.TEACHER));
-        model.addAttribute("instructors", instructorService.findAll());
         return "admin/course-form";
     }
 
@@ -59,16 +46,16 @@ public class AdminCourseController {
                                Model model,
                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("categories", categoryService.findAll());
-            model.addAttribute("levels", CourseLevel.values());
-            model.addAttribute("courseTypes", CourseType.values());
-            model.addAttribute("teachers", userService.findUsersByRole(Role.TEACHER));
-            model.addAttribute("instructors", instructorService.findAll());
             return "admin/course-form";
         }
-        courseService.create(request, image);
-        redirectAttributes.addFlashAttribute("successMessage", "Kurs başarıyla oluşturuldu.");
-        return "redirect:/admin/kurslar";
+        try {
+            courseService.create(request, image);
+            redirectAttributes.addFlashAttribute("successMessage", "Kurs başarıyla oluşturuldu.");
+            return "redirect:/admin/kurslar";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "admin/course-form";
+        }
     }
 
     @GetMapping("/{id}/duzenle")
@@ -97,13 +84,12 @@ public class AdminCourseController {
         dto.setScheduleEndTime(course.getScheduleEndTime());
         dto.setManualCurriculum(course.getManualCurriculum());
         dto.setCertificateDeadline(course.getCertificateDeadline());
+        if (course.getInstructors() != null && !course.getInstructors().isEmpty()) {
+            dto.setInstructorIds(course.getInstructors().stream()
+                    .map(InstructorResponse::getId)
+                    .collect(java.util.stream.Collectors.toList()));
+        }
         model.addAttribute("courseUpdateRequest", dto);
-        model.addAttribute("categories", categoryService.findAll());
-        model.addAttribute("levels", CourseLevel.values());
-        model.addAttribute("statuses", CourseStatus.values());
-        model.addAttribute("courseTypes", CourseType.values());
-        model.addAttribute("teachers", userService.findUsersByRole(Role.TEACHER));
-        model.addAttribute("instructors", instructorService.findAll());
         return "admin/course-edit";
     }
 
@@ -116,17 +102,17 @@ public class AdminCourseController {
                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("course", courseService.findById(id));
-            model.addAttribute("categories", categoryService.findAll());
-            model.addAttribute("levels", CourseLevel.values());
-            model.addAttribute("statuses", CourseStatus.values());
-            model.addAttribute("courseTypes", CourseType.values());
-            model.addAttribute("teachers", userService.findUsersByRole(Role.TEACHER));
-            model.addAttribute("instructors", instructorService.findAll());
             return "admin/course-edit";
         }
-        courseService.update(id, request, image);
-        redirectAttributes.addFlashAttribute("successMessage", "Kurs güncellendi.");
-        return "redirect:/admin/kurslar";
+        try {
+            courseService.update(id, request, image);
+            redirectAttributes.addFlashAttribute("successMessage", "Kurs güncellendi.");
+            return "redirect:/admin/kurslar";
+        } catch (IllegalArgumentException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            model.addAttribute("course", courseService.findById(id));
+            return "admin/course-edit";
+        }
     }
 
     @PostMapping("/{id}/durum")

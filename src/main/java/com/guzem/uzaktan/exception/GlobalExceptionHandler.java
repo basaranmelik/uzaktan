@@ -1,5 +1,8 @@
 package com.guzem.uzaktan.exception;
 
+import com.guzem.uzaktan.exception.course.CourseFullException;
+import com.guzem.uzaktan.exception.course.DuplicateEnrollmentException;
+import com.guzem.uzaktan.exception.admin.DuplicateSubmissionException;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;

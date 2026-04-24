@@ -1,6 +1,6 @@
 package com.guzem.uzaktan.dto.response;
 
-import com.guzem.uzaktan.model.SubmissionStatus;
+import com.guzem.uzaktan.model.admin.SubmissionStatus;
 import lombok.Builder;
 import lombok.Getter;
 

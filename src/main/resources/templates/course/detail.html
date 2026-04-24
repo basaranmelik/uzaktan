@@ -514,24 +514,54 @@
           </span>
         </div>
 
-        <!-- Eğitmen Kartı -->
-        <div th:if="${course.instructorName != null and !#strings.isEmpty(course.instructorName)}" class="cd-instructor-card">
-          <div th:if="${course.instructorImage != null}" class="cd-instructor-avatar" style="padding:0; overflow:hidden; background:#fff;">
-            <img th:src="@{${course.instructorImage}}" alt="" style="width:100%;height:100%;object-fit:cover;">
+        <!-- Eğitmenler -->
+        <!-- Çoklu eğitmen varsa hepsini eşit göster -->
+        <div th:if="${course.instructors != null and !course.instructors.isEmpty()}" style="margin-top:1.25rem;">
+          <div class="cd-instructor-label" style="margin-bottom:0.75rem; font-size:0.75rem;">EĞİTMENLER</div>
+          <div style="display:flex; flex-direction:column; gap:0.75rem;">
+            <div th:each="instructor : ${course.instructors}" class="cd-instructor-card" style="margin:0;">
+              <div th:if="${instructor.photoUrl != null}" class="cd-instructor-avatar" style="padding:0; overflow:hidden; background:#fff;">
+                <img th:src="@{${instructor.photoUrl}}" alt="" style="width:100%;height:100%;object-fit:cover;">
+              </div>
+              <div th:if="${instructor.photoUrl == null}" class="cd-instructor-avatar" th:text="${#strings.substring(instructor.name, 0, 1)}">E</div>
+              <div class="cd-instructor-info">
+                <div class="cd-instructor-name" th:text="${instructor.name}">Eğitmen Adı</div>
+                <div th:if="${instructor.expertise != null}" style="font-size:0.8rem; color:rgba(255,255,255,0.7);" th:text="${instructor.expertise}">Uzmanlık</div>
+                <div class="cd-instructor-stats" th:if="${instructor.courseCount != null or instructor.studentCount != null}">
+                  <span th:if="${instructor.courseCount != null and instructor.courseCount > 0}">
+                    <i class="bi bi-journal-bookmark-fill"></i>
+                    <span th:text="${instructor.courseCount}">0</span> Aktif Kurs
+                  </span>
+                  <span th:if="${instructor.studentCount != null and instructor.studentCount > 0}">
+                    <i class="bi bi-people-fill"></i>
+                    <span th:text="${instructor.studentCount}">0</span> Öğrenci
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-          <div th:if="${course.instructorImage == null}" class="cd-instructor-avatar" th:text="${#strings.substring(course.instructorName, 0, 1)}">E</div>
-          <div class="cd-instructor-info">
-            <div class="cd-instructor-label">Eğitmen</div>
-            <div class="cd-instructor-name" th:text="${course.instructorName}">Ad Soyad</div>
-            <div class="cd-instructor-stats">
-              <span th:if="${instructorCourseCount != null}">
-                <i class="bi bi-journal-bookmark-fill"></i>
-                <span th:text="${instructorCourseCount}">0</span> Aktif Kurs
-              </span>
-              <span th:if="${instructorStudentCount != null}">
-                <i class="bi bi-people-fill"></i>
-                <span th:text="${instructorStudentCount}">0</span> Öğrenci
-              </span>
+        </div>
+        <!-- Geriye dönük uyumluluk: sadece instructorName varsa tek kart -->
+        <div th:if="${(course.instructors == null or course.instructors.isEmpty()) and course.instructorName != null and !#strings.isEmpty(course.instructorName)}"
+             style="margin-top:1.25rem;">
+          <div class="cd-instructor-label" style="margin-bottom:0.75rem; font-size:0.75rem;">EĞİTMEN</div>
+          <div class="cd-instructor-card">
+            <div th:if="${course.instructorImage != null}" class="cd-instructor-avatar" style="padding:0; overflow:hidden; background:#fff;">
+              <img th:src="@{${course.instructorImage}}" alt="" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+            <div th:if="${course.instructorImage == null}" class="cd-instructor-avatar" th:text="${#strings.substring(course.instructorName, 0, 1)}">E</div>
+            <div class="cd-instructor-info">
+              <div class="cd-instructor-name" th:text="${course.instructorName}">Ad Soyad</div>
+              <div class="cd-instructor-stats">
+                <span th:if="${instructorCourseCount != null}">
+                  <i class="bi bi-journal-bookmark-fill"></i>
+                  <span th:text="${instructorCourseCount}">0</span> Aktif Kurs
+                </span>
+                <span th:if="${instructorStudentCount != null}">
+                  <i class="bi bi-people-fill"></i>
+                  <span th:text="${instructorStudentCount}">0</span> Öğrenci
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -720,22 +750,142 @@
     <!-- Flash -->
 
 
-    <!-- Yüzyüze / Uzaktan Örgün Eğitim İçeriği -->
-    <div th:if="${(course.courseType != null and course.courseType.name() != 'ONLINE') and course.manualCurriculum != null and !#strings.isEmpty(course.manualCurriculum)}">
+    <!-- ============================================================
+         KURS MÜFREDATı — Tüm Kurs Tipleri (JSON modüller)
+         ============================================================ -->
+    <div th:if="${course.curriculumModules.size() > 0}">
+
+      <!-- Başlık -->
       <div class="cd-section-header">
         <h2 class="cd-section-title">
-          <i class="bi bi-journal-text"></i> Eğitim İçeriği
+          <i class="bi bi-journal-bookmark-fill"></i> Kurs Müfredatı
         </h2>
+        <span style="font-size:0.82rem;color:var(--text-muted);">
+          <i class="bi bi-grid-3x2-gap"></i>
+          <span th:text="${course.curriculumModules.size()}">0</span> Modül
+        </span>
       </div>
-      <div class="cd-rich-content">
-        <p style="white-space:pre-line; text-align: justify;" th:text="${course.manualCurriculum}"></p>
+
+      <!-- Accordion modüller -->
+        <div id="curriculum-accordion" style="display:flex;flex-direction:column;gap:0.85rem;margin-bottom:2.5rem;">
+
+            <div th:each="cm, modSt : ${course.curriculumModules}" class="cm-accord-card" th:id="'module-' + ${modSt.index}">
+
+                <div class="cm-accord-head"
+                     th:onclick="'toggleModule(' + ${modSt.index} + ')'"
+                     th:id="'mhead-' + ${modSt.index}">
+                    <div style="display:flex;align-items:center;gap:0.9rem;flex:1;min-width:0;">
+                        <div class="cm-accord-num"
+                             th:text="'MODÜL ' + ${#strings.toString(modSt.count).length() == 1 ? '0' + modSt.count : modSt.count}">
+                            MODÜL 01
+                        </div>
+                        <div class="cm-accord-title" th:text="${cm.title}">Modül Başlığı</div>
+                    </div>
+                    <div class="cm-accord-chevron" th:id="'chevron-' + ${modSt.index}">
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                </div>
+
+                <div class="cm-accord-body"
+                     th:id="'mbody-' + ${modSt.index}"
+                     style="display:none;">
+
+                    <p th:if="${cm.description != null and !#strings.isEmpty(cm.description)}"
+                       class="cm-accord-desc" th:text="${cm.description}"></p>
+
+                    <div th:if="${cm.topics != null and !cm.topics.isEmpty()}"
+                         class="cm-accord-topics">
+                        <div th:each="topic, tSt : ${cm.topics}" class="cm-accord-topic">
+                            <i class="bi bi-check2" th:style="${tSt.index % 2 == 0} ? 'color:#2b8a3e;' : 'color:#e67700;'"></i>
+                            <span th:text="${topic}">Konu</span>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+      <!-- Accordion CSS -->
+      <style>
+        .cm-accord-card {
+          background: var(--bg);
+          border: 1px solid var(--border);
+          border-radius: 12px;
+          overflow: hidden;
+          box-shadow: var(--shadow-sm);
+          transition: box-shadow var(--transition-fast);
+        }
+        .cm-accord-card:hover { box-shadow: var(--shadow-md); }
+        .cm-accord-head {
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 1.1rem 1.4rem;
+          cursor: pointer;
+          user-select: none;
+          gap: 1rem;
+          transition: background var(--transition-fast);
+        }
+        .cm-accord-head:hover { background: var(--primary-50); }
+        .cm-accord-num {
+          font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
+          letter-spacing: 0.08em; color: var(--primary-600);
+          white-space: nowrap;
+        }
+        .cm-accord-title {
+          font-size: 1.02rem; font-weight: 700; color: var(--text);
+          line-height: 1.35;
+        }
+        .cm-accord-chevron { color: var(--text-muted); flex-shrink: 0; font-size: 0.9rem; }
+        .cm-accord-body {
+          padding: 1.1rem 1.4rem 1.4rem;
+          border-top: 1px solid var(--gray-100);
+        }
+        .cm-accord-desc {
+          font-size: 0.92rem; color: var(--text-alt);
+          line-height: 1.7; margin: 0 0 1.1rem;
+          text-align: justify;
+        }
+        .cm-accord-topics {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 0.5rem 1.5rem;
+        }
+        @media (max-width: 580px) {
+          .cm-accord-topics { grid-template-columns: 1fr; }
+        }
+        .cm-accord-topic {
+          display: flex; align-items: flex-start; gap: 0.5rem;
+          font-size: 0.88rem; color: var(--text-alt); line-height: 1.4;
+        }
+        .cm-accord-topic i { flex-shrink: 0; font-size: 0.95rem; margin-top: 1px; font-weight: 700; }
+      </style>
+
+      <!-- Accordion JS -->
+      <script>
+        function toggleModule(idx) {
+          var body = document.getElementById('mbody-' + idx);
+          var chevron = document.getElementById('chevron-' + idx);
+          var isOpen = body.style.display !== 'none';
+          body.style.display = isOpen ? 'none' : '';
+          chevron.innerHTML = isOpen
+            ? '<i class="bi bi-chevron-down"></i>'
+            : '<i class="bi bi-chevron-up"></i>';
+        }
+      </script>
+    </div>
+
+    <!-- Müfredat yoksa boş durum -->
+    <div th:if="${course.curriculumModules.size() == 0}"
+         class="cd-curriculum" style="margin-bottom:2.5rem;">
+      <div class="cd-empty">
+        <i class="bi bi-journal-x"></i>
+        <p style="margin:0;">Bu kurs için henüz müfredat eklenmemiş.</p>
       </div>
     </div>
 
-    <!-- Kurs Icerigi (sadece Online kurslar) -->
+    <!-- Online Kurs: Eğitime Başla Banneri (video varsa) -->
     <div th:if="${(course.courseType == null or course.courseType.name() == 'ONLINE') and videos != null and !#lists.isEmpty(videos)}">
 
-      <!-- Aktif kayitli ogrenci banneri -->
+      <!-- Aktif kayıtlı öğrenci banneri -->
       <div th:if="${isActiveEnrolled != null and isActiveEnrolled}" class="cd-start-banner">
         <div style="display:flex;align-items:center;gap:1rem;">
           <div class="cd-start-banner-icon">
@@ -743,7 +893,7 @@
           </div>
           <div class="cd-start-banner-text">
             <h4>Kursunuz Aktif!</h4>
-            <p>Sol kenar çubuktan ders seçip izlemeye başlayabilirsiniz.</p>
+            <p>Eğitim videolarına erişmek için aşağıdaki butonu kullanın.</p>
           </div>
         </div>
         <a th:href="@{/egitimler/izle/{id}(id=${course.id})}" class="cd-start-btn">
@@ -751,39 +901,17 @@
         </a>
       </div>
 
-      <!-- Odeme bekleniyor uyarisi -->
+      <!-- Ödeme bekleniyor -->
       <div th:if="${isEnrolled != null and isEnrolled and (isActiveEnrolled == null or !isActiveEnrolled)}"
            class="cd-pending-warn">
         <i class="bi bi-hourglass-split"></i>
         Kaydınız yönetici onayı bekliyor. Onaylandığında tüm videolara erişebileceksiniz.
       </div>
 
-      <!-- Mufredat baslik -->
-      <div class="cd-section-header">
-        <h2 class="cd-section-title">
-          <i class="bi bi-collection-play"></i> Kurs Müfredatı
-        </h2>
-        <span style="font-size:0.82rem;color:var(--text-muted);">
-          <i class="bi bi-camera-video"></i>
-          <span th:text="${#lists.size(videos)}">0</span> ders
-        </span>
-      </div>
-
-      <!-- Video listesi -->
-      <div class="cd-curriculum">
-        <div th:each="v, stat : ${videos}" class="cd-curriculum-row">
-          <div class="cd-num" th:text="${v.orderIndex}">1</div>
-          <div style="min-width:0;">
-            <div class="cd-vtitle" th:text="${v.title}">Video Başlığı</div>
-            <div th:if="${v.description != null and !#strings.isEmpty(v.description)}"
-                 class="cd-vdesc" th:text="${v.description}"></div>
-          </div>
-        </div>
-      </div>
-
+      <!-- Satın alma çağrısı -->
       <div th:if="${isEnrolled == null or !isEnrolled}" class="cd-enroll-call">
         <i class="bi bi-info-circle"></i>
-        Videoları izlemek için eğitimi satın almanız gerekmektedir.
+        Video derslerine erişmek için eğitimi satın almanız gerekmektedir.
         <span sec:authorize="isAnonymous()">
           — <a th:href="@{/giris(sonra=|/egitimler/| + ${course.id})}"
                style="color:var(--primary-600);font-weight:600;">Giriş Yap</a>
@@ -791,13 +919,6 @@
       </div>
     </div>
 
-    <!-- Video yok (sadece Online kurslar için) -->
-    <div th:if="${(course.courseType == null or course.courseType.name() == 'ONLINE') and (videos == null or #lists.isEmpty(videos))}" class="cd-curriculum">
-      <div class="cd-empty">
-        <i class="bi bi-film"></i>
-        <p style="margin:0;">Bu kursa henüz içerik eklenmemiş.</p>
-      </div>
-    </div>
 
     <!-- YORUMLAR -->
     <div class="cd-reviews">

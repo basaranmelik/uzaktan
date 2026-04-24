@@ -6,6 +6,7 @@ target/
 .claude*
 .claude/*.local.json
 CLAUDE.md
+HELP.md
 
 ### STS ###
 .apt_generated

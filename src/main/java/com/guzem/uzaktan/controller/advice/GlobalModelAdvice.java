@@ -2,9 +2,9 @@ package com.guzem.uzaktan.controller.advice;
 
 import com.guzem.uzaktan.dto.response.CartItemResponse;
 import com.guzem.uzaktan.dto.response.NotificationResponse;
-import com.guzem.uzaktan.service.CartService;
-import com.guzem.uzaktan.service.NotificationService;
-import com.guzem.uzaktan.service.UserService;
+import com.guzem.uzaktan.service.user.CartService;
+import com.guzem.uzaktan.service.user.NotificationService;
+import com.guzem.uzaktan.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,10 +22,43 @@ public class GlobalModelAdvice {
     private final CartService cartService;
     private final NotificationService notificationService;
 
+    // ── Kimlik & Rol ──────────────────────────────────────────────────────────
+
     @ModelAttribute("currentUserFullName")
     public String currentUserFullName(@AuthenticationPrincipal UserDetails principal) {
         if (principal == null) return null;
         return userService.findByEmail(principal.getUsername()).getFullName();
+    }
+
+    /**
+     * Oturum açmış kullanıcının veritabanı ID'si.
+     * Controller'larda Long userId = userService.findUserIdByEmail(...) yerine kullanılır.
+     */
+    @ModelAttribute("currentUserId")
+    public Long currentUserId(@AuthenticationPrincipal UserDetails principal) {
+        if (principal == null) return null;
+        return userService.findUserIdByEmail(principal.getUsername());
+    }
+
+    @ModelAttribute("isAdmin")
+    public boolean isAdmin(@AuthenticationPrincipal UserDetails principal) {
+        if (principal == null) return false;
+        return principal.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+    }
+
+    @ModelAttribute("isTeacher")
+    public boolean isTeacher(@AuthenticationPrincipal UserDetails principal) {
+        if (principal == null) return false;
+        return principal.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_TEACHER".equals(a.getAuthority()));
+    }
+
+    @ModelAttribute("isFirm")
+    public boolean isFirm(@AuthenticationPrincipal UserDetails principal) {
+        if (principal == null) return false;
+        return principal.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_FIRM".equals(a.getAuthority()));
     }
 
     @ModelAttribute("cartItems")

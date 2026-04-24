@@ -1,7 +1,7 @@
 package com.guzem.uzaktan.dto.response;
 
-import com.guzem.uzaktan.model.CourseType;
-import com.guzem.uzaktan.model.EnrollmentStatus;
+import com.guzem.uzaktan.model.course.CourseType;
+import com.guzem.uzaktan.model.course.EnrollmentStatus;
 import lombok.Builder;
 import lombok.Getter;
 

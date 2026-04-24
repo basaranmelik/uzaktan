@@ -1,7 +1,7 @@
 package com.guzem.uzaktan.controller.admin;
 
-import com.guzem.uzaktan.model.Role;
-import com.guzem.uzaktan.service.UserService;
+import com.guzem.uzaktan.model.common.Role;
+import com.guzem.uzaktan.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

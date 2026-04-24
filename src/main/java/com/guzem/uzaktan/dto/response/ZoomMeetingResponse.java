@@ -1,6 +1,6 @@
 package com.guzem.uzaktan.dto.response;
 
-import com.guzem.uzaktan.model.ZoomMeetingStatus;
+import com.guzem.uzaktan.model.instructor.ZoomMeetingStatus;
 import lombok.Builder;
 import lombok.Getter;
 

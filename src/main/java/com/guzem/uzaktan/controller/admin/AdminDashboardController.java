@@ -1,12 +1,13 @@
 package com.guzem.uzaktan.controller.admin;
 
-import com.guzem.uzaktan.model.Role;
-import com.guzem.uzaktan.service.AssignmentService;
-import com.guzem.uzaktan.service.CertificateService;
-import com.guzem.uzaktan.service.CourseReviewService;
-import com.guzem.uzaktan.service.CourseService;
-import com.guzem.uzaktan.service.InstructorService;
-import com.guzem.uzaktan.service.UserService;
+import com.guzem.uzaktan.model.common.Role;
+import com.guzem.uzaktan.service.admin.AssignmentService;
+import com.guzem.uzaktan.service.course.EnrollmentService;
+import com.guzem.uzaktan.service.course.CertificateService;
+import com.guzem.uzaktan.service.course.CourseReviewService;
+import com.guzem.uzaktan.service.course.CourseService;
+import com.guzem.uzaktan.service.instructor.InstructorService;
+import com.guzem.uzaktan.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
@@ -25,7 +26,7 @@ public class AdminDashboardController {
     private final CertificateService certificateService;
     private final AssignmentService assignmentService;
     private final InstructorService instructorService;
-    private final com.guzem.uzaktan.service.EnrollmentService enrollmentService;
+    private final com.guzem.uzaktan.service.course.EnrollmentService enrollmentService;
     private final CourseReviewService courseReviewService;
 
     @GetMapping
@@ -41,7 +42,7 @@ public class AdminDashboardController {
         model.addAttribute("pendingSubmissions", assignmentService.countPendingSubmissions());
         model.addAttribute("totalInstructors", userService.findUsersByRole(Role.TEACHER).size());
         model.addAttribute("totalEnrollments", enrollmentService.countTotal());
-        model.addAttribute("pendingEnrollments", enrollmentService.countByStatus(com.guzem.uzaktan.model.EnrollmentStatus.PENDING_PAYMENT));
+        model.addAttribute("pendingEnrollments", enrollmentService.countByStatus(com.guzem.uzaktan.model.course.EnrollmentStatus.PENDING_PAYMENT));
         model.addAttribute("totalReviews", courseReviewService.countAllReviews());
         model.addAttribute("pendingReviews", courseReviewService.countPendingReviews());
         return "admin/dashboard";

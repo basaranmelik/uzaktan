@@ -2,7 +2,7 @@ package com.guzem.uzaktan.service.client;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.guzem.uzaktan.config.ZoomConfig;
+import com.guzem.uzaktan.config.instructor.ZoomConfig;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Qualifier;

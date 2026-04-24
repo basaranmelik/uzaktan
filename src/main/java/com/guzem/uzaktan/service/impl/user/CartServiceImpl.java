@@ -1,0 +1,120 @@
+package com.guzem.uzaktan.service.impl.user;
+
+import com.guzem.uzaktan.dto.response.CartItemResponse;
+import com.guzem.uzaktan.exception.ResourceNotFoundException;
+import com.guzem.uzaktan.model.user.CartItem;
+import com.guzem.uzaktan.model.course.Course;
+import com.guzem.uzaktan.model.course.CourseType;
+import com.guzem.uzaktan.model.common.User;
+import com.guzem.uzaktan.repository.user.CartItemRepository;
+import com.guzem.uzaktan.repository.course.CourseRepository;
+import com.guzem.uzaktan.repository.course.EnrollmentRepository;
+import com.guzem.uzaktan.repository.user.UserRepository;
+import com.guzem.uzaktan.service.user.CartService;
+import com.guzem.uzaktan.service.course.EnrollmentService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class CartServiceImpl implements CartService {
+
+    private final CartItemRepository cartItemRepository;
+    private final UserRepository userRepository;
+    private final CourseRepository courseRepository;
+    private final EnrollmentRepository enrollmentRepository;
+    private final EnrollmentService enrollmentService;
+
+    @Override
+    public void addToCart(Long userId, Long courseId) {
+        if (cartItemRepository.existsByUserIdAndCourseId(userId, courseId)) {
+            return; // zaten sepette
+        }
+        if (enrollmentRepository.existsByUserIdAndCourseId(userId, courseId)) {
+            throw new IllegalStateException("Bu kursa zaten kayıtlısınız.");
+        }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", userId));
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Kurs", "id", courseId));
+
+        if (course.getCourseType() != com.guzem.uzaktan.model.course.CourseType.ONLINE) {
+            long activeEnrollments = enrollmentRepository.countByCourseId(courseId);
+            if (course.getQuota() != null && activeEnrollments >= course.getQuota()) {
+                throw new IllegalStateException("Bu kursun kontenjanı maalesef dolmuştur.");
+            }
+        }
+
+        cartItemRepository.save(CartItem.builder().user(user).course(course).build());
+    }
+
+    @Override
+    public void removeFromCart(Long userId, Long courseId) {
+        cartItemRepository.deleteByUserIdAndCourseId(userId, courseId);
+    }
+
+    @Override
+    public void clearCart(Long userId) {
+        cartItemRepository.deleteByUserId(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CartItemResponse> getCartItems(Long userId) {
+        return cartItemRepository.findByUserIdWithCourse(userId).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public int getCartCount(Long userId) {
+        return cartItemRepository.countByUserId(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isInCart(Long userId, Long courseId) {
+        return cartItemRepository.existsByUserIdAndCourseId(userId, courseId);
+    }
+
+    @Override
+    public BigDecimal getCartTotal(List<CartItemResponse> items) {
+        return items.stream()
+                .map(i -> i.getPrice() != null ? i.getPrice() : BigDecimal.ZERO)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public BigDecimal getCartTotalByUser(Long userId) {
+        return getCartTotal(getCartItems(userId));
+    }
+
+    @Override
+    @Transactional
+    public void checkout(Long userId) {
+        List<CartItemResponse> items = getCartItems(userId);
+        for (CartItemResponse item : items) {
+            enrollmentService.enroll(userId, item.getCourseId());
+        }
+        clearCart(userId);
+    }
+
+    private CartItemResponse toResponse(CartItem item) {
+        Course c = item.getCourse();
+        return CartItemResponse.builder()
+                .id(item.getId())
+                .courseId(c.getId())
+                .courseTitle(c.getTitle())
+                .categoryDisplayName(c.getCategory() != null ? c.getCategory().getDisplayName() : null)
+                .price(c.getPrice())
+                .addedAt(item.getAddedAt())
+                .build();
+    }
+}

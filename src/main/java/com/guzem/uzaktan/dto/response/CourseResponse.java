@@ -1,15 +1,18 @@
 package com.guzem.uzaktan.dto.response;
 
-import com.guzem.uzaktan.model.CourseCategory;
-import com.guzem.uzaktan.model.CourseLevel;
-import com.guzem.uzaktan.model.CourseStatus;
-import com.guzem.uzaktan.model.CourseType;
+import com.guzem.uzaktan.dto.CurriculumModule;
+import com.guzem.uzaktan.model.course.CourseCategory;
+import com.guzem.uzaktan.model.course.CourseLevel;
+import com.guzem.uzaktan.model.course.CourseStatus;
+import com.guzem.uzaktan.model.course.CourseType;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
 @Getter
 @Builder
@@ -38,12 +41,17 @@ public class CourseResponse {
     private String scheduleStartTime;
     private String scheduleEndTime;
     private String manualCurriculum;
+    /** manualCurriculum JSON alanından parse edilmiş modül listesi */
+    @Builder.Default
+    @lombok.Setter
+    private List<CurriculumModule> curriculumModules = Collections.emptyList();
     private LocalDate certificateDeadline;
     private String imagePath;
     private String instructorName;
     private Long instructorId;
     @lombok.Setter
     private String instructorImage;
+    private List<InstructorResponse> instructors;
     private Double averageRating;
     private Integer reviewCount;
     private LocalDateTime createdAt;

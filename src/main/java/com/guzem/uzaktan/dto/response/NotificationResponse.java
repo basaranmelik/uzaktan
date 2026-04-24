@@ -1,6 +1,6 @@
 package com.guzem.uzaktan.dto.response;
 
-import com.guzem.uzaktan.model.NotificationType;
+import com.guzem.uzaktan.model.user.NotificationType;
 import lombok.Builder;
 import lombok.Data;
 

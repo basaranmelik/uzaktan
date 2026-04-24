@@ -1,14 +1,14 @@
 package com.guzem.uzaktan.scheduler;
 
-import com.guzem.uzaktan.model.Enrollment;
-import com.guzem.uzaktan.model.NotificationType;
-import com.guzem.uzaktan.model.User;
-import com.guzem.uzaktan.model.ZoomMeeting;
-import com.guzem.uzaktan.repository.AssignmentRepository;
-import com.guzem.uzaktan.repository.EnrollmentRepository;
-import com.guzem.uzaktan.repository.ZoomMeetingRepository;
-import com.guzem.uzaktan.service.EmailService;
-import com.guzem.uzaktan.service.NotificationService;
+import com.guzem.uzaktan.model.course.Enrollment;
+import com.guzem.uzaktan.model.user.NotificationType;
+import com.guzem.uzaktan.model.common.User;
+import com.guzem.uzaktan.model.instructor.ZoomMeeting;
+import com.guzem.uzaktan.repository.admin.AssignmentRepository;
+import com.guzem.uzaktan.repository.course.EnrollmentRepository;
+import com.guzem.uzaktan.repository.instructor.ZoomMeetingRepository;
+import com.guzem.uzaktan.service.common.EmailService;
+import com.guzem.uzaktan.service.user.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;

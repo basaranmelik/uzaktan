@@ -1,8 +1,8 @@
 package com.guzem.uzaktan.dto.request;
 
-import com.guzem.uzaktan.model.CourseCategory;
-import com.guzem.uzaktan.model.CourseLevel;
-import com.guzem.uzaktan.model.CourseType;
+import com.guzem.uzaktan.model.course.CourseCategory;
+import com.guzem.uzaktan.model.course.CourseLevel;
+import com.guzem.uzaktan.model.course.CourseType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -13,6 +13,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 @Getter
 @Setter
@@ -73,6 +74,8 @@ public class CourseCreateRequest {
     private String instructorName;
 
     private Long instructorId;
+
+    private java.util.List<Long> instructorIds;
 
     private CourseLevel level;
 }

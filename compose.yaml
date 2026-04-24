@@ -69,15 +69,14 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - app-uploads:/app/uploads
+      - ./uploads:/app/uploads
+      - ./logs:/app/logs
     networks:
       - uzaktan-network
     restart: unless-stopped
 
 volumes:
   sqlserver_data:
-    driver: local
-  app-uploads:
     driver: local
 
 networks:

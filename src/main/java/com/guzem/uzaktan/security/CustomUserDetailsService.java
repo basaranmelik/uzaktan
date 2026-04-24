@@ -1,7 +1,7 @@
 package com.guzem.uzaktan.security;
 
-import com.guzem.uzaktan.model.User;
-import com.guzem.uzaktan.repository.UserRepository;
+import com.guzem.uzaktan.model.common.User;
+import com.guzem.uzaktan.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

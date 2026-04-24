@@ -210,6 +210,7 @@
                   <span sec:authorize="hasRole('ADMIN')">Yönetici</span>
                   <span sec:authorize="hasRole('TEACHER')">Eğitmen</span>
                   <span sec:authorize="hasRole('USER')">Öğrenci</span>
+                  <span sec:authorize="hasRole('FIRM')">Firma</span>
                 </span>
               </div>
               <i class="bi bi-chevron-down user-chevron"></i>
@@ -227,6 +228,7 @@
                     <span sec:authorize="hasRole('ADMIN')">Sistem Yöneticisi</span>
                     <span sec:authorize="hasRole('TEACHER')">Eğitmen</span>
                     <span sec:authorize="hasRole('USER')">Öğrenci</span>
+                    <span sec:authorize="hasRole('FIRM')">Firma</span>
                   </div>
                 </div>
               </div>
@@ -239,6 +241,10 @@
 
               <a th:href="@{/admin}" class="udm-item" sec:authorize="hasRole('ADMIN')">
                 <i class="bi bi-shield-lock-fill udm-icon"></i> Admin Paneli
+              </a>
+
+              <a th:href="@{/admin/kurslar}" class="udm-item" sec:authorize="hasRole('FIRM')">
+                <i class="bi bi-building-fill udm-icon"></i> Kurs Yönetimi
               </a>
 
               <a th:href="@{/egitmen/panel}" class="udm-item" sec:authorize="hasRole('TEACHER')">

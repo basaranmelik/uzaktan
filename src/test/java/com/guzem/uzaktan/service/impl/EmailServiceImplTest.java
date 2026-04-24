@@ -1,13 +1,19 @@
 package com.guzem.uzaktan.service.impl;
 
-import com.guzem.uzaktan.model.Assignment;
-import com.guzem.uzaktan.model.AssignmentSubmission;
-import com.guzem.uzaktan.model.Course;
-import com.guzem.uzaktan.model.User;
-import com.guzem.uzaktan.model.ZoomMeeting;
+import com.guzem.uzaktan.model.admin.Assignment;
+import com.guzem.uzaktan.model.admin.AssignmentSubmission;
+import com.guzem.uzaktan.model.course.Course;
+import com.guzem.uzaktan.model.common.User;
+import com.guzem.uzaktan.model.instructor.ZoomMeeting;
+import com.guzem.uzaktan.service.impl.common.EmailServiceImpl;
+import jakarta.mail.BodyPart;
+import jakarta.mail.Part;
 import jakarta.mail.Session;
 import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.internet.MimeMultipart;
 import org.junit.jupiter.api.BeforeEach;
+
+import java.io.InputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -41,6 +47,44 @@ class EmailServiceImplTest {
 
         mimeMessage = new MimeMessage(Session.getInstance(new Properties()));
         lenient().when(mailSender.createMimeMessage()).thenReturn(mimeMessage);
+    }
+
+    // ── Yardımcı metodlar ───────────────────────────────────────────
+
+    /**
+     * MimeMessage'ın metin içeriğini (HTML) çıkarır.
+     * Multipart yapıyı recursive olarak tarar ve text/* content type'ını bulur.
+     */
+    private String getHtmlContent(MimeMessage message) throws Exception {
+        String result = extractTextContent(message);
+        return result != null ? result : "";
+    }
+
+    private String extractTextContent(Part part) throws Exception {
+        String contentType = part.getContentType().toLowerCase();
+        Object content = part.getContent();
+
+        if (content instanceof MimeMultipart) {
+            MimeMultipart multipart = (MimeMultipart) content;
+            // Multipart'ın içinden text içerik bul
+            for (int i = 0; i < multipart.getCount(); i++) {
+                BodyPart bodyPart = multipart.getBodyPart(i);
+                String result = extractTextContent(bodyPart);
+                if (result != null && !result.isEmpty() && !result.contains("\uFFFD")) {
+                    return result;
+                }
+            }
+        } else if (contentType.contains("text/")) {
+            // Text content
+            if (content instanceof String) {
+                return (String) content;
+            } else if (content instanceof InputStream) {
+                return new String(((InputStream) content).readAllBytes(), "UTF-8");
+            }
+        }
+        // Diğer content type'ları (image, attachment vb) yoksay
+
+        return null;
     }
 
     // ── Yardımcı builder'lar ──────────────────────────────────────
@@ -96,7 +140,7 @@ class EmailServiceImplTest {
         verify(mailSender).send(mimeMessage);
         assertThat(mimeMessage.getAllRecipients()[0].toString()).isEqualTo("ali@gazi.edu.tr");
         assertThat(mimeMessage.getSubject()).contains("Ödev 1");
-        String html = mimeMessage.getContent().toString();
+        String html = getHtmlContent(mimeMessage);
         assertThat(html).contains("Ayşe Kaya");
         assertThat(html).contains("Yeni Ödev Teslimi");
     }
@@ -128,7 +172,7 @@ class EmailServiceImplTest {
         verify(mailSender).send(mimeMessage);
         assertThat(mimeMessage.getAllRecipients()[0].toString()).isEqualTo("mehmet@std.gazi.edu.tr");
         assertThat(mimeMessage.getSubject()).contains("Dönem Ödevi");
-        String html = mimeMessage.getContent().toString();
+        String html = getHtmlContent(mimeMessage);
         assertThat(html).contains("85");
         assertThat(html).contains("Güzel çalışma");
     }
@@ -142,7 +186,7 @@ class EmailServiceImplTest {
         emailService.sendAssignmentGradedToStudent(sub);
 
         verify(mailSender).send(mimeMessage);
-        String html = mimeMessage.getContent().toString();
+        String html = getHtmlContent(mimeMessage);
         assertThat(html).contains("-");
     }
 
@@ -155,7 +199,7 @@ class EmailServiceImplTest {
 
         emailService.sendAssignmentGradedToStudent(sub);
 
-        String html = mimeMessage.getContent().toString();
+        String html = getHtmlContent(mimeMessage);
         assertThat(html).doesNotContain("<script>");
         assertThat(html).contains("&lt;script&gt;");
     }
@@ -180,7 +224,7 @@ class EmailServiceImplTest {
         verify(mailSender).send(mimeMessage);
         assertThat(mimeMessage.getAllRecipients()[0].toString()).isEqualTo("selin@std.gazi.edu.tr");
         assertThat(mimeMessage.getSubject()).contains("yarın son gün");
-        String html = mimeMessage.getContent().toString();
+        String html = getHtmlContent(mimeMessage);
         assertThat(html).contains("Bitirme Ödevi");
         assertThat(html).contains("Yazılım Mühendisliği");
         assertThat(html).contains("21.04.2026");
@@ -206,7 +250,7 @@ class EmailServiceImplTest {
         verify(mailSender).send(mimeMessage);
         assertThat(mimeMessage.getAllRecipients()[0].toString()).isEqualTo("emre@std.gazi.edu.tr");
         assertThat(mimeMessage.getSubject()).contains("Haftalık Ders");
-        String html = mimeMessage.getContent().toString();
+        String html = getHtmlContent(mimeMessage);
         assertThat(html).contains("abc123");
         assertThat(html).contains("https://zoom.us/j/123");
         assertThat(html).contains("60 dakika");
@@ -220,7 +264,7 @@ class EmailServiceImplTest {
 
         emailService.sendMeetingScheduled(student, m);
 
-        String html = mimeMessage.getContent().toString();
+        String html = getHtmlContent(mimeMessage);
         assertThat(html).doesNotContain("Toplantı şifresi");
     }
 
@@ -242,7 +286,7 @@ class EmailServiceImplTest {
 
         verify(mailSender).send(mimeMessage);
         assertThat(mimeMessage.getSubject()).contains("İptal Edildi");
-        String html = mimeMessage.getContent().toString();
+        String html = getHtmlContent(mimeMessage);
         assertThat(html).contains("İptal Edilen Ders");
         assertThat(html).contains("Algoritmalar");
     }
@@ -266,7 +310,7 @@ class EmailServiceImplTest {
 
         verify(mailSender).send(mimeMessage);
         assertThat(mimeMessage.getSubject()).contains("30 Dakika");
-        String html = mimeMessage.getContent().toString();
+        String html = getHtmlContent(mimeMessage);
         assertThat(html).contains("Canlı Soru-Cevap");
         assertThat(html).contains("pass99");
         assertThat(html).contains("https://zoom.us/j/789");

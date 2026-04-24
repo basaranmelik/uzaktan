@@ -1,0 +1,33 @@
+package com.guzem.uzaktan.service.course;
+
+import com.guzem.uzaktan.dto.request.VideoProgressRequest;
+import com.guzem.uzaktan.dto.response.CourseVideoResponse;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
+
+public interface CourseVideoService {
+
+    CourseVideoResponse upload(Long courseId, String title, String description, Integer orderIndex, MultipartFile file) throws IOException;
+
+    List<CourseVideoResponse> uploadMultiple(Long courseId, MultipartFile[] files, String[] titles, Integer[] orderIndices) throws IOException;
+
+    List<CourseVideoResponse> findByCourse(Long courseId);
+
+    List<CourseVideoResponse> findByCourseForStudent(Long courseId, Long userId);
+
+    CourseVideoResponse findById(Long videoId);
+
+    void delete(Long videoId);
+
+    boolean markWatched(Long videoId, Long userId);
+
+    void recordProgress(Long videoId, Long userId, VideoProgressRequest req);
+
+    void updateOrder(Long courseId, List<Long> orderedIds);
+
+    void update(Long videoId, String title, String description);
+
+    boolean canAccessVideo(Long videoId, Long userId);
+}
