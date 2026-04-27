@@ -2,41 +2,6 @@
 // GUZEM — Main JavaScript
 // ============================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    initNavbar();
-    initScrollAnimations();
-    initAccordions();
-    setActiveNavLink();
-});
-
-// ---------- Navbar ----------
-function initNavbar() {
-    const hamburger = document.querySelector('.nav-hamburger');
-    const navLinks = document.querySelector('.nav-links');
-
-    if (hamburger && navLinks) {
-        hamburger.addEventListener('click', () => {
-            hamburger.classList.toggle('active');
-            navLinks.classList.toggle('active');
-        });
-
-        // Close on link click (mobile)
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                navLinks.classList.remove('active');
-            });
-        });
-    }
-
-    // Scroll effect
-    window.addEventListener('scroll', () => {
-        const navbar = document.querySelector('.navbar');
-        if (navbar) {
-            navbar.classList.toggle('scrolled', window.scrollY > 20);
-        }
-    });
-}
 
 // ---------- Active nav link ----------
 function setActiveNavLink() {
@@ -785,6 +750,30 @@ function initVideoUpload() {
 // NAVBAR — Panel Toggle, Cart, Notifications
 // ============================================
 function initNavbar() {
+    // Hamburger menu (mobile)
+    const hamburger = document.querySelector('.nav-hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    if (hamburger && navLinks) {
+        hamburger.addEventListener('click', () => {
+            hamburger.classList.toggle('active');
+            navLinks.classList.toggle('active');
+        });
+        navLinks.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navLinks.classList.remove('active');
+            });
+        });
+    }
+
+    // Scroll effect
+    window.addEventListener('scroll', () => {
+        const navbar = document.querySelector('.navbar');
+        if (navbar) {
+            navbar.classList.toggle('scrolled', window.scrollY > 20);
+        }
+    });
+
     // Panel toggle (notifications)
     const notifWrap = document.getElementById('notifWrap');
     if (notifWrap) {
@@ -1659,6 +1648,9 @@ function initHomeCounters() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    initScrollAnimations();
+    initAccordions();
+    setActiveNavLink();
     initVideoLocking();
     initGlobalToasts();
     initCourseListFilters();
