@@ -390,6 +390,16 @@
           <div th:if="${allWatched}" class="izle-completed">
             <i class="bi bi-trophy-fill"></i> Tum dersler tamamlandi!
           </div>
+
+          <!-- Sertifika Sınavı Butonu (tüm videolar izlendiğinde) -->
+          <div th:if="${allWatched}" style="margin-top:1rem;text-align:center;">
+            <a th:href="@{/sinav/{id}(id=${course.id})}"
+               style="display:inline-flex;align-items:center;gap:0.5rem;background:linear-gradient(135deg,#059669,#10b981);color:#fff;font-weight:700;padding:0.75rem 1.75rem;border-radius:0.75rem;text-decoration:none;transition:transform 0.2s,box-shadow 0.2s;"
+               onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(5,150,105,0.35)'"
+               onmouseout="this.style.transform='';this.style.boxShadow=''">
+              <i class="bi bi-mortarboard-fill"></i> Sertifika Sınavına Git
+            </a>
+          </div>
         </div>
       </div>
 

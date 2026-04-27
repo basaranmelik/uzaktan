@@ -111,8 +111,7 @@
                 </a>
                 <!-- İptal Et -->
                 <form th:action="@{/admin/sertifikalar/{id}/iptal(id=${cert.id})}" method="post">
-                  <button type="submit" class="action-btn ab-del"
-                          onclick="return confirm('Bu sertifikayı iptal etmek istediğinize emin misiniz?')">
+                  <button type="submit" class="action-btn ab-del confirm-delete-btn">
                     <i class="bi bi-x-circle"></i> İptal
                   </button>
                 </form>

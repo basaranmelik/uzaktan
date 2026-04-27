@@ -90,12 +90,6 @@
         </div>
 
         <div class="form-group">
-          <label for="bio">Biyografi (Özgeçmiş)</label>
-          <textarea id="bio" th:field="*{bio}" class="form-control" rows="5" placeholder="Eğitim, tecrübe, çalışma alanları..." maxlength="2000"></textarea>
-          <span class="text-danger" th:if="${#fields.hasErrors('bio')}" th:errors="*{bio}"></span>
-        </div>
-
-        <div class="form-group">
           <label for="photo">Profil Fotoğrafı</label>
           <div th:if="${photoUrl != null}">
             <img th:src="@{${photoUrl}}" class="current-photo" alt="Mevcut Fotoğraf">

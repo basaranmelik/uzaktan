@@ -749,3 +749,200 @@ document.addEventListener('DOMContentLoaded', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 })();
+
+// ============================================
+// AUTH PAGES — Login/Register (Moved from inline JS for CSP)
+// ============================================
+
+// Login Page: Role Switcher Tabs
+function initAuthRoleSwitcher() {
+    const roleTabs = document.querySelectorAll('.role-tab');
+    const indicator = document.getElementById('tab-indicator');
+
+    if (!roleTabs.length || !indicator) return;
+
+    roleTabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => {
+            const roleName = tab.textContent.trim();
+
+            // Update active state
+            roleTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+
+            // Move indicator
+            indicator.style.transform = `translateX(${index * 100}%)`;
+
+            // Update titles
+            const title = document.getElementById('auth-main-title');
+            const subTitle = document.getElementById('auth-sub-title');
+
+            if (title) title.textContent = roleName + ' Girişi';
+
+            if (subTitle) {
+                if (roleName === 'Öğrenci') {
+                    subTitle.textContent = 'Eğitimlere erişmek için hesabınıza giriş yapın.';
+                } else if (roleName === 'Eğitmen') {
+                    subTitle.textContent = 'Derslerinizi ve öğrencilerinizi yönetmek için giriş yapın.';
+                } else {
+                    subTitle.textContent = 'Sistem kontrol paneline erişim sağlayın.';
+                }
+            }
+        });
+    });
+}
+
+// Login Page: Form Handler
+function initLoginForm() {
+    const form = document.getElementById('login-form');
+    if (!form) return;
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const email = document.getElementById('login-email');
+        const pass = document.getElementById('login-password');
+        const emailErr = document.getElementById('email-error');
+        const passErr = document.getElementById('pass-error');
+        let valid = true;
+
+        if (!email?.value) {
+            if (emailErr) emailErr.style.display = 'block';
+            if (email) email.style.borderColor = '#f87171';
+            valid = false;
+        } else {
+            if (emailErr) emailErr.style.display = 'none';
+            if (email) email.style.borderColor = '';
+        }
+
+        if (!pass?.value || pass.value.length < 6) {
+            if (passErr) passErr.style.display = 'block';
+            if (pass) pass.style.borderColor = '#f87171';
+            valid = false;
+        } else {
+            if (passErr) passErr.style.display = 'none';
+            if (pass) pass.style.borderColor = '';
+        }
+
+        if (!valid) return;
+
+        const btn = document.getElementById('login-btn');
+        if (!btn) return;
+
+        btn.textContent = 'Giriş yapılıyor...';
+        btn.disabled = true;
+
+        setTimeout(() => {
+            btn.textContent = '✓ Giriş Başarılı!';
+            btn.style.background = 'linear-gradient(135deg, #20c997, #12b886)';
+            setTimeout(() => window.location.href = '../OgrenciPaneli/index.html', 1000);
+        }, 1200);
+    });
+}
+
+// e-Devlet Button Handler
+function initEdevletButton() {
+    const btn = document.querySelector('.btn-edevlet');
+    if (btn) {
+        btn.addEventListener('click', () => {
+            alert('e-Devlet kapısına yönlendiriliyorsunuz...');
+        });
+    }
+}
+
+// Register Page: Form Handler
+function initRegisterForm() {
+    const form = document.getElementById('register-form');
+    if (!form) return;
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const btn = document.getElementById('register-btn');
+        const consent = document.getElementById('reg-consent');
+
+        if (!btn) return;
+
+        if (!consent?.checked) {
+            alert('Uyarıları onaylamanız gerekmektedir!');
+            return;
+        }
+
+        btn.textContent = 'Hesap oluşturuluyor...';
+        btn.disabled = true;
+
+        setTimeout(() => {
+            btn.textContent = '✓ Başarılı!';
+            btn.style.background = 'linear-gradient(135deg, #20c997, #12b886)';
+            setTimeout(() => window.location.href = 'giris.html', 1500);
+        }, 1200);
+    });
+}
+
+// Demo Alert Handlers (for egitim-detay.html buttons)
+function initDemoAlerts() {
+    document.querySelectorAll('[data-demo-alert]').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const message = btn.getAttribute('data-demo-alert') || 'Bu bir demo sayfasıdır.';
+            alert(message);
+        });
+    });
+}
+
+// Textarea Auto-Grow (for blog page comment forms)
+function initTextareaAutoGrow() {
+    const textareas = document.getElementsByTagName('textarea');
+    if (!textareas.length) return;
+
+    for (let i = 0; i < textareas.length; i++) {
+        const ta = textareas[i];
+        ta.style.height = ta.scrollHeight + 'px';
+        ta.style.overflowY = 'hidden';
+
+        ta.addEventListener('input', function() {
+            this.style.height = '0';
+            this.style.height = this.scrollHeight + 'px';
+        });
+    }
+}
+
+// Initialize auth pages
+document.addEventListener('DOMContentLoaded', () => {
+    initAuthRoleSwitcher();
+    initLoginForm();
+    initEdevletButton();
+    initRegisterForm();
+    initDemoAlerts();
+    initTextareaAutoGrow();
+
+    // Auto-initialize page-specific functions based on page content
+    // Home page: has featured-courses grid
+    if (document.getElementById('featured-courses')) {
+        initHomePage();
+    }
+
+    // Courses page: has courses-grid with filters
+    if (document.getElementById('courses-grid') && document.querySelector('.filter-btn')) {
+        initCoursesPage();
+    }
+
+    // Course detail page: has curriculum-accordion
+    if (document.getElementById('curriculum-accordion')) {
+        initCourseDetailPage();
+    }
+
+    // Pages with counter animations (hakkimizda.html, index.html)
+    if (document.querySelector('[data-count]')) {
+        animateCounters();
+    }
+
+    // Initialize AOS if available
+    if (typeof AOS !== 'undefined') {
+        AOS.init({
+            duration: 800,
+            once: true,
+            offset: 100,
+            easing: 'ease-out-cubic'
+        });
+    }
+});

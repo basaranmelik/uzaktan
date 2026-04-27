@@ -599,83 +599,6 @@
         .ims-item.ims-selected label { font-weight:600; color:var(--primary-700); }
         .ims-empty { padding:1.25rem; text-align:center; color:var(--text-muted); font-size:0.88rem; }
       </style>
-      <script>
-        (function() {
-          var wrap = document.getElementById('imsWrap');
-          var trigger = document.getElementById('imsTrigger');
-          var tagsEl = document.getElementById('imsTags');
-          var search = document.getElementById('imsSearch');
-          var list = document.getElementById('imsList');
-          var emptyEl = null;
-
-          function getItems() { return Array.from(list.querySelectorAll('.ims-item')); }
-
-          function renderTags() {
-            var selected = getItems().filter(function(i) { return i.querySelector('input').checked; });
-            tagsEl.innerHTML = '';
-            if (!selected.length) {
-              tagsEl.innerHTML = '<span class="ims-ph">Eğitmen seçin...</span>';
-              return;
-            }
-            selected.forEach(function(item) {
-              var id = item.dataset.id;
-              var name = item.dataset.name;
-              var tag = document.createElement('span');
-              tag.className = 'ims-tag';
-              tag.innerHTML = name + '<button type="button" class="ims-tag-remove" aria-label="Kaldır"><i class="bi bi-x"></i></button>';
-              tag.querySelector('.ims-tag-remove').addEventListener('click', function(e) {
-                e.stopPropagation();
-                var cb = list.querySelector('input[value="' + id + '"]');
-                if (cb) { cb.checked = false; cb.closest('.ims-item').classList.remove('ims-selected'); }
-                renderTags();
-              });
-              tagsEl.appendChild(tag);
-            });
-          }
-
-          getItems().forEach(function(item) {
-            item.addEventListener('click', function(e) {
-              var cb = item.querySelector('input');
-              if (e.target !== cb) cb.checked = !cb.checked;
-              item.classList.toggle('ims-selected', cb.checked);
-              renderTags();
-            });
-          });
-
-          trigger.addEventListener('click', function() {
-            wrap.classList.toggle('open');
-            if (wrap.classList.contains('open')) { setTimeout(function(){ search.focus(); }, 50); }
-          });
-
-          trigger.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); wrap.classList.toggle('open'); }
-            if (e.key === 'Escape') wrap.classList.remove('open');
-          });
-
-          search.addEventListener('input', function() {
-            var q = this.value.toLowerCase();
-            var any = false;
-            getItems().forEach(function(item) {
-              var match = item.dataset.name.toLowerCase().includes(q);
-              item.style.display = match ? '' : 'none';
-              if (match) any = true;
-            });
-            if (emptyEl) emptyEl.remove();
-            if (!any) {
-              emptyEl = document.createElement('div');
-              emptyEl.className = 'ims-empty';
-              emptyEl.textContent = 'Sonuç bulunamadı.';
-              list.appendChild(emptyEl);
-            } else { emptyEl = null; }
-          });
-
-          document.addEventListener('click', function(e) {
-            if (!wrap.contains(e.target)) wrap.classList.remove('open');
-          });
-
-          renderTags();
-        })();
-      </script>
 
       <!-- Butonlar -->
       <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
@@ -688,9 +611,9 @@
         <form th:action="@{/admin/kurslar/{id}/sil(id=${course.id})}" method="post"
               style="margin-left:auto;">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-          <button type="submit" class="btn"
+          <button type="submit" class="btn confirm-delete-btn"
                   style="background:#fff5f5;color:#c92a2a;border:1px solid #ffc9c9;"
-                  onclick="return confirm('Bu kursu iptal etmek istediğinize emin misiniz?')">
+                  data-confirm-message="Bu kursu iptal etmek istediğinize emin misiniz?">
             <i class="bi bi-trash3"></i> Kursu İptal Et
           </button>
         </form>
@@ -702,43 +625,5 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
-<script>
-  function updateTypeFields() {
-    const selected = document.querySelector('input[name="courseType"]:checked')?.value
-                     || document.querySelector('input[name="courseType"]')?.value
-                     || 'ONLINE';
-    document.querySelectorAll('[data-show-for]').forEach(el => {
-      const types = el.dataset.showFor.split(',');
-      el.style.display = types.includes(selected) ? '' : 'none';
-    });
-
-    // Update description label based on course type
-    const descLabel = document.getElementById('desc-label-edit');
-    const descHint = document.getElementById('desc-hint-edit');
-
-    if (selected === 'REMOTE_FORMAL') {
-      descLabel.textContent = 'Açıklama';
-      descHint.style.display = 'block';
-    } else {
-      descLabel.textContent = 'Açıklama';
-      descHint.style.display = 'none';
-    }
-  }
-  document.querySelectorAll('input[name="courseType"]').forEach(r =>
-    r.addEventListener('change', updateTypeFields));
-  updateTypeFields();
-
-  // Update scheduleDays hidden field when form is submitted
-  function updateScheduleDays() {
-    const days = Array.from(document.querySelectorAll('input[name="scheduleDaysArray"]:checked'))
-      .map(cb => cb.value)
-      .join(',');
-    document.getElementById('scheduleDays').value = days;
-  }
-
-  document.getElementById('courseForm').addEventListener('submit', function(e) {
-    updateScheduleDays();
-  });
-</script>
 </body>
 </html>

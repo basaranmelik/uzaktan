@@ -50,15 +50,6 @@
           <span th:text="${instructor.expertise}">Uzmanlık Alanı</span>
         </div>
 
-        <div class="instructor-detail-bio" th:if="${instructor.bio != null and !instructor.bio.isEmpty()}">
-          <h4><i class="bi bi-journal-text"></i> Hakkında</h4>
-          <p style="text-align: justify;" th:text="${instructor.bio}">Biyografi...</p>
-        </div>
-
-        <div class="instructor-detail-bio" th:if="${instructor.bio == null or instructor.bio.isEmpty()}">
-          <p style="color:var(--text-muted);font-style:italic;">Bu eğitmen için henüz biyografi eklenmemiştir.</p>
-        </div>
-
         <div class="instructor-detail-actions">
           <a th:href="@{/egitmenler}" class="btn btn-outline">
             <i class="bi bi-arrow-left"></i> Tüm Eğitmenler

@@ -72,7 +72,7 @@
           
           <!-- Q1 -->
           <div class="accordion-item active">
-              <div class="accordion-header" onclick="toggleAccordion(this)">
+              <div class="accordion-header">
                   <h4>Sistemdeki eğitimlere kimler katılabilir?</h4>
                   <span class="accordion-icon"><i class="bi bi-chevron-down"></i></span>
               </div>
@@ -85,7 +85,7 @@
 
           <!-- Q2 -->
           <div class="accordion-item">
-              <div class="accordion-header" onclick="toggleAccordion(this)">
+              <div class="accordion-header">
                   <h4>Sertifikalarınız YÖK ve MEB onaylı mı?</h4>
                   <span class="accordion-icon"><i class="bi bi-chevron-down"></i></span>
               </div>
@@ -98,7 +98,7 @@
 
           <!-- Q3 -->
           <div class="accordion-item">
-              <div class="accordion-header" onclick="toggleAccordion(this)">
+              <div class="accordion-header">
                   <h4>Ödeme yöntemleriniz nelerdir? Taksit imkanı var mı?</h4>
                   <span class="accordion-icon"><i class="bi bi-chevron-down"></i></span>
               </div>
@@ -111,7 +111,7 @@
 
           <!-- Q4 -->
           <div class="accordion-item">
-              <div class="accordion-header" onclick="toggleAccordion(this)">
+              <div class="accordion-header">
                   <h4>Satın aldığım kursa ne kadar süreyle erişebilirim?</h4>
                   <span class="accordion-icon"><i class="bi bi-chevron-down"></i></span>
               </div>
@@ -124,7 +124,7 @@
 
           <!-- Q5 -->
           <div class="accordion-item">
-              <div class="accordion-header" onclick="toggleAccordion(this)">
+              <div class="accordion-header">
                   <h4>Eğitim videolarında indirme (offline izleme) imkanı var mı?</h4>
                   <span class="accordion-icon"><i class="bi bi-chevron-down"></i></span>
               </div>
@@ -148,27 +148,6 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
-<script>
-    function toggleAccordion(header) {
-        var item = header.parentElement;
-        var body = header.nextElementSibling;
-        
-        var allItems = document.querySelectorAll('.accordion-item');
-        allItems.forEach(function(i) {
-            if (i !== item) {
-                i.classList.remove('active');
-                i.querySelector('.accordion-body').style.maxHeight = null;
-            }
-        });
-        
-        item.classList.toggle('active');
-        if (item.classList.contains('active')) {
-            body.style.maxHeight = "500px";
-        } else {
-            body.style.maxHeight = null;
-        }
-    }
-</script>
 
 </body>
 </html>

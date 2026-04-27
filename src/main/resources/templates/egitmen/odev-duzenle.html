@@ -85,9 +85,8 @@
 
         <form th:action="@{/egitmen/odevler/{id}/sil(id=${assignment.id})}" method="post"
               style="margin-left:auto;">
-          <button type="submit" class="btn"
-                  style="background:#fff5f5;color:#c92a2a;border:1px solid #ffc9c9;"
-                  onclick="return confirm('Bu ödevi silmek istediğinize emin misiniz?')">
+          <button type="submit" class="btn confirm-delete-btn"
+                  style="background:#fff5f5;color:#c92a2a;border:1px solid #ffc9c9;" data-confirm-message="Bu ödevi silmek istediğinize emin misiniz?">
             <i class="bi bi-trash3"></i> Ödevi Sil
           </button>
         </form>

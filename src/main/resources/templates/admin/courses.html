@@ -141,7 +141,7 @@
             <td class="quick-status">
               <form th:action="@{/admin/kurslar/{id}/durum(id=${course.id})}" method="post">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                <select name="status" onchange="this.form.submit()" title="Durumu değiştir">
+                <select name="status" class="auto-submit-select" title="Durumu değiştir">
                   <option th:each="s : ${statuses}"
                           th:value="${s.name()}"
                           th:text="${s.displayName}"
@@ -162,7 +162,7 @@
                 <form th:action="@{/admin/kurslar/{id}/sil(id=${course.id})}" method="post">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                   <button type="submit" class="action-btn ab-del"
-                          onclick="return confirm('Bu kursu iptal etmek istediğinize emin misiniz?')">
+                          data-confirm-message="Bu kursu iptal etmek istediğinize emin misiniz?">
                     <i class="bi bi-trash3"></i>
                   </button>
                 </form>
@@ -194,25 +194,5 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
-<script>
-(function() {
-  const input = document.getElementById('course-filter');
-  const count = document.getElementById('filter-count');
-  if (!input) return;
-  const rows = Array.from(document.querySelectorAll('.course-row'));
-  input.addEventListener('input', function() {
-    const q = this.value.trim().toLowerCase();
-    let visible = 0;
-    rows.forEach(r => {
-      const title = (r.querySelector('.row-title')?.textContent || '').toLowerCase();
-      const inst  = (r.querySelector('.row-instructor')?.textContent || '').toLowerCase();
-      const show  = !q || title.includes(q) || inst.includes(q);
-      r.style.display = show ? '' : 'none';
-      if (show) visible++;
-    });
-    count.textContent = q ? visible + ' sonuç' : '';
-  });
-})();
-</script>
 </body>
 </html>

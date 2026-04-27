@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${course.title} + ' — Sınav | GUZEM'">Sınav</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .quiz-page {
+      margin-top: var(--nav-height);
+      min-height: calc(100vh - var(--nav-height));
+      background: #f8fafc;
+      padding: 2rem 0 4rem;
+    }
+    .quiz-hero {
+      background: linear-gradient(135deg, #1e3a5f 0%, #2d5a8e 100%);
+      border-radius: 1.25rem;
+      padding: 2.5rem;
+      color: #fff;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .quiz-hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 400px;
+      height: 400px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+    }
+    .quiz-hero h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: #ffffff;
+    }
+    .quiz-hero p {
+      color: #e0e7ff;
+      margin: 0;
+    }
+
+    .quiz-card {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 2rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      margin-bottom: 1.5rem;
+    }
+    .quiz-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .quiz-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .quiz-stat {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1.5rem;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .quiz-stat-value {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #1e3a5f;
+    }
+    .quiz-stat-label {
+      font-size: 0.85rem;
+      color: #64748b;
+      margin-top: 0.25rem;
+    }
+
+    .quiz-start-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: linear-gradient(135deg, #059669, #10b981);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 1rem 2.5rem;
+      border-radius: 0.75rem;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+    .quiz-start-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(5,150,105,0.35);
+      color: #fff;
+    }
+    .quiz-start-btn:disabled, .quiz-start-btn.disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .quiz-rules li {
+      padding: 0.5rem 0;
+      border-bottom: 1px solid #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .quiz-rules li:last-child { border-bottom: none; }
+    .quiz-rules .rule-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .badge-passed {
+      background: #d1fae5;
+      color: #065f46;
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .badge-failed {
+      background: #fee2e2;
+      color: #991b1b;
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .badge-success-sm {
+      background: #d1fae5;
+      color: #065f46;
+      padding: 0.25rem 0.75rem;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+
+    .attempt-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    .attempt-table th {
+      background: #f8fafc;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #64748b;
+      font-weight: 600;
+      text-align: left;
+    }
+    .attempt-table td {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    .cert-banner {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+      border-radius: 1rem;
+      padding: 2rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .cert-banner-icon {
+      font-size: 3rem;
+    }
+    .cert-banner h3 { margin: 0 0 0.25rem; font-size: 1.25rem; }
+    .cert-banner p { margin: 0; opacity: 0.9; }
+    .cert-banner a {
+      color: #fff;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+
+    .alert-quiz {
+      padding: 1rem 1.5rem;
+      border-radius: 0.75rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .alert-quiz.error { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+    .alert-quiz.warning { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+    .alert-quiz.info { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="quiz-page">
+  <div class="container" style="max-width: 900px;">
+
+    <!-- Flash mesajlar -->
+    <div th:if="${errorMessage}" class="alert-quiz error">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <span th:text="${errorMessage}"></span>
+    </div>
+
+    <!-- Hero -->
+    <div class="quiz-hero">
+      <nav style="margin-bottom:1rem;">
+        <a th:href="@{/egitimler/{id}(id=${course.id})}" style="color:rgba(255,255,255,0.7);text-decoration:none;">
+          <i class="bi bi-arrow-left"></i> Kursa Dön
+        </a>
+      </nav>
+      <h1><i class="bi bi-mortarboard-fill"></i> Sertifika Sınavı</h1>
+      <p th:text="${course.title}">Kurs Adı</p>
+    </div>
+
+    <!-- Sertifika kazanıldıysa -->
+    <div th:if="${hasPassed}" class="cert-banner">
+      <div class="cert-banner-icon"><i class="bi bi-award-fill"></i></div>
+      <div>
+        <h3>Tebrikler! Sınavı Başarıyla Geçtiniz</h3>
+        <p>
+          Sertifika kodunuz:
+          <strong th:if="${certificate}" th:text="${certificate.certificateCode}">XXXX</strong>
+          —
+          <a th:if="${certificate}" th:href="@{/sertifika/dogrula/{code}(code=${certificate.certificateCode})}">Sertifikayı Doğrula</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- İstatistikler -->
+    <div class="quiz-stats">
+      <div class="quiz-stat">
+        <div class="quiz-stat-value" th:text="${enrollment.progressPercentage} + '%'">0%</div>
+        <div class="quiz-stat-label">Kurs İlerlemesi</div>
+      </div>
+      <div class="quiz-stat">
+        <div class="quiz-stat-value" th:text="${remainingAttempts}">3</div>
+        <div class="quiz-stat-label">Kalan Deneme (Bugün)</div>
+      </div>
+      <div class="quiz-stat">
+        <div class="quiz-stat-value" th:text="${#lists.size(attemptHistory)}">0</div>
+        <div class="quiz-stat-label">Toplam Deneme</div>
+      </div>
+    </div>
+
+    <!-- Kurallar -->
+    <div class="quiz-card">
+      <h3><i class="bi bi-info-circle-fill" style="color:#3b82f6;"></i> Sınav Kuralları</h3>
+      <ul class="quiz-rules" style="list-style:none; padding:0; margin:0;">
+        <li>
+          <div class="rule-icon" style="background:#eff6ff;color:#3b82f6;"><i class="bi bi-list-ol"></i></div>
+          <span>Soru bankasından rastgele <strong>10 soru</strong> seçilir.</span>
+        </li>
+        <li>
+          <div class="rule-icon" style="background:#f0fdf4;color:#16a34a;"><i class="bi bi-check-circle"></i></div>
+          <span>Başarı için <strong>en az %80</strong> (8/10) doğru cevap gereklidir.</span>
+        </li>
+        <li>
+          <div class="rule-icon" style="background:#fefce8;color:#ca8a04;"><i class="bi bi-clock"></i></div>
+          <span>Günlük <strong>3 deneme hakkınız</strong> vardır.</span>
+        </li>
+        <li>
+          <div class="rule-icon" style="background:#faf5ff;color:#9333ea;"><i class="bi bi-award"></i></div>
+          <span>Başarılı olduğunuzda <strong>otomatik sertifika</strong> oluşturulur.</span>
+        </li>
+        <li>
+          <div class="rule-icon" style="background:#fff7ed;color:#ea580c;"><i class="bi bi-exclamation-triangle"></i></div>
+          <span>Sınavı başlatmak için kurs tamamlanma oranınız <strong>%100</strong> olmalıdır.</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Sınav Başlat Butonu -->
+    <div th:if="${!hasPassed}" class="quiz-card" style="text-align:center;">
+      <div th:if="${enrollment.progressPercentage < 100}">
+        <div class="alert-quiz warning" style="justify-content:center;">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+          <span>Sınava girebilmek için önce tüm videoları tamamlamanız gerekmektedir.</span>
+        </div>
+      </div>
+      <div th:if="${enrollment.progressPercentage >= 100}">
+        <div th:if="${canTakeQuiz}">
+          <p style="color:#64748b;margin-bottom:1rem;">Hazır olduğunuzda sınavı başlatabilirsiniz.</p>
+          <a th:href="@{/sinav/{id}/baslat(id=${course.id})}" class="quiz-start-btn">
+            <i class="bi bi-play-fill"></i> Sınavı Başlat
+          </a>
+        </div>
+        <div th:if="${!canTakeQuiz}">
+          <div class="alert-quiz warning" style="justify-content:center;">
+            <i class="bi bi-clock-fill"></i>
+            <span>Bugünkü deneme hakkınız doldu. Yarın tekrar deneyebilirsiniz.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Deneme Geçmişi -->
+    <div th:if="${!#lists.isEmpty(attemptHistory)}" class="quiz-card">
+      <h3><i class="bi bi-clock-history" style="color:#6366f1;"></i> Deneme Geçmişi</h3>
+      <div style="overflow-x:auto;">
+        <table class="attempt-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Tarih</th>
+              <th>Doğru</th>
+              <th>Yanlış</th>
+              <th>Sonuç</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="attempt, stat : ${attemptHistory}">
+              <td th:text="${stat.count}">1</td>
+              <td th:text="${#temporals.format(attempt.attemptDate, 'dd.MM.yyyy HH:mm')}">01.01.2026</td>
+              <td>
+                <span style="color:#059669;font-weight:600;" th:text="${attempt.score}">8</span>
+                <span style="color:#94a3b8;"> / </span>
+                <span th:text="${attempt.totalQuestions}">10</span>
+              </td>
+              <td th:text="${attempt.totalQuestions - attempt.score}">2</td>
+              <td>
+                <span th:if="${attempt.passed}" class="badge-success-sm">
+                  <i class="bi bi-check-circle-fill"></i> Başarılı
+                </span>
+                <span th:if="${!attempt.passed}" class="badge-failed">
+                  <i class="bi bi-x-circle-fill"></i> Başarısız
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

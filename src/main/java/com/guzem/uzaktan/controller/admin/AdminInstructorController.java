@@ -48,7 +48,6 @@ public class AdminInstructorController {
         
         InstructorUpdateRequest request = new InstructorUpdateRequest();
         request.setName(instructor.getName());
-        request.setBio(instructor.getBio());
         request.setExpertise(instructor.getExpertise());
 
         model.addAttribute("instructorRequest", request);

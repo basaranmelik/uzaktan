@@ -269,31 +269,6 @@
         </div>
     </footer>
 
-    <!-- Scripts -->
-    <script>
-        // Mobil Alt Menü İşlevi
-        function toggleMenu() {
-            const navLinks = document.getElementById('navLinks');
-            if (navLinks) {
-                navLinks.classList.toggle('active');
-            }
-        }
-
-        // Sol Menü (Sidebar) İşlevselliği
-        const leftHamburger = document.getElementById('leftHamburger');
-        const sideDrawer = document.getElementById('sideDrawer');
-        const drawerOverlay = document.getElementById('drawerOverlay');
-        const drawerClose = document.getElementById('drawerClose');
-
-        if(leftHamburger && sideDrawer && drawerOverlay && drawerClose) {
-            function toggleSidebar() {
-                sideDrawer.classList.toggle('active');
-                drawerOverlay.classList.toggle('active');
-            }
-            leftHamburger.addEventListener('click', toggleSidebar);
-            drawerClose.addEventListener('click', toggleSidebar);
-            drawerOverlay.addEventListener('click', toggleSidebar);
-        }
-    </script>
+<script src="../assets/js/main.js"></script>
 </body>
 </html>

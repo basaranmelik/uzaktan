@@ -119,6 +119,7 @@ public class CourseController {
             model.addAttribute("isEnrolled", enrolled);
             model.addAttribute("isActiveEnrolled", isActiveEnrolled);
             model.addAttribute("enrollmentStatus", enrollmentOpt.map(EnrollmentResponse::getStatus).orElse(null));
+            enrollmentOpt.ifPresent(e -> model.addAttribute("enrollment", e));
             model.addAttribute("currentUser", user);
             model.addAttribute("hasReviewed", courseReviewService.hasUserReviewed(id, user.getId()));
             model.addAttribute("isInCart", cartService.isInCart(user.getId(), id));

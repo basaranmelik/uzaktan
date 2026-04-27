@@ -142,7 +142,7 @@
             <p>Eğitimlere erişim için bireysel kaydınızı oluşturun.</p>
         </div>
 
-        <form id="register-form" onsubmit="handleRegister(event)" novalidate>
+        <form id="register-form" novalidate>
             <div class="form-row-2">
                 <div class="form-field">
                     <label>Ad</label>
@@ -184,23 +184,6 @@
         </div>
     </div>
 
-    <script>
-        function handleRegister(e) {
-            e.preventDefault();
-            const btn = document.getElementById('register-btn');
-            if(!document.getElementById('reg-consent').checked) {
-                alert("Uyarıları onaylamanız gerekmektedir!");
-                return;
-            }
-            btn.textContent = 'Hesap oluşturuluyor...';
-            btn.disabled = true;
-            setTimeout(() => {
-                btn.textContent = '✓ Başarılı!';
-                btn.style.background = 'linear-gradient(135deg, #20c997, #12b886)';
-                setTimeout(() => window.location.href = 'giris.html', 1500);
-            }, 1200);
-        }
-    </script>
 
     <!-- Floating Contact Button -->
     <a href="iletisim.html" class="floating-contact" id="floatingContact" title="İletişime Geçin">💬</a>

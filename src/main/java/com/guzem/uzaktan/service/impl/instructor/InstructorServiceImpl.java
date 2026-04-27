@@ -43,7 +43,6 @@ public class InstructorServiceImpl implements InstructorService {
                     return InstructorResponse.builder()
                             .id(instructor.getId())
                             .name(instructor.getName())
-                            .bio(instructor.getBio())
                             .expertise(instructor.getExpertise())
                             .photoUrl(instructor.getPhotoUrl())
                             .createdAt(instructor.getCreatedAt())
@@ -72,7 +71,6 @@ public class InstructorServiceImpl implements InstructorService {
     public InstructorResponse create(InstructorCreateRequest request) {
         Instructor instructor = new Instructor();
         instructor.setName(request.getName());
-        instructor.setBio(request.getBio());
         instructor.setExpertise(request.getExpertise());
         handlePhotoUpload(instructor, request.getPhoto());
 
@@ -88,7 +86,6 @@ public class InstructorServiceImpl implements InstructorService {
     public InstructorResponse update(Long id, InstructorUpdateRequest request) {
         Instructor instructor = loadInstructor(id);
         instructor.setName(request.getName());
-        instructor.setBio(request.getBio());
         instructor.setExpertise(request.getExpertise());
         handlePhotoUpload(instructor, request.getPhoto());
 

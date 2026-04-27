@@ -271,39 +271,6 @@
 
 </div>
 
-    <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const phoneInput = document.getElementById("phoneNumber");
-            if (phoneInput) {
-                if(!phoneInput.value.startsWith('+90 ')) {
-                    phoneInput.value = '+90 ';
-                }
-                phoneInput.addEventListener('input', function (e) {
-                    let input = phoneInput.value.replace(/\D/g, ''); 
-                    if(input.length === 0) {
-                        phoneInput.value = '+90 ';
-                        return;
-                    }
-                    if(!input.startsWith('90')) {
-                        input = '90' + input;
-                    }
-                    if(input.length > 12) input = input.substring(0, 12);
-                    
-                    let formatted = '+90 ';
-                    if (input.length > 2) formatted += input.substring(2, 5);
-                    if (input.length > 5) formatted += ' ' + input.substring(5, 8);
-                    if (input.length > 8) formatted += ' ' + input.substring(8, 10);
-                    if (input.length > 10) formatted += ' ' + input.substring(10, 12);
-                    
-                    phoneInput.value = formatted;
-                });
-                phoneInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Backspace' && phoneInput.value.length <= 4) {
-                        e.preventDefault();
-                    }
-                });
-            }
-        });
-    </script>
+<script th:src="@{/js/main.js}"></script>
 </body>
 </html>

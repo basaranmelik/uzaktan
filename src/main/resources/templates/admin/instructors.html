@@ -100,8 +100,7 @@
                   <i class="bi bi-pencil"></i> Düzenle
                 </a>
                 <form th:action="@{/admin/egitmenler/{id}/sil(id=${ins.id})}" method="post">
-                  <button type="submit" class="action-btn ab-del"
-                          onclick="return confirm('Bu eğitmeni silmek istediğinize emin misiniz?')">
+                  <button type="submit" class="action-btn ab-del confirm-delete-btn">
                     <i class="bi bi-trash3"></i>
                   </button>
                 </form>
@@ -116,19 +115,6 @@
 </section>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
-<script>
-(function() {
-  const input = document.getElementById('instructor-filter');
-  if (!input) return;
-  const rows = Array.from(document.querySelectorAll('.instructor-row'));
-  input.addEventListener('input', function() {
-    const q = this.value.trim().toLowerCase();
-    rows.forEach(r => {
-      const name = (r.querySelector('.row-name')?.textContent || '').toLowerCase();
-      r.style.display = (!q || name.includes(q)) ? '' : 'none';
-    });
-  });
-})();
-</script>
+<script th:src="@{/js/main.js}"></script>
 </body>
 </html>

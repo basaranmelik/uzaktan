@@ -71,7 +71,7 @@
             <td>
               <form th:action="@{/admin/kullanicilar/{id}/rol(id=${u.id})}" method="post" style="display:inline;">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                <select name="role" onchange="this.form.submit()"
+                <select name="role" class="role-select-auto-submit"
                         style="font-size:0.78rem;padding:0.25rem 0.4rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer;">
                   <option th:each="r : ${roles}"
                           th:value="${r.name()}"
@@ -98,8 +98,10 @@
               <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
                 
                 <!-- Detay Butonu -->
-                <button type="button" class="action-btn" style="background:#e7f5ff;color:#1c7ed6;" title="Detay"
-                        th:attr="onclick=|showUserModal('${u.fullName}', '${u.email}', '${u.phoneNumber}', '${u.birthDate}', '${u.city}', '${u.district}', '${u.fullAddress}', '${u.zipCode}')|">
+                <button type="button" class="action-btn show-user-modal-btn" style="background:#e7f5ff;color:#1c7ed6;" title="Detay"
+                        th:data-name="${u.fullName}" th:data-email="${u.email}" th:data-phone="${u.phoneNumber}"
+                        th:data-birth="${u.birthDate}" th:data-city="${u.city}" th:data-district="${u.district}"
+                        th:data-address="${u.fullAddress}" th:data-zip="${u.zipCode}">
                   <i class="bi bi-info-circle-fill"></i>
                 </button>
 
@@ -116,8 +118,7 @@
                 <form th:if="${!u.locked}"
                       th:action="@{/admin/kullanicilar/{id}/sil(id=${u.id})}" method="post">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
-                  <button type="submit" class="action-btn ab-del"
-                          onclick="return confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')"
+                  <button type="submit" class="action-btn ab-del confirm-delete-btn"
                           title="Sil">
                     <i class="bi bi-trash3"></i>
                   </button>
@@ -137,7 +138,7 @@
 <div id="userModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width:90%; max-width:500px; background:var(--bg); border:1px solid var(--border); border-radius:16px; box-shadow:0 10px 40px rgba(0,0,0,0.2); z-index:9999; padding:24px;">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--border); padding-bottom:12px;">
         <h3 style="margin:0; font-size:18px; color:var(--text-primary);"><i class="bi bi-person-vcard"></i> Kullanıcı Detayları</h3>
-        <button onclick="closeUserModal()" style="background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
+        <button class="close-user-modal-btn" style="background:transparent; border:none; font-size:24px; cursor:pointer; color:var(--text-muted);">&times;</button>
     </div>
     <div style="display:flex; flex-direction:column; gap:12px;">
         <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05);">
@@ -166,56 +167,11 @@
         </div>
     </div>
     <div style="text-align:right; margin-top:24px;">
-        <button onclick="closeUserModal()" class="btn btn-primary" style="padding:10px 24px; border-radius:8px;">Kapat</button>
+        <button class="btn btn-primary close-user-modal-btn" style="padding:10px 24px; border-radius:8px;">Kapat</button>
     </div>
 </div>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
-<script>
-(function() {
-  const input = document.getElementById('user-filter');
-  const count = document.getElementById('filter-count');
-  if (!input) return;
-  const rows = Array.from(document.querySelectorAll('.user-row'));
-  input.addEventListener('input', function() {
-    const q = this.value.trim().toLowerCase();
-    let visible = 0;
-    rows.forEach(r => {
-      const name  = (r.querySelector('.row-fullname')?.textContent || '').toLowerCase();
-      const email = (r.querySelector('.row-email')?.textContent || '').toLowerCase();
-      const show  = !q || name.includes(q) || email.includes(q);
-      r.style.display = show ? '' : 'none';
-      if (show) visible++;
-    });
-    count.textContent = q ? visible + ' sonuç' : '';
-  });
-})();
-
-function showUserModal(name, email, phone, birthDate, city, district, address, zip) {
-    document.getElementById('modalFullName').textContent = name || '-';
-    document.getElementById('modalEmail').textContent = email || '-';
-    document.getElementById('modalPhone').textContent = phone && phone !== 'null' ? phone : 'Belirtilmemiş';
-    document.getElementById('modalBirthDate').textContent = birthDate && birthDate !== 'null' ? birthDate : 'Belirtilmemiş';
-    
-    let locationStr = 'Belirtilmemiş';
-    if (city && city !== 'null') {
-        locationStr = city;
-        if (district && district !== 'null') locationStr += ' / ' + district;
-    }
-    document.getElementById('modalLocation').textContent = locationStr;
-    
-    document.getElementById('modalAddress').textContent = address && address !== 'null' ? address : 'Adres bilgisi yok';
-    document.getElementById('modalZipcode').textContent = zip && zip !== 'null' ? zip : 'Posta Kodu Yok';
-
-    document.getElementById('userModalOverlay').style.display = 'block';
-    document.getElementById('userModal').style.display = 'block';
-}
-
-function closeUserModal() {
-    document.getElementById('userModalOverlay').style.display = 'none';
-    document.getElementById('userModal').style.display = 'none';
-}
-</script>
 </body>
 </html>

@@ -170,7 +170,6 @@ public class CourseMapper {
                 .map(i -> InstructorResponse.builder()
                         .id(i.getId())
                         .name(i.getName())
-                        .bio(i.getBio())
                         .expertise(i.getExpertise())
                         .photoUrl(i.getPhotoUrl())
                         .createdAt(i.getCreatedAt())

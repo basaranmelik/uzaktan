@@ -107,9 +107,7 @@
               </span>
             </div>
             <!-- Öğrenci katılma linkini kopyala -->
-            <button class="copy-btn"
-                    th:data-url="@{/zoom/toplanti/{id}/katil(id=${m.id})}"
-                    onclick="copyJoinLink(this)">
+            <button class="btn btn-secondary copy-join-link-btn" th:data-url="@{/zoom/toplanti/{id}/katil(id=${m.id})}">
               <i class="bi bi-link-45deg"></i> Öğrenci Linkini Kopyala
             </button>
           </div>
@@ -127,7 +125,7 @@
               <i class="bi bi-pencil"></i> Düzenle
             </a>
             <form th:action="@{/egitmen/zoom/toplanti/{id}/iptal(id=${m.id})}" method="post"
-                  onsubmit="return confirm('Bu toplantıyı iptal etmek istediğinizden emin misiniz?')">
+                  class="confirm-delete-btn">
               <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
               <button type="submit" class="btn btn-secondary"
                       style="font-size:0.85rem;padding:0.4rem 1rem;color:#e03131;">
@@ -194,18 +192,5 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
-<script>
-function copyJoinLink(btn) {
-  const path = btn.dataset.url;
-  const fullUrl = window.location.origin + path;
-  navigator.clipboard.writeText(fullUrl).then(() => {
-    const orig = btn.innerHTML;
-    btn.innerHTML = '<i class="bi bi-check-lg"></i> Kopyalandı!';
-    btn.style.borderColor = '#2b8a3e';
-    btn.style.color = '#2b8a3e';
-    setTimeout(() => { btn.innerHTML = orig; btn.style.borderColor = ''; btn.style.color = ''; }, 2000);
-  });
-}
-</script>
 </body>
 </html>

@@ -28,10 +28,6 @@ public class Instructor {
     private String name;
 
     @Nationalized
-    @Column(name = "bio", columnDefinition = "NVARCHAR(MAX)")
-    private String bio;
-
-    @Nationalized
     @Column(name = "expertise", nullable = false, length = 255)
     private String expertise;
 

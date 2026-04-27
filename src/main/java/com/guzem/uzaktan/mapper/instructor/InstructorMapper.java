@@ -11,7 +11,6 @@ public class InstructorMapper {
         return InstructorResponse.builder()
                 .id(instructor.getId())
                 .name(instructor.getName())
-                .bio(instructor.getBio())
                 .expertise(instructor.getExpertise())
                 .photoUrl(instructor.getPhotoUrl())
                 .createdAt(instructor.getCreatedAt())

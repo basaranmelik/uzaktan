@@ -102,8 +102,7 @@
                   </button>
                 </form>
                 <form th:action="@{/admin/yorumlar/{id}/sil(id=${rev.id})}" method="post">
-                  <button type="submit" class="action-btn ab-del"
-                          onclick="return confirm('Bu yorumu silmek/reddetmek istediğinize emin misiniz?')">
+                  <button type="submit" class="action-btn ab-del confirm-delete-btn">
                     <i class="bi bi-trash3"></i> Sil
                   </button>
                 </form>
@@ -118,20 +117,6 @@
 </section>
 
 <div th:replace="~{fragments/footer :: footer}"></div>
-<script>
-(function() {
-  const input = document.getElementById('review-filter');
-  if (!input) return;
-  const rows = Array.from(document.querySelectorAll('.review-row'));
-  input.addEventListener('input', function() {
-    const q = this.value.trim().toLowerCase();
-    rows.forEach(r => {
-      const name = (r.querySelector('.row-name')?.textContent || '').toLowerCase();
-      const comment = (r.querySelector('.row-comment')?.textContent || '').toLowerCase();
-      r.style.display = (!q || name.includes(q) || comment.includes(q)) ? '' : 'none';
-    });
-  });
-})();
-</script>
+<script th:src="@{/js/main.js}"></script>
 </body>
 </html>

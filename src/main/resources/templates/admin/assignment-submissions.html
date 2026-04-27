@@ -97,25 +97,5 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
-<script>
-(function() {
-  const input = document.getElementById('submission-filter');
-  const count = document.getElementById('filter-count');
-  if (!input) return;
-  const rows = Array.from(document.querySelectorAll('.submission-row'));
-  input.addEventListener('input', function() {
-    const q = this.value.trim().toLowerCase();
-    let visible = 0;
-    rows.forEach(r => {
-      const user = (r.querySelector('.row-user')?.textContent || '').toLowerCase();
-      const email = (r.querySelector('.row-email')?.textContent || '').toLowerCase();
-      const show  = !q || user.includes(q) || email.includes(q);
-      r.style.display = show ? '' : 'none';
-      if (show) visible++;
-    });
-    count.textContent = q ? visible + ' sonuç' : '';
-  });
-})();
-</script>
 </body>
 </html>

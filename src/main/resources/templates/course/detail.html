@@ -687,9 +687,13 @@
                             (${isTeacherOrAdmin != null and isTeacherOrAdmin} ? 'Eğitmen Erişimi — İzleme Yetkisi' : 'Bu kursa kayıtlısınız — Aktif')"></span>
             </div>
             <!-- Video İzle / Eğitime Başla (Sadece Online veya Video İçeren Örgün Eğitimler İçin) -->
-            <a th:if="${course.courseType == null or course.courseType.name() == 'ONLINE' or (course.courseType.name() == 'REMOTE_FORMAL' and not #lists.isEmpty(videos))}" 
+            <a th:if="${course.courseType == null or course.courseType.name() == 'ONLINE' or (course.courseType.name() == 'REMOTE_FORMAL' and not #lists.isEmpty(videos))}"
                th:href="@{/egitimler/izle/{id}(id=${course.id})}" class="cd-cta-btn primary">
               <i class="bi bi-play-fill"></i> Eğitime Başla
+            </a>
+            <a th:if="${enrollment != null and enrollment.progressPercentage != null and enrollment.progressPercentage >= 100}"
+               th:href="@{/sinav/{id}(id=${course.id})}" class="cd-cta-btn primary" style="background:linear-gradient(135deg,#059669,#10b981);">
+              <i class="bi bi-mortarboard-fill"></i> Sertifika Sınavı
             </a>
             <a th:href="@{/panom}" class="cd-cta-btn outline">Panoma Git</a>
           </div>
@@ -772,7 +776,7 @@
             <div th:each="cm, modSt : ${course.curriculumModules}" class="cm-accord-card" th:id="'module-' + ${modSt.index}">
 
                 <div class="cm-accord-head"
-                     th:onclick="'toggleModule(' + ${modSt.index} + ')'"
+                     th:data-module-index="${modSt.index}"
                      th:id="'mhead-' + ${modSt.index}">
                     <div style="display:flex;align-items:center;gap:0.9rem;flex:1;min-width:0;">
                         <div class="cm-accord-num"
@@ -859,18 +863,6 @@
         .cm-accord-topic i { flex-shrink: 0; font-size: 0.95rem; margin-top: 1px; font-weight: 700; }
       </style>
 
-      <!-- Accordion JS -->
-      <script>
-        function toggleModule(idx) {
-          var body = document.getElementById('mbody-' + idx);
-          var chevron = document.getElementById('chevron-' + idx);
-          var isOpen = body.style.display !== 'none';
-          body.style.display = isOpen ? 'none' : '';
-          chevron.innerHTML = isOpen
-            ? '<i class="bi bi-chevron-down"></i>'
-            : '<i class="bi bi-chevron-up"></i>';
-        }
-      </script>
     </div>
 
     <!-- Müfredat yoksa boş durum -->

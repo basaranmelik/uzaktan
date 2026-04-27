@@ -11,7 +11,6 @@ public class InstructorResponse {
 
     private Long id;
     private String name;
-    private String bio;
     private String expertise;
     private String photoUrl;
     private LocalDateTime createdAt;

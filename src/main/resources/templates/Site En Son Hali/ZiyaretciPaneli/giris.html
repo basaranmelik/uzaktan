@@ -342,9 +342,9 @@
         <div class="role-tabs" style="padding: 4px; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; background: rgba(255,255,255,0.05); margin-bottom: 24px;">
             <div style="position: relative; display: flex; width: 100%;">
                 <div class="tab-indicator" id="tab-indicator" style="position: absolute; top:0; left:0; height: 100%; width: 33.333%; background: rgba(255,255,255,0.15); border-radius: 8px; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1;"></div>
-                <div class="role-tab active" onclick="switchRole(0, 'Öğrenci')">Öğrenci</div>
-                <div class="role-tab" onclick="switchRole(1, 'Eğitmen')">Eğitmen</div>
-                <div class="role-tab" onclick="switchRole(2, 'Yönetici')">Yönetici</div>
+                <div class="role-tab active">Öğrenci</div>
+                <div class="role-tab">Eğitmen</div>
+                <div class="role-tab">Yönetici</div>
             </div>
         </div>
 
@@ -355,7 +355,7 @@
         </div>
 
         <!-- e-Devlet ile Giriş -->
-        <button class="btn-edevlet" onclick="alert('e-Devlet kapısına yönlendiriliyorsunuz...')">
+        <button class="btn-edevlet">
             <svg width="28" height="22" viewBox="28 18 54 44" xmlns="http://www.w3.org/2000/svg">
               <defs>
                 <mask id="crescentMask">
@@ -372,7 +372,7 @@
         <div class="divider"><span>veya sistem girişi</span></div>
 
         <!-- Form -->
-        <form id="login-form" onsubmit="handleLogin(event)" novalidate>
+        <form id="login-form" novalidate>
 
             <div class="form-field">
                 <label for="login-email">E-posta Adresi veya T.C. Kimlik No</label>
@@ -405,65 +405,6 @@
 
     </div>
 
-    <script>
-        function switchRole(index, roleName) {
-            const tabs = document.querySelectorAll('.role-tab');
-            tabs.forEach(t => t.classList.remove('active'));
-            tabs[index].classList.add('active');
-            
-            const indicator = document.getElementById('tab-indicator');
-            indicator.style.transform = `translateX(${index * 100}%)`;
-            
-            const title = document.getElementById('auth-main-title');
-            const subTitle = document.getElementById('auth-sub-title');
-            
-            title.textContent = roleName + ' Girişi';
-            
-            if(roleName === 'Öğrenci') {
-                subTitle.textContent = 'Eğitimlere erişmek için hesabınıza giriş yapın.';
-            } else if(roleName === 'Eğitmen') {
-                subTitle.textContent = 'Derslerinizi ve öğrencilerinizi yönetmek için giriş yapın.';
-            } else {
-                subTitle.textContent = 'Sistem kontrol paneline erişim sağlayın.';
-            }
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const email = document.getElementById('login-email');
-            const pass  = document.getElementById('login-password');
-            const emailErr = document.getElementById('email-error');
-            const passErr  = document.getElementById('pass-error');
-            let valid = true;
-
-            if (!email.value) {
-                emailErr.style.display = 'block';
-                email.style.borderColor = '#f87171';
-                valid = false;
-            } else {
-                emailErr.style.display = 'none';
-                email.style.borderColor = '';
-            }
-            if (!pass.value || pass.value.length < 6) {
-                passErr.style.display = 'block';
-                pass.style.borderColor = '#f87171';
-                valid = false;
-            } else {
-                passErr.style.display = 'none';
-                pass.style.borderColor = '';
-            }
-            if (!valid) return;
-
-            const btn = document.getElementById('login-btn');
-            btn.textContent = 'Giriş yapılıyor...';
-            btn.disabled = true;
-            setTimeout(() => {
-                btn.textContent = '✓ Giriş Başarılı!';
-                btn.style.background = 'linear-gradient(135deg, #20c997, #12b886)';
-                setTimeout(() => window.location.href = '../OgrenciPaneli/index.html', 1000);
-            }, 1200);
-        }
-    </script>
 
     <!-- Floating Contact Button -->
     <a href="iletisim.html" class="floating-contact" id="floatingContact" title="İletişime Geçin">💬</a>

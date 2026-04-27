@@ -156,10 +156,9 @@
         <!-- Dosya seçim alanı -->
         <div class="form-group">
           <label>Video Dosyaları * <span style="font-weight:400;color:var(--text-muted);">(birden fazla seçebilirsiniz)</span></label>
-          <input type="file" name="files" id="fileInput" class="form-control"
+          <input type="file" name="files" id="videoFiles" class="form-control"
                  accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo"
-                 multiple required
-                 onchange="showPreview(this)">
+                 multiple required>
           <div style="font-size:0.78rem;color:var(--text-muted);margin-top:4px;">
             Desteklenen formatlar: MP4, WebM, OGG, MOV, AVI &nbsp;·&nbsp;
             Her video için başlık belirleyebilirsiniz.
@@ -239,18 +238,16 @@
             </div>
           </div>
           <!-- Düzenle butonu -->
-          <button type="button" class="action-btn"
+          <button type="button" class="action-btn edit-video-btn"
                   style="background:var(--primary-50);color:var(--primary-700);border:1px solid var(--primary-200);"
                   th:data-id="${v.id}"
                   th:data-title="${v.title}"
-                  th:data-description="${v.description != null ? v.description : ''}"
-                  onclick="openEditModal(this)">
+                  th:data-description="${v.description != null ? v.description : ''}">
             <i class="bi bi-pencil"></i> Düzenle
           </button>
           <!-- Sil butonu -->
           <form th:action="@{/admin/videolar/{id}/sil(id=${v.id})}" method="post">
-            <button type="submit" class="action-btn ab-del"
-                    onclick="return confirm('Bu videoyu silmek istediğinize emin misiniz?')">
+            <button type="submit" class="action-btn ab-del confirm-delete-btn" data-confirm-message="Bu videoyu silmek istediğinize emin misiniz?">
               <i class="bi bi-trash3"></i> Sil
             </button>
           </form>
@@ -259,9 +256,9 @@
     </div>
 
     <!-- Edit Modal -->
-    <div id="editModalBackdrop" class="vl-modal-backdrop" onclick="closeEditModal(event)">
+    <div id="editModalBackdrop" class="vl-modal-backdrop">
       <div class="vl-modal">
-        <button class="vl-modal-close" onclick="closeEditModalDirect()" type="button">&times;</button>
+        <button class="vl-modal-close" type="button">&times;</button>
         <h3><i class="bi bi-pencil-square" style="color:var(--primary-500);margin-right:0.4rem;"></i>Video Düzenle</h3>
         <form id="editForm" method="post">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
@@ -280,9 +277,8 @@
             <button type="submit" class="btn btn-primary">
               <i class="bi bi-check-lg"></i> Kaydet
             </button>
-            <button type="button" class="btn"
-                    style="background:var(--bg);border:1px solid var(--border);"
-                    onclick="closeEditModalDirect()">
+            <button type="button" class="btn cancel-modal-btn"
+                    style="background:var(--bg);border:1px solid var(--border);">
               İptal
             </button>
           </div>
@@ -296,191 +292,5 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.3/Sortable.min.js"></script>
-<script>
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-
-function showPreview(input) {
-  const preview = document.getElementById('filePreview');
-  const list = document.getElementById('fileList');
-  const btn = document.getElementById('uploadBtn');
-  const warning = document.getElementById('limitWarning');
-  const warningText = document.getElementById('limitWarningText');
-  const form = document.getElementById('uploadForm');
-  const files = Array.from(input.files);
-
-  if (files.length === 0) {
-    preview.style.display = 'none';
-    if (warning) warning.style.display = 'none';
-    return;
-  }
-
-  const currentCount = parseInt(form.dataset.currentCount || '0');
-  const moduleCount = parseInt(form.dataset.moduleCount || '0');
-  const remaining = moduleCount > 0 ? moduleCount - currentCount : 999;
-
-  // Limit kontrolü
-  if (moduleCount > 0 && files.length > remaining) {
-    warning.style.display = 'block';
-    warningText.textContent = 'En fazla ' + remaining + ' video daha ekleyebilirsiniz (Modül sayısı: ' + moduleCount + ', mevcut: ' + currentCount + '). Lütfen ' + remaining + ' veya daha az dosya seçin.';
-    btn.disabled = true;
-  } else {
-    if (warning) warning.style.display = 'none';
-    btn.disabled = false;
-  }
-
-  list.innerHTML = files.map((f, i) => {
-    const nameNoExt = f.name.includes('.') ? f.name.substring(0, f.name.lastIndexOf('.')) : f.name;
-    const sizeMb = (f.size / (1024 * 1024)).toFixed(1);
-    return `
-      <div style="padding:0.75rem 1rem;${i < files.length - 1 ? 'border-bottom:1px solid var(--gray-100);' : ''}">
-        <div style="display:flex;align-items:center;gap:0.75rem;font-size:0.875rem;margin-bottom:0.5rem;">
-          <i class="bi bi-file-earmark-play" style="color:var(--primary-400);flex-shrink:0;"></i>
-          <span style="color:var(--text-muted);font-size:0.78rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(f.name)}</span>
-          <span style="color:var(--text-muted);font-size:0.78rem;flex-shrink:0;">${escapeHtml(sizeMb)} MB</span>
-        </div>
-        <div style="display:flex;gap:0.6rem;align-items:center;">
-          <input type="text" name="titles" value="${escapeHtml(nameNoExt)}" class="form-control"
-                 placeholder="Video başlığı girin" maxlength="200" required
-                 style="font-size:0.85rem;padding:0.4rem 0.65rem;flex:1;">
-        </div>
-      </div>`;
-  }).join('');
-
-  btn.innerHTML = '<i class="bi bi-cloud-upload"></i> Yükle (' + files.length + ' video)';
-  preview.style.display = 'block';
-}
-
-var uploadForm = document.getElementById('uploadForm');
-if (uploadForm) {
-  uploadForm.addEventListener('submit', function(e) {
-    var titleInputs = this.querySelectorAll('input[name="titles"]');
-    for (var i = 0; i < titleInputs.length; i++) {
-      if (!titleInputs[i].value.trim()) {
-        e.preventDefault();
-        titleInputs[i].focus();
-        titleInputs[i].style.borderColor = '#c92a2a';
-        return;
-      }
-    }
-    document.getElementById('uploadBtn').disabled = true;
-    document.getElementById('uploadHint').style.display = 'inline';
-  });
-}
-
-// ── Drag-and-drop sıralama ──
-var videoList = document.getElementById('videoList');
-var saveOrderBar = document.getElementById('saveOrderBar');
-var originalOrder = [];
-
-if (videoList && typeof Sortable !== 'undefined') {
-  // Başlangıç sırasını kaydet
-  function captureOrder() {
-    return Array.from(videoList.querySelectorAll('.vl-row')).map(r => r.dataset.videoId);
-  }
-  originalOrder = captureOrder();
-
-  Sortable.create(videoList, {
-    handle: '.vl-handle',
-    animation: 150,
-    ghostClass: 'sortable-ghost',
-    dragClass: 'sortable-drag',
-    onEnd: function() {
-      var currentOrder = captureOrder();
-      var changed = currentOrder.some((id, i) => id !== originalOrder[i]);
-      // Sıra numaralarını güncelle
-      videoList.querySelectorAll('.vl-row').forEach(function(row, idx) {
-        var numEl = row.querySelector('.vl-num');
-        if (numEl) numEl.textContent = idx + 1;
-      });
-      saveOrderBar.classList.toggle('visible', changed);
-    }
-  });
-
-  document.getElementById('saveOrderBtn').addEventListener('click', function() {
-    var ids = captureOrder().map(Number);
-    var url = videoList.dataset.reorderUrl;
-    this.disabled = true;
-    this.innerHTML = '<i class="bi bi-hourglass-split"></i> Kaydediliyor...';
-    var csrfToken  = document.querySelector('meta[name="_csrf"]').getAttribute('content');
-    var csrfHeader = document.querySelector('meta[name="_csrf_header"]').getAttribute('content');
-    fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', [csrfHeader]: csrfToken },
-      body: JSON.stringify(ids)
-    }).then(function(res) {
-      if (res.ok) {
-        originalOrder = captureOrder();
-        saveOrderBar.classList.remove('visible');
-        showToast('Sıralama kaydedildi.');
-      } else {
-        showToast('Sıralama kaydedilemedi!', true);
-      }
-    }).catch(function() {
-      showToast('Bağlantı hatası!', true);
-    }).finally(function() {
-      var btn = document.getElementById('saveOrderBtn');
-      btn.disabled = false;
-      btn.innerHTML = '<i class="bi bi-check-lg"></i> Sırayı Kaydet';
-    });
-  });
-
-  document.getElementById('cancelOrderBtn').addEventListener('click', function() {
-    // DOM sırasını geri al
-    originalOrder.forEach(function(id) {
-      var row = videoList.querySelector('[data-video-id="' + id + '"]');
-      if (row) videoList.appendChild(row);
-    });
-    // Numaraları geri yükle
-    videoList.querySelectorAll('.vl-row').forEach(function(row, idx) {
-      var numEl = row.querySelector('.vl-num');
-      if (numEl) numEl.textContent = idx + 1;
-    });
-    saveOrderBar.classList.remove('visible');
-  });
-}
-
-// Toast bildirimi
-function showToast(msg, isError) {
-  var t = document.createElement('div');
-  t.textContent = msg;
-  t.style.cssText = 'position:fixed;bottom:1.5rem;right:1.5rem;z-index:9999;padding:0.75rem 1.25rem;border-radius:10px;font-size:0.9rem;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,0.15);transition:opacity 0.4s;' +
-    (isError ? 'background:#ffe3e3;color:#c92a2a;border:1px solid #ffa8a8;' : 'background:#d3f9d8;color:#2b8a3e;border:1px solid #69db7c;');
-  document.body.appendChild(t);
-  setTimeout(function() { t.style.opacity = '0'; setTimeout(function() { t.remove(); }, 400); }, 2500);
-}
-
-// ── Edit modal ──
-function openEditModal(btn) {
-  var id = btn.dataset.id;
-  var title = btn.dataset.title;
-  var desc = btn.dataset.description;
-  document.getElementById('editTitle').value = title || '';
-  document.getElementById('editDescription').value = desc || '';
-  document.getElementById('editForm').action = '/admin/videolar/' + id + '/duzenle';
-  document.getElementById('editModalBackdrop').classList.add('open');
-  document.getElementById('editTitle').focus();
-}
-
-function closeEditModal(e) {
-  if (e.target === document.getElementById('editModalBackdrop')) {
-    document.getElementById('editModalBackdrop').classList.remove('open');
-  }
-}
-
-function closeEditModalDirect() {
-  document.getElementById('editModalBackdrop').classList.remove('open');
-}
-
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') closeEditModalDirect();
-});
-</script>
 </body>
 </html>

@@ -83,8 +83,7 @@
                         ₺0
                       </div>
                     </div>
-                    <button class="nav-cart-remove" title="Kaldır"
-                            onclick="event.preventDefault(); event.stopPropagation(); removeCartItem(this.getAttribute('data-id'), this)" th:data-id="${item.courseId}">
+                    <button class="nav-cart-remove" title="Kaldır" th:data-id="${item.courseId}">
                       <i class="bi bi-x-lg"></i>
                     </button>
                   </div>
@@ -138,8 +137,7 @@
 
           <!-- Bildirimler (giriş yapmış) -->
           <div class="nav-panel-wrap" id="notifWrap" sec:authorize="isAuthenticated()">
-            <button type="button" class="nav-icon-btn" title="Bildirimler"
-                    onclick="toggleNavPanel('notifWrap', event)">
+            <button type="button" class="nav-icon-btn" title="Bildirimler">
               <i class="bi bi-bell"></i>
               <span class="nav-badge" id="notifBadge"
                     th:text="${unreadNotifCount}"
@@ -168,10 +166,7 @@
                     <div class="nav-notif-time"><i class="bi bi-clock"></i> <span th:text="${n.timeAgo}"></span></div>
                   </div>
                   <div th:if="${!n.read}" class="nav-notif-dot"></div>
-                  <button type="button"
-                          class="nav-notif-remove"
-                          title="Bildirimi kapat"
-                          onclick="removeNotification(this)">
+                  <button type="button" class="nav-notif-remove" title="Bildirimi kapat">
                     <i class="bi bi-x-lg"></i>
                   </button>
                 </div>
@@ -276,162 +271,6 @@
       </div>
     </nav>
 
-    <script>
-    // ── Panel toggle (sepet / bildirimler) ──
-    function toggleNavPanel(wrapId, event) {
-      if (event) event.stopPropagation();
-      var wrap = document.getElementById(wrapId);
-      var isOpen = wrap.classList.toggle('open');
-      ['notifWrap'].forEach(function(id) {
-        if (id !== wrapId) {
-          var el = document.getElementById(id);
-          if (el) el.classList.remove('open');
-        }
-      });
-    }
-
-    document.addEventListener('click', function(e) {
-      ['notifWrap'].forEach(function(id) {
-        var wrap = document.getElementById(id);
-        if (wrap && !wrap.contains(e.target)) {
-          wrap.classList.remove('open');
-        }
-      });
-    });
-
-    // ── Sepetten AJAX kaldır ──
-    function removeCartItem(courseId, btn) {
-      var panel  = document.getElementById('cartPanel');
-      var csrf   = panel.dataset.csrfToken;
-      var header = panel.dataset.csrfHeader;
-      fetch('/sepet/kaldir-ajax?courseId=' + courseId, {
-        method: 'POST',
-        headers: { [header]: csrf }
-      }).then(function(res) { return res.json(); })
-        .then(function(data) {
-          var row = btn.closest('.nav-cart-item');
-          if (row) row.remove();
-          var badge = document.getElementById('cartBadge');
-          if (badge) {
-            badge.textContent = data.count;
-            badge.style.display = data.count > 0 ? '' : 'none';
-          }
-          if (typeof showToast === 'function') {
-            showToast('Eğitim sepetten kaldırıldı.', 'info');
-          }
-          var countEl = panel.querySelector('.nav-panel-count');
-          if (countEl) countEl.textContent = data.count + ' kurs';
-          
-          if (data.total !== undefined) {
-             var totalStr = '₺' + data.total.toLocaleString('tr-TR', {minimumFractionDigits: 0, maximumFractionDigits: 0});
-             var totalEl = panel.querySelector('.nav-panel-footer strong');
-             if (totalEl) totalEl.textContent = totalStr;
-          }
-
-          if (data.count === 0) {
-            var body = panel.querySelector('.nav-panel-body');
-            var footer = panel.querySelector('.nav-panel-footer');
-            if (body) body.closest('div').innerHTML =
-              '<div style="padding:2rem;text-align:center;color:var(--text-muted);">' +
-              '<i class="bi bi-cart3" style="font-size:2rem;display:block;margin-bottom:0.5rem;color:var(--gray-300);"></i>' +
-              '<div style="font-size:0.85rem;">Sepetiniz boş</div></div>';
-          }
-        });
-    }
-
-    // ── Bildirimi panelden kapat/sil ──
-    function removeNotification(btn) {
-      var panel = document.getElementById('notifPanel');
-      if (!panel) return;
-      var row = btn.closest('.nav-notif-item');
-      if (!row) return;
-      var notifId = row.getAttribute('data-id');
-      if (!notifId) return;
-
-      var csrf = panel.dataset.csrfToken;
-      var header = panel.dataset.csrfHeader || 'X-CSRF-TOKEN';
-
-      fetch('/bildirimler/' + notifId + '/sil', {
-        method: 'POST',
-        headers: {
-          [header]: csrf,
-          'X-Requested-With': 'XMLHttpRequest'
-        }
-      })
-      .then(function(res) {
-        if (!res.ok) throw new Error('Bildirimi kapatma basarisiz');
-        return res.json();
-      })
-      .then(function(data) {
-        row.remove();
-        var badge = document.getElementById('notifBadge');
-        if (badge) {
-          badge.textContent = data.count;
-          badge.style.display = data.count > 0 ? '' : 'none';
-        }
-        var countEl = panel.querySelector('.nav-panel-count');
-        if (countEl) countEl.textContent = data.count + ' yeni';
-
-        var body = panel.querySelector('.nav-panel-body');
-        if (body && body.querySelectorAll('.nav-notif-item').length === 0) {
-          body.innerHTML =
-            '<div style="padding:2rem;text-align:center;color:var(--text-muted);">' +
-            '<i class="bi bi-bell-slash" style="font-size:2rem;display:block;margin-bottom:0.5rem;color:var(--gray-300);"></i>' +
-            '<div style="font-size:0.85rem;">Yeni bildirim yok</div></div>';
-        }
-
-        if (typeof showToast === 'function') {
-          // Toast mesajı kaldırıldı
-        }
-      })
-      .catch(function() {
-        if (typeof showToast === 'function') {
-          showToast('Bildirim kapatilirken bir hata olustu.', 'error');
-        }
-      });
-    }
-
-    // ── Bildirim Sayacı Polling (30s) ──
-    (function() {
-      var badge = document.getElementById('notifBadge');
-      if (!badge) return; // giriş yapmamış
-      function pollNotifCount() {
-        fetch('/bildirimler/sayac', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-          .then(function(r) { return r.ok ? r.json() : null; })
-          .then(function(data) {
-            if (!data) return;
-            badge.textContent = data.count;
-            badge.style.display = data.count > 0 ? '' : 'none';
-            var countEl = document.querySelector('#notifPanel .nav-panel-count');
-            if (countEl) countEl.textContent = data.count + ' yeni';
-          })
-          .catch(function() {});
-      }
-      setInterval(pollNotifCount, 30000);
-    })();
-
-    // ── Navbar Arama ──
-    document.addEventListener('DOMContentLoaded', function() {
-      var input = document.getElementById('navSearchInput');
-      if (!input) return;
-
-      // Eğitimler sayfasında canlı filtre uygula
-      input.addEventListener('input', function() {
-        var courseSearch = document.getElementById('course-search');
-        if (courseSearch) {
-          courseSearch.value = this.value;
-          courseSearch.dispatchEvent(new Event('input'));
-        }
-      });
-
-      // Eğitimler sayfasındaysa mevcut keyword'ü doldur
-      var params = new URLSearchParams(window.location.search);
-      var kw = params.get('keyword');
-      if (kw && window.location.pathname === '/egitimler') {
-        input.value = kw;
-      }
-    });
-    </script>
 
   </header>
 

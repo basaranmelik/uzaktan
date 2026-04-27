@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${course.title} + ' — Sınav Sonucu | GUZEM'">Sınav Sonucu</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .result-page {
+      margin-top: var(--nav-height);
+      min-height: calc(100vh - var(--nav-height));
+      background: #f8fafc;
+      padding: 2rem 0 4rem;
+    }
+
+    .result-hero {
+      border-radius: 1.25rem;
+      padding: 3rem 2.5rem;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .result-hero.passed {
+      background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+    }
+    .result-hero.failed {
+      background: linear-gradient(135deg, #dc2626 0%, #ef4444 100%);
+    }
+    .result-hero::before {
+      content: '';
+      position: absolute;
+      top: -60%;
+      right: -15%;
+      width: 350px;
+      height: 350px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 50%;
+    }
+    .result-hero-icon {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+    }
+    .result-hero h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
+      color: #ffffff;
+    }
+    .result-hero p {
+      color: #e0e7ff;
+      font-size: 1.1rem;
+    }
+
+    .result-score-ring {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 1.5rem auto;
+      border: 4px solid rgba(255,255,255,0.4);
+    }
+    .result-score-inner {
+      font-size: 2.5rem;
+      font-weight: 900;
+    }
+    .result-score-label {
+      font-size: 0.85rem;
+      color: #e0e7ff;
+    }
+
+    .result-card {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .result-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .answer-item {
+      border: 2px solid #e2e8f0;
+      border-radius: 0.75rem;
+      padding: 1.25rem;
+      margin-bottom: 0.75rem;
+      transition: all 0.2s;
+    }
+    .answer-item.correct {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }
+    .answer-item.wrong {
+      border-color: #fca5a5;
+      background: #fef2f2;
+    }
+    .answer-item-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .answer-q-text {
+      font-weight: 600;
+      color: #1e293b;
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+    .answer-q-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+    }
+    .answer-q-num.correct { background: #dcfce7; color: #16a34a; }
+    .answer-q-num.wrong { background: #fee2e2; color: #dc2626; }
+
+    .answer-badge {
+      padding: 0.3rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .answer-badge.correct { background: #dcfce7; color: #065f46; }
+    .answer-badge.wrong { background: #fee2e2; color: #991b1b; }
+
+    .answer-options {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+      color: #64748b;
+    }
+    .answer-options .selected {
+      font-weight: 700;
+      color: #dc2626;
+    }
+    .answer-options .correct-opt {
+      font-weight: 700;
+      color: #059669;
+    }
+
+    .answer-explanation {
+      margin-top: 0.75rem;
+      padding: 0.75rem 1rem;
+      background: #fffbeb;
+      border-radius: 0.5rem;
+      font-size: 0.9rem;
+      color: #92400e;
+      border-left: 3px solid #f59e0b;
+    }
+
+    .cert-card {
+      background: linear-gradient(135deg, #059669, #10b981);
+      border-radius: 1rem;
+      padding: 2rem;
+      color: #fff;
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    .cert-card h3 { margin: 0 0 0.5rem; }
+    .cert-card .cert-code {
+      font-family: monospace;
+      font-size: 1.25rem;
+      font-weight: 800;
+      background: rgba(255,255,255,0.2);
+      padding: 0.5rem 1.5rem;
+      border-radius: 0.5rem;
+      display: inline-block;
+      margin: 0.75rem 0;
+    }
+    .cert-card a {
+      color: #fff;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+
+    .result-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 1.5rem;
+    }
+    .result-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 0.75rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform 0.2s;
+    }
+    .result-btn:hover { transform: translateY(-1px); }
+    .result-btn.primary {
+      background: #1e3a5f;
+      color: #fff;
+    }
+    .result-btn.outline {
+      background: #fff;
+      color: #1e3a5f;
+      border: 2px solid #e2e8f0;
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="result-page">
+  <div class="container" style="max-width: 800px;">
+
+    <!-- Sonuç Hero -->
+    <div class="result-hero" th:classappend="${result.passed} ? 'passed' : 'failed'">
+      <div class="result-hero-icon">
+        <i th:class="${result.passed} ? 'bi bi-trophy-fill' : 'bi bi-emoji-frown-fill'"></i>
+      </div>
+      <h1 th:text="${result.passed} ? 'Tebrikler!' : 'Maalesef Başarısız'"></h1>
+      <p th:text="${result.passed} ? 'Sınavı başarıyla geçtiniz ve sertifikanız oluşturuldu!' : 'Bu sefer olmadı ama tekrar deneyebilirsiniz.'"></p>
+
+      <div class="result-score-ring">
+        <div style="text-align:center;">
+          <div class="result-score-inner" th:text="${result.score} + '/' + ${result.totalQuestions}">8/10</div>
+          <div class="result-score-label">Doğru Cevap</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sertifika Kartı -->
+    <div th:if="${result.certificateIssued}" class="cert-card">
+      <h3><i class="bi bi-award-fill"></i> Sertifikanız Hazır!</h3>
+      <p>Sertifika kodunuz:</p>
+      <div class="cert-code" th:text="${result.certificateCode}">GAZI-XXX</div>
+      <br>
+      <a th:href="@{/sertifika/dogrula/{code}(code=${result.certificateCode})}">
+        <i class="bi bi-patch-check-fill"></i> Sertifikayı Doğrula
+      </a>
+    </div>
+
+    <!-- Detaylı Sonuçlar -->
+    <div class="result-card">
+      <h3><i class="bi bi-list-check" style="color:#6366f1;"></i> Detaylı Sonuçlar</h3>
+
+      <div th:each="detail, stat : ${result.details}" class="answer-item" th:classappend="${detail.correct} ? 'correct' : 'wrong'">
+        <div class="answer-item-header">
+          <div class="answer-q-text">
+            <span class="answer-q-num" th:classappend="${detail.correct} ? 'correct' : 'wrong'"
+                  th:text="${stat.count}">1</span>
+            <span th:text="${detail.questionText}">Soru metni</span>
+          </div>
+          <span class="answer-badge" th:classappend="${detail.correct} ? 'correct' : 'wrong'">
+            <i th:class="${detail.correct} ? 'bi bi-check-lg' : 'bi bi-x-lg'"></i>
+            <span th:text="${detail.correct} ? 'Doğru' : 'Yanlış'">Doğru</span>
+          </span>
+        </div>
+        <div class="answer-options">
+          <span>
+            Cevabınız:
+            <span th:class="${detail.correct} ? 'correct-opt' : 'selected'"
+                  th:text="${detail.selectedOption != null ? detail.selectedOption : 'Boş'}">B</span>
+          </span>
+          <span th:if="${!detail.correct}">
+            — Doğru cevap:
+            <span class="correct-opt" th:text="${detail.correctOption}">A</span>
+          </span>
+        </div>
+        <div th:if="${detail.explanation != null and !detail.explanation.isEmpty()}" class="answer-explanation">
+          <i class="bi bi-lightbulb-fill"></i>
+          <span th:text="${detail.explanation}">Açıklama</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aksiyonlar -->
+    <div class="result-actions">
+      <a th:href="@{/sinav/{id}(id=${course.id})}" class="result-btn primary">
+        <i class="bi bi-arrow-left"></i> Sınav Sayfasına Dön
+      </a>
+      <a th:href="@{/egitimler/{id}(id=${course.id})}" class="result-btn outline">
+        <i class="bi bi-book"></i> Kursa Git
+      </a>
+      <a th:if="${result.certificateIssued}" th:href="@{/sertifika/dogrula/{code}(code=${result.certificateCode})}" class="result-btn outline" style="border-color:#10b981;color:#059669;">
+        <i class="bi bi-award"></i> Sertifikam
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

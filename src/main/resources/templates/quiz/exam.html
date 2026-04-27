@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${course.title} + ' — Sınav | GUZEM'">Sınav</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <style>
+    .exam-page {
+      margin-top: var(--nav-height);
+      min-height: calc(100vh - var(--nav-height));
+      background: #f8fafc;
+      padding: 2rem 0 4rem;
+    }
+
+    .exam-header {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: calc(var(--nav-height) + 0.5rem);
+      z-index: 10;
+    }
+    .exam-header h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .exam-progress {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 0.9rem;
+      color: #64748b;
+      font-weight: 600;
+    }
+    .exam-progress-bar {
+      width: 120px;
+      height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .exam-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3b82f6, #6366f1);
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+
+    .question-card {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 2rem;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      transition: border-color 0.2s;
+      border: 2px solid transparent;
+    }
+    .question-card.answered {
+      border-color: #bbf7d0;
+    }
+    .question-number {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #eff6ff;
+      color: #2563eb;
+      font-weight: 800;
+      font-size: 0.95rem;
+      margin-right: 0.75rem;
+      flex-shrink: 0;
+    }
+    .question-text {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #1e293b;
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: flex-start;
+    }
+
+    .option-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .option-label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.85rem 1.25rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 0.75rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-size: 0.95rem;
+    }
+    .option-label:hover {
+      border-color: #93c5fd;
+      background: #f0f7ff;
+    }
+    .option-label input[type="radio"] {
+      display: none;
+    }
+    .option-label input[type="radio"]:checked + .option-letter {
+      background: #2563eb;
+      color: #fff;
+    }
+    .option-label:has(input:checked) {
+      border-color: #2563eb;
+      background: #eff6ff;
+    }
+    .option-letter {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      background: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.85rem;
+      color: #64748b;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+    .option-text {
+      flex: 1;
+    }
+
+    .exam-submit-area {
+      background: #fff;
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .exam-submit-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      background: linear-gradient(135deg, #2563eb, #4f46e5);
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.1rem;
+      padding: 1rem 3rem;
+      border-radius: 0.75rem;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .exam-submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(37,99,235,0.35);
+    }
+    .exam-submit-btn:disabled {
+      background: #cbd5e1;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+    .exam-warning {
+      color: #94a3b8;
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+    }
+
+    .exam-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-bottom: 1rem;
+    }
+    .exam-nav-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      border: 2px solid #e2e8f0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #94a3b8;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .exam-nav-dot.answered {
+      background: #dcfce7;
+      border-color: #86efac;
+      color: #16a34a;
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="exam-page">
+  <div class="container" style="max-width: 800px;">
+
+    <!-- Üst Bar -->
+    <div class="exam-header">
+      <h2><i class="bi bi-mortarboard-fill" style="color:#6366f1;"></i> <span th:text="${course.title}">Kurs</span></h2>
+      <div class="exam-progress">
+        <span id="answeredCount">0</span> / <span th:text="${totalQuestions}">10</span>
+        <div class="exam-progress-bar">
+          <div class="exam-progress-fill" id="progressFill" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Soru Navigasyonu -->
+    <div class="exam-nav" id="questionNav">
+      <a th:each="q, stat : ${questions}"
+         th:href="'#q' + ${stat.count}"
+         th:text="${stat.count}"
+         th:id="'nav-' + ${stat.count}"
+         class="exam-nav-dot">1</a>
+    </div>
+
+    <!-- Sınav Formu -->
+    <form th:action="@{/sinav/{id}/gonder(id=${course.id})}" method="post" id="examForm">
+
+      <div th:each="question, stat : ${questions}" class="question-card" th:id="'q' + ${stat.count}">
+        <div class="question-text">
+          <span class="question-number" th:text="${stat.count}">1</span>
+          <span th:text="${question.questionText}">Soru metni?</span>
+        </div>
+        <div class="option-group">
+          <label class="option-label" th:each="opt : ${ {'A','B','C','D','E'} }">
+            <input type="radio"
+                   th:name="'answer_' + ${question.id}"
+                   th:value="${opt}"
+                   th:data-qnum="${stat.count}">
+            <span class="option-letter" th:text="${opt}">A</span>
+            <span class="option-text"
+                  th:text="${opt == 'A' ? question.optionA : (opt == 'B' ? question.optionB : (opt == 'C' ? question.optionC : (opt == 'D' ? question.optionD : question.optionE)))}">
+              Seçenek
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Gönder -->
+      <div class="exam-submit-area">
+        <button type="submit" class="exam-submit-btn confirm-submit-btn" id="submitBtn">
+          <i class="bi bi-send-fill"></i> Sınavı Tamamla
+        </button>
+        <p class="exam-warning">Gönderdikten sonra cevaplarınız değiştirilemez.</p>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<div id="examData" th:data-total-questions="${totalQuestions}" hidden></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>
