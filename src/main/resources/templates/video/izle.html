@@ -238,6 +238,7 @@
         <!-- Server-side veriyi data attribute'larla aktar (inline JS gerektirmez) -->
         <div id="video-player-data"
              th:data-video-id="${video.id}"
+             th:data-course-id="${video.courseId}"
              th:data-already-watched="${alreadyWatched}"
              hidden></div>
 
@@ -294,6 +295,27 @@
                   style="opacity:0.6;">
               Sonraki Video <i class="bi bi-lock-fill"></i>
             </span>
+          </div>
+
+          <!-- Sertifika Sınavı Butonu — tüm videolar izlenince görünür -->
+          <div id="quiz-cta-wrap"
+               th:if="${enrollment != null and enrollment.progressPercentage != null and enrollment.progressPercentage >= 100}"
+               style="margin-top:1.25rem; padding:1.25rem; background:linear-gradient(135deg,#f0fdf4,#dcfce7); border:1px solid #86efac; border-radius:12px; text-align:center;">
+            <div style="font-size:0.85rem; color:#166534; font-weight:600; margin-bottom:0.75rem;">
+              <i class="bi bi-trophy-fill"></i> Tüm videolar tamamlandı! Sertifika sınavına girebilirsiniz.
+            </div>
+            <a th:href="@{/sinav/{id}(id=${video.courseId})}"
+               style="display:inline-flex; align-items:center; gap:0.5rem; background:linear-gradient(135deg,#059669,#10b981); color:#fff; font-weight:700; padding:0.75rem 2rem; border-radius:8px; text-decoration:none; font-size:0.95rem;">
+              <i class="bi bi-mortarboard-fill"></i> Sertifika Sınavına Git
+            </a>
+          </div>
+
+          <!-- JS tarafından dinamik ekleme için placeholder (sayfa ilk yüklendiğinde henüz %100 değilse) -->
+          <div id="quiz-cta-dynamic" style="display:none; margin-top:1.25rem; padding:1.25rem; background:linear-gradient(135deg,#f0fdf4,#dcfce7); border:1px solid #86efac; border-radius:12px; text-align:center;">
+            <div style="font-size:0.85rem; color:#166534; font-weight:600; margin-bottom:0.75rem;">
+              <i class="bi bi-trophy-fill"></i> Tüm videolar tamamlandı! Sertifika sınavına girebilirsiniz.
+            </div>
+            <div id="quiz-cta-btn-placeholder"></div>
           </div>
         </div>
       </div>

@@ -4,6 +4,7 @@
     if (!dataEl) return;
 
     var videoId = parseInt(dataEl.dataset.videoId || '0', 10);
+    var courseId = parseInt(dataEl.dataset.courseId || '0', 10);
     var alreadyWatched = dataEl.dataset.alreadyWatched === 'true';
 
     // ── Plyr Init ──
@@ -154,7 +155,7 @@
             if (lockIcon) lockIcon.remove();
         }
 
-        // İlerleme çubuğunu güncelle
+        // İlerleme çubuğunu güncelle ve tüm videolar bittiyse quiz butonunu göster
         var total = document.querySelectorAll('.playlist-item').length;
         var watched = document.querySelectorAll('.playlist-item .watch-check').length;
         if (total > 0) {
@@ -163,6 +164,21 @@
             if (fill) fill.style.width = pct + '%';
             var label = document.querySelector('.izle-progress-info span:last-child');
             if (label) label.textContent = pct + '%';
+
+            // Tüm videolar tamamlandıysa sınav butonunu dinamik olarak göster
+            if (pct >= 100 && courseId > 0) {
+                var dynamicWrap = document.getElementById('quiz-cta-dynamic');
+                var staticWrap = document.getElementById('quiz-cta-wrap');
+                if (dynamicWrap && !staticWrap) {
+                    var btnHolder = document.getElementById('quiz-cta-btn-placeholder');
+                    if (btnHolder) {
+                        btnHolder.innerHTML = '<a href="/sinav/' + courseId + '" ' +
+                            'style="display:inline-flex;align-items:center;gap:0.5rem;background:linear-gradient(135deg,#059669,#10b981);color:#fff;font-weight:700;padding:0.75rem 2rem;border-radius:8px;text-decoration:none;font-size:0.95rem;">' +
+                            '<i class="bi bi-mortarboard-fill"></i> Sertifika Sınavına Git</a>';
+                    }
+                    dynamicWrap.style.display = 'block';
+                }
+            }
         }
     }
 

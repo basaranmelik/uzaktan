@@ -10,6 +10,7 @@ import java.time.LocalDateTime;
 public class CertificateResponse {
 
     private Long id;
+    private Long courseId;
     private String certificateCode;
     private String fileUrl;
     private LocalDateTime issueDate;

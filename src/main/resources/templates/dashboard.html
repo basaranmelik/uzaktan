@@ -277,10 +277,27 @@
               </div>
 
               <!-- CTA Butonları -->
-              <!-- Online: Eğitime Devam Et -->
-              <div th:if="${enrollment.status.name() == 'ACTIVE' and (enrollment.courseType == null or enrollment.courseType.name() == 'ONLINE')}">
+              <!-- Online ACTIVE + %100 DEĞİL: Eğitime Devam Et -->
+              <div th:if="${enrollment.status.name() == 'ACTIVE' and (enrollment.courseType == null or enrollment.courseType.name() == 'ONLINE') and (enrollment.progressPercentage == null or enrollment.progressPercentage < 100)}">
                 <a th:href="@{/egitimler/izle/{id}(id=${enrollment.courseId})}" class="btn btn-primary btn-full shadow-sm" style="border-radius:10px; font-weight:600; font-size:0.9rem;">
                   <i class="bi bi-play-circle"></i> Eğitime Devam Et
+                </a>
+              </div>
+
+              <!-- Online ACTIVE + %100 TAMAMLANDI: Sınava Git veya Sertifika -->
+              <div th:if="${enrollment.status.name() == 'ACTIVE' and (enrollment.courseType == null or enrollment.courseType.name() == 'ONLINE') and enrollment.progressPercentage != null and enrollment.progressPercentage >= 100}" style="display:flex; flex-direction:column; gap:0.5rem;">
+                <a th:href="@{/egitimler/izle/{id}(id=${enrollment.courseId})}" class="btn" style="background:#f8f9fa; border:1px solid #dee2e6; color:var(--text); border-radius:10px; font-size:0.82rem; font-weight:600; text-align:center;">
+                  <i class="bi bi-arrow-repeat"></i> Videoları Tekrar İzle
+                </a>
+                <a th:if="${!certifiedCourseIds.contains(enrollment.courseId)}"
+                   th:href="@{/sinav/{id}(id=${enrollment.courseId})}"
+                   class="btn btn-primary btn-full shadow-sm" style="border-radius:10px; font-weight:600; font-size:0.9rem; background:linear-gradient(135deg,#059669,#10b981); border-color:#059669;">
+                  <i class="bi bi-mortarboard-fill"></i> Sertifika Sınavına Git
+                </a>
+                <a th:if="${certifiedCourseIds.contains(enrollment.courseId)}"
+                   th:href="@{/profilim}"
+                   class="btn btn-primary btn-full shadow-sm" style="border-radius:10px; font-weight:600; font-size:0.9rem;">
+                  <i class="bi bi-award-fill"></i> Sertifikamı Gör
                 </a>
               </div>
 
@@ -294,12 +311,19 @@
                 </button>
               </div>
 
-              <!-- Online tamamlandı: Tekrar İzle + Sertifika -->
+              <!-- Online COMPLETED: Tekrar İzle + Sınav/Sertifika -->
               <div th:if="${enrollment.status.name() == 'COMPLETED' and (enrollment.courseType == null or enrollment.courseType.name() == 'ONLINE')}" style="display:grid; grid-template-columns: 1fr 1fr; gap:0.5rem;">
                 <a th:href="@{/egitimler/izle/{id}(id=${enrollment.courseId})}" class="btn" style="background:#f8f9fa; border:1px solid #dee2e6; color:var(--text); border-radius:10px; font-size:0.85rem; font-weight:600; display:flex; justify-content:center; align-items:center;">
                   <i class="bi bi-arrow-repeat" style="margin-right:0.3rem;"></i> Tekrar İzle
                 </a>
-                <a th:href="@{/profilim}" class="btn btn-primary shadow-sm" style="border-radius:10px; font-size:0.85rem; font-weight:600; display:flex; justify-content:center; align-items:center;">
+                <a th:if="${!certifiedCourseIds.contains(enrollment.courseId)}"
+                   th:href="@{/sinav/{id}(id=${enrollment.courseId})}"
+                   class="btn btn-primary shadow-sm" style="border-radius:10px; font-size:0.85rem; font-weight:600; display:flex; justify-content:center; align-items:center; background:linear-gradient(135deg,#059669,#10b981); border-color:#059669;">
+                   <i class="bi bi-mortarboard-fill" style="margin-right:0.3rem;"></i> Sınava Git
+                </a>
+                <a th:if="${certifiedCourseIds.contains(enrollment.courseId)}"
+                   th:href="@{/profilim}"
+                   class="btn btn-primary shadow-sm" style="border-radius:10px; font-size:0.85rem; font-weight:600; display:flex; justify-content:center; align-items:center;">
                    <i class="bi bi-award-fill" style="margin-right:0.3rem;"></i> Sertifika
                 </a>
               </div>

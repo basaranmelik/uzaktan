@@ -1,9 +1,11 @@
 package com.guzem.uzaktan.controller.user;
 
 import com.guzem.uzaktan.dto.response.AssignmentResponse;
+import com.guzem.uzaktan.dto.response.CertificateResponse;
 import com.guzem.uzaktan.dto.response.EnrollmentResponse;
 import com.guzem.uzaktan.dto.response.SubmissionResponse;
 import com.guzem.uzaktan.dto.response.UserResponse;
+import com.guzem.uzaktan.service.course.CertificateService;
 
 import com.guzem.uzaktan.dto.request.ContactRequest;
 import com.guzem.uzaktan.service.admin.AssignmentService;
@@ -28,6 +30,8 @@ import org.springframework.http.ResponseEntity;
 import com.guzem.uzaktan.model.course.EnrollmentStatus;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -39,6 +43,7 @@ public class HomeController {
     private final AssignmentService assignmentService;
     private final ZoomService zoomService;
     private final EmailService emailService;
+    private final CertificateService certificateService;
 
     @GetMapping({"/", "/home"})
     public String home(Model model) {
@@ -67,6 +72,13 @@ public class HomeController {
         model.addAttribute("submissions", submissions);
         model.addAttribute("upcomingMeetings", zoomService.getUpcomingForStudent(currentUserId));
         model.addAttribute("allMeetings", zoomService.getAllForStudent(currentUserId));
+
+        // Sınav geçilerek kazanılan sertifikalara sahip kurs ID'leri
+        Set<Long> certifiedCourseIds = certificateService.findByUser(currentUserId).stream()
+                .map(CertificateResponse::getCourseId)
+                .collect(Collectors.toSet());
+        model.addAttribute("certifiedCourseIds", certifiedCourseIds);
+
         return "dashboard";
     }
 
