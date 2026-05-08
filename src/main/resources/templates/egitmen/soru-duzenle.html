@@ -7,43 +7,7 @@
   <title>Soru Düzenle | Gazi Üniversitesi</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <style>
-    .form-section {
-      border: 1px solid var(--border); border-radius: 12px;
-      padding: 1.5rem; margin-bottom: 1.5rem; background: var(--bg);
-    }
-    .form-section-title {
-      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: 0.8px; color: var(--text-muted); margin: 0 0 1.25rem 0;
-      padding-bottom: 0.75rem; border-bottom: 1px solid var(--gray-100);
-      display: flex; align-items: center; gap: 6px;
-    }
-    .form-section-title i { font-size: 0.9rem; }
-
-    .option-group {
-      display: flex; align-items: flex-start; gap: 0.75rem; margin-bottom: 0.85rem;
-    }
-    .option-letter {
-      background: var(--primary-600); color: #fff;
-      width: 34px; height: 34px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.82rem; font-weight: 800; flex-shrink: 0; margin-top: 2px;
-    }
-    .option-group .form-control { flex: 1; }
-
-    .correct-selector { display: flex; gap: 0.5rem; flex-wrap: wrap; }
-    .correct-selector label {
-      display: flex; align-items: center; gap: 0.4rem;
-      padding: 0.55rem 1.1rem; border: 2px solid var(--border); border-radius: 10px;
-      cursor: pointer; font-weight: 700; font-size: 0.9rem; color: var(--text-muted);
-      transition: all 0.2s; user-select: none;
-    }
-    .correct-selector label:hover { border-color: var(--primary-600); color: var(--primary-600); }
-    .correct-selector input[type="radio"] { display: none; }
-    .correct-selector input[type="radio"]:checked + label {
-      background: #ebfbee; border-color: #2b8a3e; color: #2b8a3e;
-    }
-  </style>
+  
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -66,7 +30,21 @@
   <div class="container" style="max-width:780px;">
 
     <form th:action="@{/egitmen/sorular/{id}(id=${question.id})}"
-          th:object="${questionUpdateRequest}" method="post">
+          th:object="${questionUpdateRequest}" method="post" enctype="multipart/form-data">
+
+      <!-- Modül Seçimi -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-collection-fill"></i> Modül</div>
+        <div class="form-group">
+          <label>Modül seçiniz <span style="color: red;">*</span></label>
+          <select th:field="*{moduleIndex}" class="form-control"
+                  th:classappend="${#fields.hasErrors('moduleIndex')} ? ' is-invalid' : ''" required>
+            <option value="">-- Modül Seçiniz --</option>
+            <th:block th:utext="${#strings.isEmpty(moduleOptions) ? '' : moduleOptions}"></th:block>
+          </select>
+          <div class="invalid-feedback" th:errors="*{moduleIndex}" th:if="${#fields.hasErrors('moduleIndex')}"></div>
+        </div>
+      </div>
 
       <!-- Soru Metni -->
       <div class="form-section">
@@ -80,59 +58,93 @@
         </div>
       </div>
 
+      <!-- Medya (Opsiyonel) -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-paperclip"></i> Medya (Opsiyonel)</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Fotoğraf <span style="color:var(--text-muted);font-weight:400;">(maks. 5 MB)</span></label>
+            <input type="file" name="image" class="form-control" accept="image/jpeg,image/png,image/webp,image/gif">
+            <div th:if="${question.imagePath != null}" style="margin-top:0.5rem;">
+              <img th:src="@{'/uploads/' + ${question.imagePath}}" style="max-height:80px;border-radius:6px;border:1px solid var(--border);" alt="Mevcut görsel">
+              <small style="color:var(--text-muted);display:block;">Yeni dosya seçilmezse mevcut görsel korunur.</small>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Video <span style="color:var(--text-muted);font-weight:400;">(maks. 50 MB)</span></label>
+            <input type="file" name="video" class="form-control" accept="video/mp4,video/webm,video/ogg">
+            <div th:if="${question.videoPath != null}" style="margin-top:0.5rem;">
+              <small style="color:var(--text-muted);display:block;">Mevcut video yüklü.</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Şıklar -->
       <div class="form-section">
         <div class="form-section-title"><i class="bi bi-list-check"></i> Şıklar</div>
 
-        <div class="option-group">
-          <div class="option-letter">A</div>
-          <input type="text" th:field="*{optionA}" class="form-control"
-                 th:classappend="${#fields.hasErrors('optionA')} ? ' is-invalid'"
-                 placeholder="A şıkkı..." maxlength="500" required>
-        </div>
-        <div th:if="${#fields.hasErrors('optionA')}" class="invalid-feedback" th:errors="*{optionA}" style="display:block;margin-bottom:0.5rem;margin-left:46px;"></div>
+        <div class="options-grid">
+          <div class="opt-card">
+            <span class="opt-card-badge">A</span>
+            <div class="opt-card-body">
+              <input type="text" th:field="*{optionA}" class="form-control opt-input"
+                     th:classappend="${#fields.hasErrors('optionA')} ? 'is-invalid' : ''"
+                     placeholder="A şıkkı..." maxlength="500" required>
+              <div th:if="${#fields.hasErrors('optionA')}" class="opt-error" th:errors="*{optionA}"></div>
+            </div>
+          </div>
 
-        <div class="option-group">
-          <div class="option-letter">B</div>
-          <input type="text" th:field="*{optionB}" class="form-control"
-                 th:classappend="${#fields.hasErrors('optionB')} ? ' is-invalid'"
-                 placeholder="B şıkkı..." maxlength="500" required>
-        </div>
-        <div th:if="${#fields.hasErrors('optionB')}" class="invalid-feedback" th:errors="*{optionB}" style="display:block;margin-bottom:0.5rem;margin-left:46px;"></div>
+          <div class="opt-card">
+            <span class="opt-card-badge">B</span>
+            <div class="opt-card-body">
+              <input type="text" th:field="*{optionB}" class="form-control opt-input"
+                     th:classappend="${#fields.hasErrors('optionB')} ? 'is-invalid' : ''"
+                     placeholder="B şıkkı..." maxlength="500" required>
+              <div th:if="${#fields.hasErrors('optionB')}" class="opt-error" th:errors="*{optionB}"></div>
+            </div>
+          </div>
 
-        <div class="option-group">
-          <div class="option-letter">C</div>
-          <input type="text" th:field="*{optionC}" class="form-control"
-                 th:classappend="${#fields.hasErrors('optionC')} ? ' is-invalid'"
-                 placeholder="C şıkkı..." maxlength="500" required>
-        </div>
-        <div th:if="${#fields.hasErrors('optionC')}" class="invalid-feedback" th:errors="*{optionC}" style="display:block;margin-bottom:0.5rem;margin-left:46px;"></div>
+          <div class="opt-card">
+            <span class="opt-card-badge">C</span>
+            <div class="opt-card-body">
+              <input type="text" th:field="*{optionC}" class="form-control opt-input"
+                     th:classappend="${#fields.hasErrors('optionC')} ? 'is-invalid' : ''"
+                     placeholder="C şıkkı..." maxlength="500" required>
+              <div th:if="${#fields.hasErrors('optionC')}" class="opt-error" th:errors="*{optionC}"></div>
+            </div>
+          </div>
 
-        <div class="option-group">
-          <div class="option-letter">D</div>
-          <input type="text" th:field="*{optionD}" class="form-control"
-                 th:classappend="${#fields.hasErrors('optionD')} ? ' is-invalid'"
-                 placeholder="D şıkkı..." maxlength="500" required>
-        </div>
-        <div th:if="${#fields.hasErrors('optionD')}" class="invalid-feedback" th:errors="*{optionD}" style="display:block;margin-bottom:0.5rem;margin-left:46px;"></div>
+          <div class="opt-card">
+            <span class="opt-card-badge">D</span>
+            <div class="opt-card-body">
+              <input type="text" th:field="*{optionD}" class="form-control opt-input"
+                     th:classappend="${#fields.hasErrors('optionD')} ? 'is-invalid' : ''"
+                     placeholder="D şıkkı..." maxlength="500" required>
+              <div th:if="${#fields.hasErrors('optionD')}" class="opt-error" th:errors="*{optionD}"></div>
+            </div>
+          </div>
 
-        <div class="option-group">
-          <div class="option-letter">E</div>
-          <input type="text" th:field="*{optionE}" class="form-control"
-                 th:classappend="${#fields.hasErrors('optionE')} ? ' is-invalid'"
-                 placeholder="E şıkkı..." maxlength="500" required>
+          <div class="opt-card">
+            <span class="opt-card-badge">E</span>
+            <div class="opt-card-body">
+              <input type="text" th:field="*{optionE}" class="form-control opt-input"
+                     th:classappend="${#fields.hasErrors('optionE')} ? 'is-invalid' : ''"
+                     placeholder="E şıkkı..." maxlength="500" required>
+              <div th:if="${#fields.hasErrors('optionE')}" class="opt-error" th:errors="*{optionE}"></div>
+            </div>
+          </div>
         </div>
-        <div th:if="${#fields.hasErrors('optionE')}" class="invalid-feedback" th:errors="*{optionE}" style="display:block;margin-bottom:0.5rem;margin-left:46px;"></div>
       </div>
 
       <!-- Doğru Cevap -->
       <div class="form-section">
         <div class="form-section-title"><i class="bi bi-check-circle-fill"></i> Doğru Cevap</div>
         <div class="form-group">
-          <label>Doğru şıkkı seçin *</label>
+          <label>Doğru şıkkı seçin <span style="color: red;">*</span></label>
           <div class="correct-selector">
-            <span th:each="opt : ${T(com.guzem.uzaktan.model.course.CorrectOption).values()}">
-              <input type="radio" th:field="*{correctOption}" th:value="${opt}" th:id="${'opt_' + opt.name()}">
+            <span th:each="opt : ${correctOptions}">
+              <input type="radio" th:field="*{correctOption}" th:value="${opt.name()}" th:id="${'opt_' + opt.name()}">
               <label th:for="${'opt_' + opt.name()}" th:text="${opt.displayName}">A</label>
             </span>
           </div>

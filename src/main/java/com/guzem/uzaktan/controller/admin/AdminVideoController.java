@@ -56,7 +56,7 @@ public class AdminVideoController {
         } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Video yüklenirken hata oluştu: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Video yüklenirken beklenmeyen hata: " + e.getMessage());
         }
         return "redirect:/admin/kurslar/" + courseId + "/videolar";
     }

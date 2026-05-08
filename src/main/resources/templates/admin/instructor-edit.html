@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eğitmen Düzenle — GUZEM Admin</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header admin-page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/admin}">Admin</a>
+      <span class="separator">›</span>
+      <a th:href="@{/admin/egitmenler}">Eğitmenler</a>
+      <span class="separator">›</span>
+      <span class="current">Düzenle</span>
+    </div>
+    <h1 style="margin-top:0.5rem;">
+      <i class="bi bi-person-gear"></i> Eğitmen Düzenle
+    </h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
+    <div class="form-card">
+      <form th:action="@{/admin/egitmenler/{id}(id=${teacher.id})}" method="post" enctype="multipart/form-data">
+
+        <!-- Profil Fotoğrafı -->
+        <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border);">
+          <img th:if="${teacher.profilePictureUrl != null}" th:src="@{${teacher.profilePictureUrl}}"
+               style="width:80px;height:80px;border-radius:12px;object-fit:cover;border:2px solid var(--border);" alt="Foto">
+          <div th:unless="${teacher.profilePictureUrl != null}"
+               style="width:80px;height:80px;border-radius:12px;background:var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:2rem;color:var(--text-muted);border:2px solid var(--border);">
+            <i class="bi bi-person-fill"></i>
+          </div>
+          <div>
+            <label for="photo" style="font-weight:600;display:block;margin-bottom:0.3rem;">Profil Fotoğrafı</label>
+            <input type="file" id="photo" name="photo" class="form-control" accept="image/jpeg,image/png,image/webp" style="max-width:300px;">
+            <small style="color:var(--text-muted);">JPG, PNG veya WEBP · Maks. 5 MB</small>
+          </div>
+        </div>
+
+        <!-- Kişisel Bilgiler -->
+        <div style="margin-bottom:1.5rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);padding-bottom:0.75rem;border-bottom:1px solid var(--gray-100);">
+          <i class="bi bi-person-vcard"></i> Kişisel Bilgiler
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label for="firstName">Ad *</label>
+            <input type="text" id="firstName" name="firstName" th:value="${teacher.firstName}" class="form-control" maxlength="50" required>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Soyad *</label>
+            <input type="text" id="lastName" name="lastName" th:value="${teacher.lastName}" class="form-control" maxlength="50" required>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label for="email">E-posta Adresi *</label>
+            <input type="email" id="email" name="email" th:value="${teacher.email}" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label for="phone">Telefon</label>
+            <input type="tel" id="phone" name="phone" th:value="${teacher.phoneNumber}" class="form-control" placeholder="+90 5XX XXX XX XX" maxlength="20">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label for="birthDate">Doğum Tarihi</label>
+            <input type="date" id="birthDate" name="birthDate" th:value="${teacher.birthDate}" class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="zoomEmail">Zoom E-posta Adresi</label>
+            <input type="email" id="zoomEmail" name="zoomEmail" th:value="${teacher.zoomEmail}" class="form-control" placeholder="ornek@zoom.us">
+            <small style="color:var(--text-muted);">Toplantılar bu Zoom hesabı altında oluşturulur.</small>
+          </div>
+        </div>
+
+        <!-- Adres Bilgileri -->
+        <div style="margin-bottom:1.5rem;margin-top:2rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);padding-bottom:0.75rem;border-bottom:1px solid var(--gray-100);">
+          <i class="bi bi-geo-alt"></i> Adres Bilgileri
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label for="city">Şehir</label>
+            <input type="text" id="city" name="city" th:value="${teacher.city}" class="form-control" maxlength="100" placeholder="Örn: Ankara">
+          </div>
+          <div class="form-group">
+            <label for="district">İlçe</label>
+            <input type="text" id="district" name="district" th:value="${teacher.district}" class="form-control" maxlength="100" placeholder="Örn: Yenimahalle">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div class="form-group">
+            <label for="zipCode">Posta Kodu</label>
+            <input type="text" id="zipCode" name="zipCode" th:value="${teacher.zipCode}" class="form-control" maxlength="10" placeholder="06000">
+          </div>
+          <div></div>
+        </div>
+
+        <div class="form-group">
+          <label for="fullAddress">Açık Adres</label>
+          <textarea id="fullAddress" name="fullAddress" class="form-control" rows="2" maxlength="500" placeholder="Mahalle, cadde, sokak, bina no..." th:text="${teacher.fullAddress}"></textarea>
+        </div>
+
+        <!-- Mesleki Bilgiler -->
+        <div style="margin-bottom:1.5rem;margin-top:2rem;font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--text-muted);padding-bottom:0.75rem;border-bottom:1px solid var(--gray-100);">
+          <i class="bi bi-briefcase"></i> Mesleki Bilgiler
+        </div>
+
+        <div class="form-group">
+          <label for="expertise">Uzmanlık Alanı</label>
+          <input type="text" id="expertise" name="expertise"
+                 th:value="${teacher.skillsList != null and !teacher.skillsList.isEmpty() ? #strings.listJoin(teacher.skillsList, ', ') : ''}"
+                 class="form-control" maxlength="500" placeholder="Örn: Yazılım Mühendisliği, Veri Bilimi">
+        </div>
+
+        <div class="form-group">
+          <label for="bio">Biyografi</label>
+          <textarea id="bio" name="bio" class="form-control" rows="4" placeholder="Eğitmen hakkında kısa bilgi..." th:text="${teacher.bio}"></textarea>
+        </div>
+
+        <div style="display:flex;gap:1rem;margin-top:2rem;">
+          <button type="submit" class="btn btn-primary" style="flex:1;">
+            <i class="bi bi-save"></i> Kaydet
+          </button>
+          <a th:href="@{/admin/egitmenler}" class="btn btn-secondary">İptal</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profilim | Eğitmen Paneli</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header admin-page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/egitmen/panel}">Eğitmen Paneli</a>
+      <span class="separator">›</span>
+      <span class="current">Profilim</span>
+    </div>
+    <h1><i class="bi bi-person-gear"></i> Profilim</h1>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="form-card">
+
+      <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
+
+      <form th:action="@{/egitmen/profilim}" th:object="${profileForm}"
+            method="post" enctype="multipart/form-data">
+
+        <!-- Profile picture header -->
+        <div class="profile-header">
+          <div class="profile-avatar-wrap">
+            <div class="profile-avatar" id="avatar-preview">
+              <img th:if="${teacher.profilePictureUrl != null}"
+                   th:src="@{${teacher.profilePictureUrl}}" alt="Profil" id="avatar-img">
+              <i th:unless="${teacher.profilePictureUrl != null}"
+                 class="bi bi-person-fill" id="avatar-icon"></i>
+            </div>
+            <label for="profilePicture" class="avatar-upload-btn" title="Fotoğraf değiştir">
+              <i class="bi bi-camera"></i>
+            </label>
+            <input type="file" id="profilePicture" name="profilePicture"
+                   accept="image/jpeg,image/png,image/webp,image/gif"
+                   style="display:none;">
+          </div>
+          <div>
+            <div style="font-size:1rem;color:var(--text-muted);">
+              JPG, PNG veya WEBP · Maks. 5 MB
+            </div>
+          </div>
+        </div>
+
+        <!-- Name row -->
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">Ad</label>
+            <input type="text" id="firstName" th:field="*{firstName}" class="form-control"
+                   placeholder="Adınız" required maxlength="100">
+            <div th:if="${#fields.hasErrors('firstName')}" style="color:var(--danger,#e03131);font-size:13px;margin-top:4px;"
+                 th:errors="*{firstName}"></div>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Soyad</label>
+            <input type="text" id="lastName" th:field="*{lastName}" class="form-control"
+                   placeholder="Soyadınız" required maxlength="100">
+            <div th:if="${#fields.hasErrors('lastName')}" style="color:var(--danger,#e03131);font-size:13px;margin-top:4px;"
+                 th:errors="*{lastName}"></div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="bio">Biyografi</label>
+          <textarea id="bio" th:field="*{bio}" class="form-control" rows="5"
+                    placeholder="Kendiniz hakkında kısa bilgi yazın..." maxlength="2000"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="skills">Uzmanlık Alanları</label>
+          <input type="text" id="skills" th:field="*{skills}" class="form-control"
+                 placeholder="Örn: Yazılım Mühendisliği, Veri Bilimi" maxlength="500">
+          <small style="color:var(--text-muted);margin-top:0.3rem;display:block;">
+            Birden fazla alan virgülle ayırarak yazabilirsiniz.
+          </small>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width:100%;">
+          <i class="bi bi-save"></i> Kaydet
+        </button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

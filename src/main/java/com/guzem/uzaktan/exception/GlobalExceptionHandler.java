@@ -84,7 +84,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.CONFLICT)
     @ExceptionHandler(DataIntegrityViolationException.class)
     public String handleDataIntegrity(DataIntegrityViolationException ex, Model model) {
-        log.warn("Veritabanı kısıtlama ihlali: {}", ex.getMostSpecificCause().getMessage());
+        log.debug("Veritabanı kısıtlama ihlali: {}", ex.getMostSpecificCause().getMessage());
         model.addAttribute("message", "Bu işlem veritabanı kısıtlamalarıyla çelişiyor. Kayıt zaten mevcut olabilir.");
         model.addAttribute("status", 409);
         return "error/409";

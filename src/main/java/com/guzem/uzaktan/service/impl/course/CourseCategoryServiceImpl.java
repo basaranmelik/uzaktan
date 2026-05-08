@@ -1,8 +1,10 @@
 package com.guzem.uzaktan.service.impl.course;
 
 import com.guzem.uzaktan.exception.ResourceNotFoundException;
+import com.guzem.uzaktan.model.course.Course;
 import com.guzem.uzaktan.model.course.CourseCategory;
 import com.guzem.uzaktan.repository.course.CourseCategoryRepository;
+import com.guzem.uzaktan.repository.course.CourseRepository;
 import com.guzem.uzaktan.service.course.CourseCategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -15,6 +17,7 @@ import java.util.List;
 public class CourseCategoryServiceImpl implements CourseCategoryService {
 
     private final CourseCategoryRepository categoryRepository;
+    private final CourseRepository courseRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -50,6 +53,17 @@ public class CourseCategoryServiceImpl implements CourseCategoryService {
     @Override
     @Transactional
     public void delete(Long id) {
-        categoryRepository.delete(findById(id));
+        CourseCategory category = findById(id);
+
+        // Bu kategoriye sahip kursların kategori referansını temizle
+        List<Course> courses = courseRepository.findByCategory(category);
+        for (Course course : courses) {
+            course.setCategory(null);
+        }
+        if (!courses.isEmpty()) {
+            courseRepository.saveAll(courses);
+        }
+
+        categoryRepository.delete(category);
     }
 }

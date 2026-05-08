@@ -16,7 +16,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "question",
        indexes = {
-               @Index(name = "idx_question_course_id", columnList = "course_id")
+               @Index(name = "idx_question_course_id", columnList = "course_id"),
+               @Index(name = "idx_question_course_module", columnList = "course_id, module_index")
        })
 public class Question {
 
@@ -59,6 +60,15 @@ public class Question {
     @Nationalized
     @Column(name = "explanation", columnDefinition = "NVARCHAR(MAX)")
     private String explanation;
+
+    @Column(name = "module_index")
+    private Integer moduleIndex;
+
+    @Column(name = "image_path", length = 500)
+    private String imagePath;
+
+    @Column(name = "video_path", length = 500)
+    private String videoPath;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "course_id", nullable = false)

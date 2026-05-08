@@ -7,46 +7,7 @@
   <title>Zoom Toplantıları | Gazi Üniversitesi</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <style>
-    .meeting-card {
-      display:flex; justify-content:space-between; align-items:flex-start;
-      flex-wrap:wrap; gap:1rem; padding:1.25rem 1.5rem;
-      border:1px solid var(--border); border-radius:12px;
-      background:var(--bg); margin-bottom:0.75rem;
-      transition: border-color 0.15s, box-shadow 0.15s;
-    }
-    .meeting-card:hover { border-color:var(--primary-300); box-shadow:0 2px 12px rgba(0,0,0,0.06); }
-    .meeting-card.cancelled { opacity:0.55; }
-    .meeting-card.live { border-color:#2b8a3e; background:#f0fdf4; }
-    .meeting-card.past { background:var(--bg-secondary); }
-    .live-pulse {
-      display:inline-flex; align-items:center; gap:5px;
-      background:#2b8a3e; color:#fff; font-size:0.72rem;
-      font-weight:700; padding:2px 9px; border-radius:20px;
-    }
-    .live-dot {
-      width:7px; height:7px; border-radius:50%; background:#fff;
-      animation: pulse 1s infinite;
-    }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-    .section-header {
-      font-size:0.72rem; font-weight:700; text-transform:uppercase;
-      letter-spacing:0.8px; color:var(--text-muted); margin:1.5rem 0 0.75rem;
-      padding-bottom:0.5rem; border-bottom:1px solid var(--gray-100);
-    }
-    .copy-btn {
-      background:none; border:1px solid var(--border); border-radius:7px;
-      padding:0.3rem 0.7rem; font-size:0.78rem; color:var(--text-alt);
-      cursor:pointer; display:inline-flex; align-items:center; gap:4px;
-      transition: all 0.15s;
-    }
-    .copy-btn:hover { border-color:var(--primary-400); color:var(--primary-600); }
-    .recording-form { display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap; }
-    .recording-form input {
-      flex:1; min-width:200px; padding:0.35rem 0.75rem;
-      border:1px solid var(--border); border-radius:8px; font-size:0.84rem;
-    }
-  </style>
+  
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -68,9 +29,21 @@
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
       <h3 style="margin:0;">Toplantılar</h3>
-      <a th:href="@{/egitmen/zoom/kurslarim/{id}/yeni(id=${course.id})}" class="btn btn-primary">
+      <a th:if="${instructorZoomEmail != null}" th:href="@{/egitmen/zoom/kurslarim/{id}/yeni(id=${course.id})}" class="btn btn-primary">
         <i class="bi bi-plus-circle"></i> Yeni Toplantı Oluştur
       </a>
+      <a th:if="${instructorZoomEmail == null}" th:href="@{/profilim}" class="btn btn-warning">
+        <i class="bi bi-exclamation-triangle"></i> Önce Zoom Hesabı Tanımlayın
+      </a>
+    </div>
+
+    <div th:if="${instructorZoomEmail == null}" class="alert" style="background:#fff3cd;border:1px solid #ffc107;border-radius:8px;padding:14px 18px;color:#856404;margin-bottom:1.5rem;">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+      <strong>Zoom hesabınız tanımlanmamış.</strong> Toplantı oluşturabilmek için profilinize Zoom e-posta adresinizi eklemelisiniz.
+    </div>
+    <div th:if="${instructorZoomEmail != null}" class="alert" style="background:#e7f5ff;border:1px solid #a5d8ff;border-radius:8px;padding:10px 16px;color:#1864ab;margin-bottom:1.5rem;font-size:0.88rem;">
+      <i class="bi bi-info-circle"></i>
+      Toplantılar <strong th:text="${instructorZoomEmail}"></strong> Zoom hesabı altında oluşturuluyor.
     </div>
 
     <!-- Toplantı yok -->
@@ -78,6 +51,14 @@
          style="padding:4rem;text-align:center;color:var(--text-muted);">
       <div style="font-size:3rem;margin-bottom:1rem;color:var(--primary-600);"><i class="bi bi-camera-video"></i></div>
       <p>Bu kurs için henüz Zoom toplantısı oluşturulmadı.</p>
+      <form th:if="${instructorZoomEmail != null}"
+            th:action="@{/egitmen/zoom/kurslarim/{id}/toplu-olustur(id=${course.id})}" method="post"
+            style="margin-top:1rem;">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-calendar-plus"></i> Ders Programından Otomatik Oluştur
+        </button>
+      </form>
     </div>
 
     <!-- Yaklaşan / Aktif toplantılar -->

@@ -8,10 +8,13 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ZoomMeetingRepository extends JpaRepository<ZoomMeeting, Long> {
 
     List<ZoomMeeting> findByCourseIdOrderByScheduledAtDesc(Long courseId);
+
+    Optional<ZoomMeeting> findByZoomMeetingId(String zoomMeetingId);
 
     @Query("""
             SELECT m FROM ZoomMeeting m JOIN FETCH m.course c
@@ -40,4 +43,17 @@ public interface ZoomMeetingRepository extends JpaRepository<ZoomMeeting, Long> 
               AND m.status = SCHEDULED
             """)
     List<ZoomMeeting> findScheduledBetween(@Param("from") LocalDateTime from, @Param("to") LocalDateTime to);
+
+    long countByCourseIdAndStatusNot(Long courseId, ZoomMeetingStatus status);
+
+    long count();
+
+    long countByScheduledAtBeforeAndStatusAndHostJoinedFalse(LocalDateTime now, ZoomMeetingStatus status);
+
+    long countByRecordingUrlIsNotNull();
+
+    long countByHostJoinedTrue();
+
+    @Query("SELECT m FROM ZoomMeeting m JOIN FETCH m.course ORDER BY m.scheduledAt DESC")
+    List<ZoomMeeting> findAllWithCourse();
 }

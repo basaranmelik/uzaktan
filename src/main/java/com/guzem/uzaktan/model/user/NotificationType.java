@@ -12,6 +12,7 @@ public enum NotificationType {
     MEETING_CANCELLED("Canlı Ders İptal"),
     MEETING_REMINDER("Canlı Ders Hatırlatma"),
     MEETING_STARTED("Ders Başladı"),
+    RECORDING_READY("Ders Kaydı Hazır"),
     COURSE_ANNOUNCEMENT("Eğitmen Duyurusu"),
     NEW_ASSIGNMENT("Yeni Ödev Yayınlandı");
 

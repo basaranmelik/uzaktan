@@ -1,5 +1,6 @@
 package com.guzem.uzaktan.dto.response;
 
+import com.guzem.uzaktan.dto.AssessmentItem;
 import com.guzem.uzaktan.dto.CurriculumModule;
 import com.guzem.uzaktan.model.course.CourseCategory;
 import com.guzem.uzaktan.model.course.CourseLevel;
@@ -27,7 +28,6 @@ public class CourseResponse {
     private LocalDate startDate;
     private LocalDate endDate;
     private Integer hours;
-    private Integer module;
     private CourseCategory category;
     private String categoryDisplayName;
     private CourseStatus status;
@@ -45,7 +45,6 @@ public class CourseResponse {
     @Builder.Default
     @lombok.Setter
     private List<CurriculumModule> curriculumModules = Collections.emptyList();
-    private LocalDate certificateDeadline;
     private String imagePath;
     private String instructorName;
     private Long instructorId;
@@ -55,4 +54,48 @@ public class CourseResponse {
     private Double averageRating;
     private Integer reviewCount;
     private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    // ── UZEM Form Alanları ──────────────────────────────────────────────────
+
+    private String aim;
+    private Integer minHours;
+    private Integer maxHours;
+    private String courseVersion;
+    private String preparedBy;
+    private LocalDate preparedDate;
+    private String reviewedBy;
+    private String approvedBy;
+    private String trainingMethod;
+    private String usedMaterials;
+    private String usedPlatform;
+    private String instructorNotes;
+
+    /** Ham JSON stringler — edit formu pre-fill için */
+    private String targetAudience;
+    private String contentTopics;
+    private String learningOutcomes;
+    private String prerequisites;
+    private String assessmentItems;
+
+    /** Parse edilmiş listeler — detay sayfası gösterimi için */
+    @Builder.Default
+    @lombok.Setter
+    private List<String> targetAudienceList = Collections.emptyList();
+
+    @Builder.Default
+    @lombok.Setter
+    private List<String> contentTopicsList = Collections.emptyList();
+
+    @Builder.Default
+    @lombok.Setter
+    private List<String> learningOutcomesList = Collections.emptyList();
+
+    @Builder.Default
+    @lombok.Setter
+    private List<String> prerequisitesList = Collections.emptyList();
+
+    @Builder.Default
+    @lombok.Setter
+    private List<AssessmentItem> assessmentItemsList = Collections.emptyList();
 }

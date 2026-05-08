@@ -9,461 +9,7 @@
   <title th:text="${course.title} + ' — GUZEM'">Eğitim Detay | Gazi Üniversitesi</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <style>
-    /* ── Hero ── */
-    .cd-hero {
-      background: var(--gradient-hero);
-      padding: calc(var(--nav-height) + 1.5rem) 0 0;
-      position: relative;
-      overflow: hidden;
-    }
-    .cd-hero::before {
-      content: '';
-      position: absolute;
-      top: -30%; right: -15%;
-      width: 600px; height: 600px;
-      background: radial-gradient(circle, rgba(187,227,250,0.08) 0%, transparent 70%);
-      transform: rotate(45deg);
-    }
-    .cd-hero::after {
-      content: '';
-      position: absolute;
-      bottom: -20%; left: -10%;
-      width: 400px; height: 400px;
-      background: radial-gradient(circle, rgba(26,111,173,0.06) 0%, transparent 70%);
-      transform: rotate(-15deg);
-    }
-    .cd-hero-inner {
-      display: grid;
-      grid-template-columns: 1fr 420px;
-      gap: 3rem;
-      align-items: stretch;
-      position: relative;
-      z-index: 2;
-      padding-bottom: 3.5rem;
-    }
-    @media (max-width: 1024px) {
-      .cd-hero-inner { grid-template-columns: 1fr; }
-      .cd-sidebar { margin-top: 0; }
-    }
-
-    /* breadcrumb */
-    .cd-breadcrumb {
-      display: flex; align-items: center; gap: 0.4rem;
-      font-size: 0.82rem; margin-bottom: 1.5rem;
-    }
-    .cd-breadcrumb a { color: rgba(255,255,255,0.45); text-decoration: none; transition: color var(--transition-fast); }
-    .cd-breadcrumb a:hover { color: rgba(255,255,255,0.85); }
-    .cd-breadcrumb .sep { color: rgba(255,255,255,0.2); }
-    .cd-breadcrumb .cur { color: rgba(255,255,255,0.75); }
-
-    /* category badge */
-    .cd-category {
-      display: inline-flex; align-items: center; gap: 0.35rem;
-      padding: 0.35rem 1rem;
-      border-radius: var(--radius-full);
-      background: rgba(187,227,250,0.12);
-      border: 1px solid rgba(187,227,250,0.2);
-      color: var(--accent-500);
-      font-size: 0.78rem; font-weight: 600; letter-spacing: .04em;
-      text-transform: uppercase;
-      margin-bottom: 1.25rem;
-    }
-
-    /* title */
-    .cd-title {
-      color: #fff;
-      font-family: var(--font-heading);
-      font-size: clamp(1.75rem, 4vw, 2.4rem);
-      font-weight: 800;
-      line-height: 1.25;
-      margin-bottom: 1rem;
-    }
-
-    /* description */
-    .cd-desc {
-      color: rgba(255,255,255,0.6);
-      font-size: 1.125rem;
-      line-height: 1.7;
-      margin-bottom: 1.75rem;
-      max-width: 640px;
-      text-align: justify;
-    }
-
-    /* meta pills */
-    .cd-meta {
-      display: flex; flex-wrap: wrap; gap: 0.6rem;
-      margin-bottom: 1.5rem;
-    }
-    .cd-meta-pill {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      padding: 0.45rem 0.9rem;
-      border-radius: var(--radius-full);
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.1);
-      color: rgba(255,255,255,0.75);
-      font-size: 0.82rem;
-      transition: background var(--transition-fast);
-    }
-    .cd-meta-pill:hover { background: rgba(255,255,255,0.1); }
-    .cd-meta-pill i { color: var(--accent-500); font-size: 0.85rem; }
-
-    /* rating stars row */
-    .cd-stars { font-size: 1.1rem; margin-bottom: 0; margin-top: auto; }
-
-    /* ── Sidebar card ── */
-    .cd-sidebar {
-      background: var(--bg);
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      border-top: none;
-      overflow: hidden;
-      box-shadow: var(--shadow-xl);
-      position: relative;
-      z-index: 3;
-      margin-top: 0;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-    .cd-sidebar-head {
-      background: var(--bg-alt);
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--border);
-    }
-    .cd-sidebar-head h3 {
-      font-family: var(--font-heading);
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--text);
-      margin: 0;
-    }
-    .cd-sidebar-body { padding: 1rem 1.5rem; }
-
-    .cd-price-section {
-      background: var(--bg);
-      padding: 1rem 1.5rem;
-      text-align: center;
-    }
-    .cd-price {
-      font-family: var(--font-heading);
-      font-size: 2.4rem;
-      font-weight: 800;
-      color: var(--primary-600);
-      line-height: 1;
-    }
-    .cd-price-label {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      margin-top: 0.3rem;
-    }
-
-    /* enrolled badges */
-    .cd-enrolled-badge {
-      display: flex; align-items: center; gap: 0.6rem;
-      padding: 0.8rem 1rem;
-      border-radius: var(--radius-sm);
-      margin-bottom: 0.75rem;
-      font-size: 0.88rem; font-weight: 600;
-      background: var(--primary-50); color: var(--primary-600); border: 1px solid var(--primary-200);
-    }
-    .cd-enrolled-badge.pending {
-      background: #fef3c7; color: #92400e; border-color: #fde68a;
-    }
-
-    /* sidebar CTA button */
-    .cd-cta-btn {
-      display: block; width: 100%;
-      padding: 0.9rem; border-radius: var(--radius-sm);
-      text-align: center; font-weight: 700; font-size: 0.95rem;
-      cursor: pointer; transition: all var(--transition-fast);
-      margin-bottom: 0.75rem;
-      text-decoration: none;
-    }
-    .cd-cta-btn.primary {
-      background: var(--primary-600);
-      color: #fff; border: none;
-    }
-    .cd-cta-btn.primary:hover { background: var(--primary-700); transform: translateY(-1px); box-shadow: var(--shadow-md); }
-    .cd-cta-btn.outline {
-      background: transparent; color: var(--primary-600);
-      border: 1.5px solid var(--primary-200);
-    }
-    .cd-cta-btn.outline:hover { background: var(--primary-50); }
-    .cd-cta-btn.disabled-info {
-      background: var(--bg-alt); color: var(--text-muted);
-      border: 1px solid var(--border); cursor: default;
-    }
-
-    /* feature list */
-    .cd-feature-list { list-style: none; padding: 0; margin: 0; }
-    .cd-feature-list li {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 0.7rem 0;
-      border-bottom: 1px solid var(--gray-100);
-      font-size: 0.85rem;
-    }
-    .cd-feature-list li:last-child { border-bottom: none; }
-    .cd-feature-list .fl-label {
-      display: flex; align-items: center; gap: 0.5rem;
-      color: var(--text-muted);
-    }
-    .cd-feature-list .fl-label i { color: var(--primary-500); width: 16px; }
-    .cd-feature-list .fl-value { font-weight: 600; color: var(--text); }
-
-    /* ── Body sections ── */
-    .cd-body { background: var(--bg-alt); padding-bottom: 4rem; }
-
-    /* flash */
-    .cd-flash {
-      background: var(--primary-50); border: 1px solid var(--primary-200);
-      border-radius: var(--radius-sm); padding: 0.85rem 1.25rem;
-      color: var(--primary-600); font-weight: 600; font-size: 0.9rem;
-      display: flex; align-items: center; gap: 0.5rem;
-      margin-bottom: 1.5rem;
-    }
-    .cd-flash.error {
-      background: #fef2f2; border-color: #fca5a5; color: #991b1b;
-    }
-
-    /* section header */
-    .cd-section-header {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 0.75rem; flex-wrap: wrap;
-      margin-bottom: 1.5rem;
-    }
-    .cd-section-title {
-      font-family: var(--font-heading);
-      font-size: 1.25rem; font-weight: 700; color: var(--text);
-      display: flex; align-items: center; gap: 0.5rem;
-      margin: 0;
-    }
-    .cd-section-title i { color: var(--primary-500); }
-
-    /* start course banner */
-    .cd-start-banner {
-      background: var(--bg);
-      border: 1px solid var(--primary-200);
-      border-radius: var(--radius-md);
-      padding: 1.5rem 1.75rem;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 1rem;
-      margin-bottom: 2rem;
-      box-shadow: var(--shadow-sm);
-    }
-    .cd-start-banner-icon {
-      width: 52px; height: 52px;
-      border-radius: var(--radius-md);
-      background: var(--gradient-primary);
-      display: flex; align-items: center; justify-content: center;
-      color: #fff; font-size: 1.4rem;
-      flex-shrink: 0;
-    }
-    .cd-start-banner-text h4 { font-size: 1rem; margin: 0 0 0.2rem; color: var(--text); }
-    .cd-start-banner-text p { font-size: 0.82rem; color: var(--text-muted); margin: 0; }
-    .cd-start-btn {
-      display: inline-flex; align-items: center; gap: 0.5rem;
-      padding: 0.7rem 1.6rem;
-      border-radius: var(--radius-sm);
-      background: var(--primary-600);
-      color: #fff; font-weight: 700; font-size: 0.9rem;
-      text-decoration: none;
-      transition: all var(--transition-fast); flex-shrink: 0;
-      border: none;
-    }
-    .cd-start-btn:hover { background: var(--primary-700); transform: translateY(-1px); box-shadow: var(--shadow-md); color: #fff; }
-
-    /* pending warning */
-    .cd-pending-warn {
-      background: #fffbeb; border: 1px solid #fde68a;
-      border-radius: var(--radius-sm); padding: 1rem 1.25rem;
-      color: #92400e; font-size: 0.88rem;
-      display: flex; align-items: center; gap: 0.6rem;
-      margin-bottom: 2rem;
-    }
-
-    /* curriculum */
-    .cd-curriculum {
-      background: var(--bg);
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border);
-      overflow: hidden;
-      box-shadow: var(--shadow-sm);
-    }
-    .cd-curriculum-row {
-      display: grid;
-      grid-template-columns: 48px 1fr;
-      align-items: center; gap: 0.85rem;
-      padding: 1rem 1.5rem;
-      border-bottom: 1px solid var(--gray-100);
-      border-left: 3px solid transparent;
-      transition: background var(--transition-fast), border-color var(--transition-fast);
-    }
-    .cd-curriculum-row:last-child { border-bottom: none; }
-    .cd-curriculum-row:hover { background: var(--primary-50); border-left-color: var(--primary-600); }
-    .cd-num {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--primary-50); color: var(--primary-600);
-      font-size: 0.78rem; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      border: 1px solid var(--primary-200);
-    }
-    .cd-vtitle { font-weight: 600; font-size: 0.92rem; color: var(--text); }
-    .cd-vdesc {
-      font-size: 0.78rem; color: var(--text-muted); margin-top: 2px;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 480px;
-    }
-    .cd-rich-content {
-      background: var(--bg);
-      border-radius: var(--radius-md);
-      border: 1px solid var(--border);
-      box-shadow: var(--shadow-sm);
-      padding: 1.75rem 2rem;
-      margin-bottom: 2rem;
-    }
-    .cd-rich-content-list {
-      margin: 0;
-      padding-left: 1.25rem;
-      color: var(--text-alt);
-    }
-    .cd-rich-content-list li {
-      font-size: 1rem;
-      line-height: 1.9;
-      margin-bottom: 0.55rem;
-    }
-    .cd-rich-content-list li:last-child {
-      margin-bottom: 0;
-    }
-
-    /* empty */
-    .cd-empty {
-      padding: 3rem; text-align: center; color: var(--text-muted);
-    }
-    .cd-empty i { font-size: 2.5rem; margin-bottom: 0.75rem; display: block; color: var(--primary-200); }
-
-    /* enroll call */
-    .cd-enroll-call {
-      margin-top: 1.25rem; padding: 1rem 1.5rem;
-      background: var(--bg); border: 1px dashed var(--gray-400);
-      border-radius: var(--radius-sm); text-align: center;
-      font-size: 0.88rem; color: var(--text-muted);
-    }
-    .cd-enroll-call i { color: var(--primary-400); }
-
-    /* ── Reviews ── */
-    .cd-reviews { margin-top: 3.5rem; }
-    .cd-rev-card {
-      background: var(--bg);
-      border-radius: var(--radius-md);
-      padding: 1.5rem;
-      border: 1px solid var(--border);
-      margin-bottom: 1rem;
-      box-shadow: var(--shadow-sm);
-      transition: box-shadow var(--transition-fast);
-    }
-    .cd-rev-card:hover { box-shadow: var(--shadow-md); }
-    .cd-rev-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-    .cd-rev-user { display: flex; align-items: center; gap: 0.75rem; }
-    .cd-rev-avatar {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--gradient-primary); color: #fff;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 700; font-size: 1rem;
-      flex-shrink: 0;
-    }
-    .cd-rev-name { font-weight: 600; color: var(--text); font-size: 0.95rem; }
-    .cd-rev-date { font-size: 0.75rem; color: var(--text-muted); }
-    .cd-rev-stars { color: var(--warm-500); font-size: 0.9rem; }
-    .cd-rev-comment { color: var(--text-alt); font-size: 0.9rem; line-height: 1.7; margin: 0; }
-
-    /* rating form */
-    .cd-rating-form {
-      background: var(--bg); padding: 1.75rem;
-      border-radius: var(--radius-md); border: 1px solid var(--border);
-      margin-bottom: 2rem; box-shadow: var(--shadow-sm);
-    }
-    .star-rating { display: inline-flex; flex-direction: row-reverse; gap: 0.2rem; margin-bottom: 1rem; }
-    .star-rating input { display: none; }
-    .star-rating label { font-size: 1.6rem; color: var(--gray-300); cursor: pointer; transition: color var(--transition-fast); }
-    .star-rating input:checked ~ label,
-    .star-rating label:hover,
-    .star-rating label:hover ~ label { color: var(--warm-500); }
-
-    /* ── Course detail info cards (inside hero — glassmorphism) ── */
-    .cd-info-strip {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 0.75rem;
-      margin-bottom: 2.5rem;
-    }
-    .cd-info-card {
-      background: rgba(255,255,255,0.07);
-      border: 1px solid rgba(255,255,255,0.13);
-      border-radius: var(--radius-md);
-      padding: 1.1rem 1rem;
-      text-align: center;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      transition: transform var(--transition-fast), background var(--transition-fast);
-    }
-    .cd-info-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.12); }
-    .cd-info-card i {
-      font-size: 1.4rem; color: var(--accent-500);
-      margin-bottom: 0.45rem; display: block;
-    }
-    .cd-info-card .cd-ic-value {
-      font-size: 1.05rem; font-weight: 700; color: #fff;
-    }
-    .cd-info-card .cd-ic-label {
-      font-size: 0.73rem; color: rgba(255,255,255,0.5); margin-top: 0.15rem;
-    }
-
-    /* ── Eğitmen kartı ── */
-    .cd-instructor-card {
-      display: flex; align-items: center; gap: 1.5rem;
-      background: rgba(255,255,255,0.06);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: var(--radius-md);
-      padding: 1rem 1.25rem;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      transition: box-shadow var(--transition-fast), transform var(--transition-fast);
-      margin-top: 0;
-    }
-    .cd-instructor-card:hover { transform: translateY(-2px); background: rgba(255,255,255,0.1); }
-    .cd-instructor-avatar {
-      width: 60px; height: 60px; border-radius: 50%;
-      background: #ffffff;
-      color: var(--primary-600); font-family: var(--font-heading);
-      font-size: 1.6rem; font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      text-transform: uppercase;
-      box-shadow: var(--shadow-sm);
-    }
-    .cd-instructor-label {
-      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
-      letter-spacing: .06em; color: rgba(255,255,255,0.6); margin-bottom: 0.2rem;
-    }
-    .cd-instructor-name {
-      font-family: var(--font-heading);
-      font-size: 1.05rem; font-weight: 700; color: #ffffff;
-      margin-bottom: 0.4rem;
-    }
-    .cd-instructor-stats {
-      display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;
-      font-size: 0.82rem; color: rgba(255,255,255,0.8);
-    }
-    .cd-instructor-stats i { color: var(--accent-500); margin-right: 0.2rem; }
-    .cd-instructor-link {
-      display: inline-flex; align-items: center; gap: 0.3rem;
-      font-size: 0.8rem; font-weight: 600;
-      color: var(--accent-300); text-decoration: none;
-      transition: color var(--transition-fast);
-    }
-    .cd-instructor-link:hover { color: #fff; }
-  </style>
+  
 </head>
 <body>
 
@@ -477,7 +23,7 @@
       <!-- Sol: Bilgiler -->
       <div style="align-self: stretch; display: flex; flex-direction: column;">
         <nav class="cd-breadcrumb">
-          <a href="javascript:history.back()" style="margin-right:1rem; font-weight:600; color:var(--primary-200); border-right:1px solid rgba(255,255,255,0.2); padding-right:1rem; text-decoration:none;"><i class="bi bi-arrow-left"></i> Geri Dön</a>
+          <a href="#" id="goBackBtn" style="margin-right:1rem; font-weight:600; color:var(--primary-200); border-right:1px solid rgba(255,255,255,0.2); padding-right:1rem; text-decoration:none;"><i class="bi bi-arrow-left"></i> Geri Dön</a>
           <a th:href="@{/}"><i class="bi bi-house-fill"></i> Ana Sayfa</a>
           <span class="sep">/</span>
           <a th:href="@{/egitimler}">Eğitimler</a>
@@ -582,7 +128,6 @@
                th:text="${course.title}"></div>
         </div>
 
-
         <div class="cd-sidebar-body">
 
           <!-- Kurs türü badge -->
@@ -590,7 +135,7 @@
             <span th:text="${course.courseTypeDisplayName}"
                   th:style="${course.courseType != null and course.courseType.name() == 'ONLINE'} ?
                               'background:#d0ebff;color:#1864ab;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:700;' :
-                              (${course.courseType != null and course.courseType.name() == 'FACE_TO_FACE'} ?
+                              (${course.courseType != null and course.courseType.name() == 'HYBRID'} ?
                               'background:#d3f9d8;color:#2b8a3e;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:700;' :
                               'background:#f3d9fa;color:#862e9c;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:700;')">
               Online Eğitim
@@ -653,12 +198,6 @@
                 <i class="bi bi-award" style="color: #3b82f6; font-size: 1.1rem;"></i>
                 <span>Belge Türü: <strong style="color: #111827; font-weight: 600;">Sertifika</strong></span>
               </li>
-              <li th:if="${course.courseType == null or course.courseType.name() == 'ONLINE'}"
-                  style="padding: 1rem 0; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 0.75rem; color: #6b7280; font-size: 0.95rem;">
-                <i class="bi bi-star" style="color: #3b82f6; font-size: 1.1rem;"></i>
-                <span>Sertifika Son Talep Tarihi: <strong style="color: #111827; font-weight: 600;"
-                      th:text="${course.certificateDeadline != null ? #temporals.format(course.certificateDeadline, 'dd.MM.yyyy') : 'Belirtilmedi'}">Belirtilmedi</strong></span>
-              </li>
               <li style="padding: 1rem 0; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 0.75rem; color: #6b7280; font-size: 0.95rem;">
                 <i class="bi bi-play-circle" style="color: #3b82f6; font-size: 1.1rem;"></i>
                 <span>Cihaz Desteği : <strong style="color: #111827; font-weight: 600;">Mobil & Masaüstü</strong></span>
@@ -687,7 +226,7 @@
                             (${isTeacherOrAdmin != null and isTeacherOrAdmin} ? 'Eğitmen Erişimi — İzleme Yetkisi' : 'Bu kursa kayıtlısınız — Aktif')"></span>
             </div>
             <!-- Video İzle / Eğitime Başla (Sadece Online veya Video İçeren Örgün Eğitimler İçin) -->
-            <a th:if="${course.courseType == null or course.courseType.name() == 'ONLINE' or (course.courseType.name() == 'REMOTE_FORMAL' and not #lists.isEmpty(videos))}"
+            <a th:if="${course.courseType == null or course.courseType.name() == 'ONLINE' or (course.courseType.name() == 'HYBRID' and not #lists.isEmpty(videos))}"
                th:href="@{/egitimler/izle/{id}(id=${course.id})}" class="cd-cta-btn primary">
               <i class="bi bi-play-fill"></i> Eğitime Başla
             </a>
@@ -753,11 +292,166 @@
 
     <!-- Flash -->
 
+    <!-- ============================================================
+         KURS GENEL BİLGİLERİ — Açılır Panel
+         ============================================================ -->
+    <div class="cd-course-info-panel" style="margin-bottom:2rem;">
+      <div class="cd-info-header toggle-course-info" data-course-info-toggle style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; padding:1.2rem 1.5rem; background:linear-gradient(135deg, var(--primary-600), var(--primary-700)); border-radius:12px; color:#fff;">
+        <div style="display:flex; align-items:center; gap:0.75rem;">
+          <i class="bi bi-info-circle-fill" style="font-size:1.2rem;"></i>
+          <span style="font-weight:700; font-size:1.05rem;">Kurs Genel Bilgileri</span>
+        </div>
+        <div style="display:flex; align-items:center; gap:0.5rem;">
+          <span style="font-size:0.8rem; opacity:0.9;">Detayları Gör</span>
+          <i class="bi bi-chevron-down" data-course-info-chevron style="transition:transform 0.3s;"></i>
+        </div>
+      </div>
+
+      <div class="cd-info-body" data-course-info-body style="display:none; background:var(--bg); border:1px solid var(--border); border-top:none; border-radius:0 0 12px 12px; padding:1.5rem; box-shadow:var(--shadow-sm);">
+        <div class="cd-info-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:1.25rem;">
+
+          <!-- Eğitim Adı -->
+          <div class="cd-info-item">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-book-fill" style="color:var(--primary-500);"></i>
+              <span>Eğitim Adı</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.title}">Kurs Adı</div>
+          </div>
+
+          <!-- Eğitim Kategorisi -->
+          <div class="cd-info-item">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-folder-fill" style="color:var(--primary-500);"></i>
+              <span>Kategori</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.categoryDisplayName != null ? course.categoryDisplayName : 'Belirtilmedi'}">Kategori</div>
+          </div>
+
+          <!-- Seviye -->
+          <div class="cd-info-item">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-bar-chart-fill" style="color:var(--primary-500);"></i>
+              <span>Seviye</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.levelDisplayName != null ? course.levelDisplayName : 'Belirtilmedi'}">Seviye</div>
+          </div>
+
+          <!-- Eğitim Türü -->
+          <div class="cd-info-item">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-broadcast-pin" style="color:var(--primary-500);"></i>
+              <span>Eğitim Türü</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.courseTypeDisplayName != null ? course.courseTypeDisplayName : 'Belirtilmedi'}">Online Eğitim</div>
+          </div>
+
+          <!-- Eğitmen -->
+          <div class="cd-info-item">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-person-fill" style="color:var(--primary-500);"></i>
+              <span>Eğitmen</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;">
+              <span th:if="${course.instructors != null and !course.instructors.isEmpty()}" th:text="${#strings.listJoin(course.instructors.![name], ', ')}">Eğitmen Adı</span>
+              <span th:if="${(course.instructors == null or course.instructors.isEmpty()) and course.instructorName != null}" th:text="${course.instructorName}">Eğitmen Adı</span>
+              <span th:if="${(course.instructors == null or course.instructors.isEmpty()) and course.instructorName == null}">Belirtilmedi</span>
+            </div>
+          </div>
+
+          <!-- Hazırlama Tarihi -->
+          <div class="cd-info-item" th:if="${course.createdAt != null}">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-calendar3" style="color:var(--primary-500);"></i>
+              <span>Hazırlama Tarihi</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${#temporals.format(course.createdAt, 'dd.MM.yyyy')}">01.01.2024</div>
+          </div>
+
+          <!-- Versiyon (kullanıcı tanımlı) -->
+          <div class="cd-info-item" th:if="${course.courseVersion != null}">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-git" style="color:var(--primary-500);"></i>
+              <span>Versiyon</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.courseVersion}">V1</div>
+          </div>
+
+          <!-- Min/Maks Süre -->
+          <div class="cd-info-item" th:if="${course.minHours != null or course.maxHours != null}">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-clock" style="color:var(--primary-500);"></i>
+              <span>Eğitim Süresi</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;">
+              <span th:if="${course.minHours != null and course.maxHours != null}"
+                    th:text="${course.minHours} + ' – ' + ${course.maxHours} + ' Saat'"></span>
+              <span th:if="${course.minHours != null and course.maxHours == null}"
+                    th:text="'Min. ' + ${course.minHours} + ' Saat'"></span>
+              <span th:if="${course.minHours == null and course.maxHours != null}"
+                    th:text="'Maks. ' + ${course.maxHours} + ' Saat'"></span>
+            </div>
+          </div>
+
+          <!-- Hazırlayan / Kontrol Eden / Onaylayan -->
+          <div class="cd-info-item" th:if="${course.preparedBy != null}">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-person-check" style="color:var(--primary-500);"></i>
+              <span>Hazırlayan</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.preparedBy}"></div>
+          </div>
+
+          <div class="cd-info-item" th:if="${course.reviewedBy != null}">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-eye" style="color:var(--primary-500);"></i>
+              <span>Kontrol Eden</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.reviewedBy}"></div>
+          </div>
+
+          <div class="cd-info-item" th:if="${course.approvedBy != null}">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-patch-check" style="color:var(--primary-500);"></i>
+              <span>Onaylayan</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.approvedBy}"></div>
+          </div>
+
+          <div class="cd-info-item" th:if="${course.preparedDate != null}">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-calendar-check" style="color:var(--primary-500);"></i>
+              <span>Hazırlama Tarihi</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;"
+                 th:text="${#temporals.format(course.preparedDate, 'dd.MM.yyyy')}"></div>
+          </div>
+
+          <div class="cd-info-item" th:if="${course.usedPlatform != null}">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-display" style="color:var(--primary-500);"></i>
+              <span>Platform / Araç</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.usedPlatform}"></div>
+          </div>
+
+          <!-- Güncelleme Tarihi -->
+          <div class="cd-info-item" th:if="${course.updatedAt != null}">
+            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
+              <i class="bi bi-arrow-repeat" style="color:var(--primary-500);"></i>
+              <span>Son Güncelleme</span>
+            </div>
+            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${#temporals.format(course.updatedAt, 'dd.MM.yyyy')}">01.01.2024</div>
+          </div>
+
+        </div>
+      </div>
+    </div>
 
     <!-- ============================================================
          KURS MÜFREDATı — Tüm Kurs Tipleri (JSON modüller)
          ============================================================ -->
-    <div th:if="${course.curriculumModules.size() > 0}">
+    <div th:if="${course != null and course.curriculumModules != null and course.curriculumModules.size() > 0}">
 
       <!-- Başlık -->
       <div class="cd-section-header">
@@ -797,12 +491,51 @@
                     <p th:if="${cm.description != null and !#strings.isEmpty(cm.description)}"
                        class="cm-accord-desc" th:text="${cm.description}"></p>
 
+                    <!-- Modül Amacı -->
+                    <div th:if="${cm.purpose != null and !#strings.isEmpty(cm.purpose)}"
+                         style="margin-bottom:1rem;">
+                      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">
+                        <i class="bi bi-bullseye" style="color:var(--primary-400);"></i> Modül Amacı
+                      </div>
+                      <p style="font-size:0.9rem;color:var(--text-alt);line-height:1.7;margin:0;" th:text="${cm.purpose}"></p>
+                    </div>
+
+                    <!-- Konu Başlıkları -->
                     <div th:if="${cm.topics != null and !cm.topics.isEmpty()}"
-                         class="cm-accord-topics">
+                         class="cm-accord-topics" style="margin-bottom:1rem;">
                         <div th:each="topic, tSt : ${cm.topics}" class="cm-accord-topic">
                             <i class="bi bi-check2" th:style="${tSt.index % 2 == 0} ? 'color:#2b8a3e;' : 'color:#e67700;'"></i>
                             <span th:text="${topic}">Konu</span>
                         </div>
+                    </div>
+
+                    <!-- Uygulama / Etkinlikler -->
+                    <div th:if="${cm.activities != null and !cm.activities.isEmpty()}"
+                         style="margin-bottom:1rem;">
+                      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.4rem;">
+                        <i class="bi bi-lightning-fill" style="color:#e67700;"></i> Uygulama / Etkinlikler
+                      </div>
+                      <ul style="margin:0;padding-left:1.25rem;color:var(--text-alt);font-size:0.88rem;line-height:1.8;">
+                        <li th:each="act : ${cm.activities}" th:text="${act}"></li>
+                      </ul>
+                    </div>
+
+                    <!-- Modül Kazanımları -->
+                    <div th:if="${cm.outcomes != null and !cm.outcomes.isEmpty()}"
+                         style="margin-bottom:1rem;">
+                      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.4rem;">
+                        <i class="bi bi-check2-circle" style="color:#2b8a3e;"></i> Modül Kazanımları
+                      </div>
+                      <ul style="margin:0;padding-left:1.25rem;color:var(--text-alt);font-size:0.88rem;line-height:1.8;">
+                        <li th:each="out : ${cm.outcomes}" th:text="${out}"></li>
+                      </ul>
+                    </div>
+
+                    <!-- Süre -->
+                    <div th:if="${cm.durationHours != null}"
+                         style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;">
+                      <i class="bi bi-clock" style="color:var(--primary-400);"></i>
+                      Süre: <strong th:text="${cm.durationHours} + ' saat'"></strong>
                     </div>
 
                 </div>
@@ -810,67 +543,165 @@
         </div>
 
       <!-- Accordion CSS -->
-      <style>
-        .cm-accord-card {
-          background: var(--bg);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          overflow: hidden;
-          box-shadow: var(--shadow-sm);
-          transition: box-shadow var(--transition-fast);
-        }
-        .cm-accord-card:hover { box-shadow: var(--shadow-md); }
-        .cm-accord-head {
-          display: flex; align-items: center; justify-content: space-between;
-          padding: 1.1rem 1.4rem;
-          cursor: pointer;
-          user-select: none;
-          gap: 1rem;
-          transition: background var(--transition-fast);
-        }
-        .cm-accord-head:hover { background: var(--primary-50); }
-        .cm-accord-num {
-          font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
-          letter-spacing: 0.08em; color: var(--primary-600);
-          white-space: nowrap;
-        }
-        .cm-accord-title {
-          font-size: 1.02rem; font-weight: 700; color: var(--text);
-          line-height: 1.35;
-        }
-        .cm-accord-chevron { color: var(--text-muted); flex-shrink: 0; font-size: 0.9rem; }
-        .cm-accord-body {
-          padding: 1.1rem 1.4rem 1.4rem;
-          border-top: 1px solid var(--gray-100);
-        }
-        .cm-accord-desc {
-          font-size: 0.92rem; color: var(--text-alt);
-          line-height: 1.7; margin: 0 0 1.1rem;
-          text-align: justify;
-        }
-        .cm-accord-topics {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 0.5rem 1.5rem;
-        }
-        @media (max-width: 580px) {
-          .cm-accord-topics { grid-template-columns: 1fr; }
-        }
-        .cm-accord-topic {
-          display: flex; align-items: flex-start; gap: 0.5rem;
-          font-size: 0.88rem; color: var(--text-alt); line-height: 1.4;
-        }
-        .cm-accord-topic i { flex-shrink: 0; font-size: 0.95rem; margin-top: 1px; font-weight: 700; }
-      </style>
+      
 
     </div>
 
     <!-- Müfredat yoksa boş durum -->
-    <div th:if="${course.curriculumModules.size() == 0}"
+    <div th:if="${course != null and course.curriculumModules != null and course.curriculumModules.size() == 0}"
          class="cd-curriculum" style="margin-bottom:2.5rem;">
       <div class="cd-empty">
         <i class="bi bi-journal-x"></i>
         <p style="margin:0;">Bu kurs için henüz müfredat eklenmemiş.</p>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════════════════
+         UZEM FORM BÖLÜMLERİ
+         ══════════════════════════════════════════════════════════ -->
+
+    <!-- Eğitim Amacı -->
+    <div th:if="${course.aim != null and !#strings.isEmpty(course.aim)}" style="margin-bottom:2.5rem;">
+      <div class="cd-section-header">
+        <h2 class="cd-section-title"><i class="bi bi-bullseye"></i> Eğitimin Amacı</h2>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:var(--shadow-sm);">
+        <p style="font-size:0.95rem;color:var(--text-alt);line-height:1.8;margin:0;" th:text="${course.aim}"></p>
+      </div>
+    </div>
+
+    <!-- Hedef Kitle -->
+    <div th:if="${course.targetAudienceList != null and !course.targetAudienceList.isEmpty()}" style="margin-bottom:2.5rem;">
+      <div class="cd-section-header">
+        <h2 class="cd-section-title"><i class="bi bi-people-fill"></i> Hedef Kitle</h2>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:var(--shadow-sm);">
+        <ul style="margin:0;padding-left:1.4rem;color:var(--text-alt);font-size:0.93rem;line-height:1.9;">
+          <li th:each="item : ${course.targetAudienceList}" th:text="${item}"></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Eğitim Kazanımları -->
+    <div th:if="${course.learningOutcomesList != null and !course.learningOutcomesList.isEmpty()}" style="margin-bottom:2.5rem;">
+      <div class="cd-section-header">
+        <h2 class="cd-section-title"><i class="bi bi-award"></i> Eğitim Kazanımları</h2>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:var(--shadow-sm);">
+        <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 1rem;">
+          Bu programı başarıyla tamamlayan katılımcılar:
+        </p>
+        <ul style="margin:0;padding-left:1.4rem;color:var(--text-alt);font-size:0.93rem;line-height:1.9;">
+          <li th:each="outcome : ${course.learningOutcomesList}" th:text="${outcome}"></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Ön Koşullar -->
+    <div th:if="${course.prerequisitesList != null and !course.prerequisitesList.isEmpty()}" style="margin-bottom:2.5rem;">
+      <div class="cd-section-header">
+        <h2 class="cd-section-title"><i class="bi bi-check2-square"></i> Ön Koşullar</h2>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:var(--shadow-sm);">
+        <ul style="margin:0;padding-left:1.4rem;color:var(--text-alt);font-size:0.93rem;line-height:1.9;">
+          <li th:each="item : ${course.prerequisitesList}" th:text="${item}"></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Eğitim Konu Başlıkları -->
+    <div th:if="${course.contentTopicsList != null and !course.contentTopicsList.isEmpty()}" style="margin-bottom:2.5rem;">
+      <div class="cd-section-header">
+        <h2 class="cd-section-title"><i class="bi bi-list-ol"></i> Eğitim Konu Başlıkları</h2>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:var(--shadow-sm);">
+        <ul style="margin:0;padding-left:1.4rem;color:var(--text-alt);font-size:0.93rem;line-height:1.9;">
+          <li th:each="t : ${course.contentTopicsList}" th:text="${t}"></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Ölçme ve Değerlendirme -->
+    <div th:if="${course.assessmentItemsList != null and !course.assessmentItemsList.isEmpty()}" style="margin-bottom:2.5rem;">
+      <div class="cd-section-header">
+        <h2 class="cd-section-title"><i class="bi bi-graph-up"></i> Ölçme ve Değerlendirme</h2>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm);">
+        <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+          <thead>
+            <tr style="background:var(--bg-alt);border-bottom:2px solid var(--border);">
+              <th style="padding:0.85rem 1.25rem;text-align:left;font-weight:700;color:var(--text-muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;">Değerlendirme Unsuru</th>
+              <th style="padding:0.85rem 1.25rem;text-align:left;font-weight:700;color:var(--text-muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;">Açıklama</th>
+              <th style="padding:0.85rem 1.25rem;text-align:center;font-weight:700;color:var(--text-muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;">Ağırlık</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="ai, stat : ${course.assessmentItemsList}"
+                th:style="${stat.odd} ? 'background:var(--bg-alt);' : 'background:var(--bg);'"
+                style="border-bottom:1px solid var(--gray-100);">
+              <td style="padding:0.85rem 1.25rem;font-weight:600;color:var(--text);" th:text="${ai.type}"></td>
+              <td style="padding:0.85rem 1.25rem;color:var(--text-alt);" th:text="${ai.description}"></td>
+              <td style="padding:0.85rem 1.25rem;text-align:center;font-weight:700;color:var(--primary-600);"
+                  th:text="${ai.weight != null ? ai.weight + '%' : '—'}"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Eğitim Yöntemi ve Materyaller -->
+    <div th:if="${course.trainingMethod != null or course.usedMaterials != null}" style="margin-bottom:2.5rem;">
+      <div class="cd-section-header">
+        <h2 class="cd-section-title"><i class="bi bi-tools"></i> Eğitim Yöntemi ve Materyaller</h2>
+      </div>
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:1.25rem;">
+        <div th:if="${course.trainingMethod != null}">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.4rem;">
+            <i class="bi bi-easel" style="color:var(--primary-400);"></i> Eğitim Yöntemi
+          </div>
+          <p style="font-size:0.93rem;color:var(--text-alt);line-height:1.7;margin:0;" th:text="${course.trainingMethod}"></p>
+        </div>
+        <div th:if="${course.usedMaterials != null}">
+          <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.4rem;">
+            <i class="bi bi-file-earmark-richtext" style="color:var(--primary-400);"></i> Kullanılacak Materyaller
+          </div>
+          <p style="font-size:0.93rem;color:var(--text-alt);line-height:1.7;margin:0;" th:text="${course.usedMaterials}"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ders Dokümanları -->
+    <div th:if="${documents != null and !#lists.isEmpty(documents)}" style="margin-bottom:2.5rem;">
+      <div class="cd-section-header">
+        <h2 class="cd-section-title"><i class="bi bi-file-earmark-richtext"></i> Ders Dokümanları</h2>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        <a th:each="doc : ${documents}"
+           th:href="@{'/uploads/' + ${doc.filePath}}"
+           target="_blank"
+           style="display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1.25rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;text-decoration:none;transition:all 0.15s;">
+          <div style="width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">
+            <i th:switch="${#strings.toLowerCase(doc.fileType)}"
+               th:case="'application/pdf'" class="bi bi-file-pdf-fill" style="color:#dc2626;"></i>
+            <i th:case="'application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'"
+               class="bi bi-file-word-fill" style="color:#2563eb;"></i>
+            <i th:case="'application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation'"
+               class="bi bi-file-ppt-fill" style="color:#ea580c;"></i>
+            <i th:case="'application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'"
+               class="bi bi-file-excel-fill" style="color:#16a34a;"></i>
+            <i th:case="'image/jpeg','image/png','image/webp','image/gif'"
+               class="bi bi-file-image-fill" style="color:#8b5cf6;"></i>
+            <i th:case="*" class="bi bi-file-earmark-fill" style="color:var(--text-muted);"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:0.92rem;color:var(--text-alt);" th:text="${doc.title}">Doküman</div>
+            <div style="font-size:0.75rem;color:var(--text-muted);display:flex;gap:0.75rem;margin-top:0.2rem;">
+              <span th:text="${doc.originalFileName}">dosya.pdf</span>
+              <span th:text="${#numbers.formatDecimal(doc.fileSize / 1024.0, 1, 1) + ' KB'}">KB</span>
+            </div>
+          </div>
+          <i class="bi bi-download" style="color:var(--primary-600);font-size:1.1rem;flex-shrink:0;"></i>
+        </a>
       </div>
     </div>
 
@@ -911,7 +742,6 @@
       </div>
     </div>
 
-
     <!-- YORUMLAR -->
     <div class="cd-reviews">
       <div class="cd-section-header">
@@ -920,9 +750,7 @@
         </h2>
       </div>
 
-      <div th:if="${errorMessage}" class="cd-flash error" style="margin-bottom:1.5rem;">
-        <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${errorMessage}"></span>
-      </div>
+      <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
 
       <!-- Form (sadece aktif kayitli ve yorum yapmamissa) -->
       <div th:if="${isActiveEnrolled != null and isActiveEnrolled and hasReviewed != null and !hasReviewed}" class="cd-rating-form">
@@ -936,15 +764,15 @@
             <input type="radio" id="star1" name="rating" value="1"/><label for="star1" title="1 Yıldız"><i class="bi bi-star-fill"></i></label>
           </div>
           <textarea name="comment" rows="3" placeholder="Eğitim hakkındaki düşüncelerinizi paylaşın..." required
-                    style="width:100%; border:1px solid var(--border); border-radius:var(--radius-sm); padding:0.85rem; margin-bottom:1rem; font-family:inherit; font-size:0.9rem; resize:vertical; transition: border-color var(--transition-fast); background: var(--bg-alt);"
-                    onfocus="this.style.borderColor='var(--primary-400)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+                    class="review-textarea"
+                    style="width:100%; border:1px solid var(--border); border-radius:var(--radius-sm); padding:0.85rem; margin-bottom:1rem; font-family:inherit; font-size:0.9rem; resize:vertical; transition: border-color var(--transition-fast); background: var(--bg-alt);"></textarea>
           <button type="submit" class="cd-start-btn" style="cursor:pointer;">
             <i class="bi bi-send-fill"></i> Yorumu Gönder
           </button>
         </form>
       </div>
 
-      <div th:if="${hasReviewed != null and hasReviewed}" class="cd-flash" style="background:var(--bg); border-color:var(--border); color:var(--text-muted); font-weight:500;">
+      <div th:if="${hasReviewed != null and hasReviewed}" class="flash-info" style="padding:12px 20px;border-radius:10px;font-size:0.9rem;font-weight:500;display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
         <i class="bi bi-info-circle"></i> Bu kurs için değerlendirmenizi aldık. Katkınız için teşekkürler!
       </div>
 

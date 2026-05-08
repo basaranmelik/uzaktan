@@ -16,17 +16,17 @@ import java.util.Map;
 
 public interface CourseService {
 
-    Page<CourseSummaryResponse> findPublishedCourses(int page, int size);
+    Page<CourseSummaryResponse> findPublishedCourses(String sort, int page, int size);
 
-    Page<CourseSummaryResponse> findByCategory(CourseCategory category, int page, int size);
+    Page<CourseSummaryResponse> findByCategory(CourseCategory category, String sort, int page, int size);
 
-    Page<CourseSummaryResponse> search(String keyword, int page, int size);
+    Page<CourseSummaryResponse> search(String keyword, String sort, int page, int size);
 
-    Page<CourseSummaryResponse> findPublishedCoursesForUser(Long userId, int page, int size);
+    Page<CourseSummaryResponse> findPublishedCoursesForUser(Long userId, String sort, int page, int size);
 
     CourseResponse findById(Long id);
 
-    CourseResponse create(CourseCreateRequest request, MultipartFile image);
+    CourseResponse create(CourseCreateRequest request, MultipartFile image, Long creatorId);
 
     CourseResponse update(Long id, CourseUpdateRequest request, MultipartFile image);
 

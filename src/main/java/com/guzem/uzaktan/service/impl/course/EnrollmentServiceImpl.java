@@ -148,6 +148,7 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     }
 
     @Override
+    @CacheEvict(value = "enrollmentStatus", key = "#userId + '-' + #courseId")
     public void recalculateProgress(Long userId, Long courseId) {
         Enrollment enrollment = enrollmentRepository.findByUserIdAndCourseId(userId, courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kayıt", "userId+courseId", userId));
@@ -201,5 +202,6 @@ public class EnrollmentServiceImpl implements EnrollmentService {
     public long countByStatus(EnrollmentStatus status) {
         return enrollmentRepository.countByStatus(status);
     }
+
 
 }

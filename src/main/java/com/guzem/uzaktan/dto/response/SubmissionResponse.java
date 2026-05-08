@@ -29,5 +29,4 @@ public class SubmissionResponse {
     private Integer score;
     private String feedback;
     private LocalDateTime submittedAt;
-    private LocalDateTime gradedAt;
 }

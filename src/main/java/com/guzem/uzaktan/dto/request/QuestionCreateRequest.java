@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -40,4 +41,11 @@ public class QuestionCreateRequest {
 
     @Size(max = 5000, message = "Açıklama en fazla 5000 karakter olabilir.")
     private String explanation;
+
+    @NotNull(message = "Modül seçimi zorunludur.")
+    private Integer moduleIndex;
+
+    private MultipartFile image;
+
+    private MultipartFile video;
 }

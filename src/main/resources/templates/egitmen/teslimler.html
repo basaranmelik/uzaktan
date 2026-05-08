@@ -7,84 +7,7 @@
   <title th:text="${assignment.title} + ' — Teslimler'">Teslimler</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <style>
-    .stat-strip {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1.75rem;
-    }
-    .stat-box {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1.1rem 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
-    .stat-box-label {
-      font-size: 0.75rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: .04em;
-      color: var(--text-muted);
-    }
-    .stat-box-value {
-      font-size: 1.75rem;
-      font-weight: 800;
-      line-height: 1;
-      color: var(--primary-700);
-    }
-    .stat-box-sub {
-      font-size: 0.78rem;
-      color: var(--text-muted);
-      margin-top: 0.15rem;
-    }
-    .progress-thin {
-      height: 5px;
-      border-radius: 10px;
-      background: var(--gray-100);
-      overflow: hidden;
-      margin-top: 0.5rem;
-    }
-    .progress-thin-fill {
-      height: 100%;
-      border-radius: 10px;
-      background: var(--gradient-primary);
-      transition: width .4s ease;
-    }
-    .not-submitted-section {
-      margin-top: 2rem;
-      border: 1px solid #fca5a5;
-      border-radius: 12px;
-      overflow: hidden;
-    }
-    .not-submitted-header {
-      background: #fef2f2;
-      padding: 0.85rem 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-weight: 700;
-      color: #991b1b;
-      font-size: 0.95rem;
-      border-bottom: 1px solid #fca5a5;
-    }
-    .all-submitted-banner {
-      margin-top: 2rem;
-      background: #f0fdf4;
-      border: 1px solid #86efac;
-      border-radius: 12px;
-      padding: 1.1rem 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      color: #166534;
-      font-weight: 600;
-      font-size: 0.95rem;
-    }
-  </style>
+  
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -102,13 +25,13 @@
     <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
       <div>
         <h1><i class="bi bi-inbox-fill"></i> Teslim İstatistikleri</h1>
-        <p style="margin:0;color:var(--text-muted);" th:text="${assignment.title}">Ödev adı</p>
+        <p style="margin:0;" th:text="${assignment.title}">Ödev adı</p>
       </div>
       <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
-        <div style="font-size:0.82rem;color:var(--text-muted);">
+        <div style="font-size:0.82rem;color:rgba(255,255,255,0.8);">
           Son Tarih:
           <strong th:text="${#temporals.format(assignment.dueDate,'dd.MM.yyyy HH:mm')}"
-                  th:style="${assignment.dueDate.isBefore(#temporals.createNow())} ? 'color:#e03131;' : 'color:var(--primary-600);'">—</strong>
+                  th:style="${assignment.dueDate.isBefore(#temporals.createNow())} ? 'color:#ff8787;' : 'color:rgba(255,255,255,0.9);'">—</strong>
           &nbsp;·&nbsp; Maks: <strong th:text="${assignment.maxScore}">0</strong> puan
         </div>
         <a th:if="${assignment.submissionCount > 0}"
@@ -123,6 +46,8 @@
 
 <section class="section">
   <div class="container">
+
+    <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
 
     <!-- ── İstatistik Kartları ── -->
     <div class="stat-strip">

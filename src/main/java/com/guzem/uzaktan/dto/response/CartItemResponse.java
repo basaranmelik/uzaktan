@@ -4,7 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 @Getter
 @Builder
@@ -14,5 +13,4 @@ public class CartItemResponse {
     private String courseTitle;
     private String categoryDisplayName;
     private BigDecimal price;
-    private LocalDateTime addedAt;
 }

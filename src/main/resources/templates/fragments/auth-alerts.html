@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+  <div th:fragment="authAlerts">
+
+    <div th:if="${param.error}" class="alert-box alert-error">
+      <i class="bi bi-exclamation-triangle-fill"></i> E-posta veya şifre hatalı.
+    </div>
+    <div th:if="${param.logout}" class="alert-box alert-success">
+      <i class="bi bi-check-circle-fill"></i> Başarıyla çıkış yapıldı.
+    </div>
+    <div th:if="${param['kayit'] == 'basarili'}" class="alert-box alert-success">
+      <i class="bi bi-check-circle-fill"></i> Kayıt başarılı! Giriş yapabilirsiniz.
+    </div>
+    <div th:if="${param['suresi-doldu']}" class="alert-box alert-warning">
+      <i class="bi bi-hourglass-split"></i> Oturumunuz sona erdi. Lütfen tekrar giriş yapın.
+    </div>
+
+  </div>
+
+  <div th:fragment="authAlertsRegister">
+
+    <div th:if="${globalError}" class="alert-box alert-error">
+      <i class="bi bi-exclamation-triangle-fill"></i> <span th:text="${globalError}"></span>
+    </div>
+
+  </div>
+
+  <div th:fragment="authAlertsPassword">
+
+    <div th:if="${forced}" class="warning-box">
+      Hesabınız için yeni bir şifre belirlemeniz gerekmektedir. Şifrenizi değiştirmeden diğer sayfalara erişim sağlayamazsınız.
+    </div>
+
+    <div th:if="${error}" class="error-msg" th:text="${error}"></div>
+
+  </div>
+
+</body>
+
+</html>

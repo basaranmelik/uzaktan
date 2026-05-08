@@ -16,6 +16,7 @@ public class ZoomConfig {
     private String accountId;
     private String clientId;
     private String clientSecret;
+    private String webhookSecret;
 
     @Bean("zoomRestClient")
     public RestClient zoomRestClient() {

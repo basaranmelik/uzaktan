@@ -1,5 +1,6 @@
 package com.guzem.uzaktan.service.impl.course;
 
+import com.guzem.uzaktan.dto.CurriculumModule;
 import com.guzem.uzaktan.dto.request.CourseCreateRequest;
 import com.guzem.uzaktan.dto.request.CourseUpdateRequest;
 import com.guzem.uzaktan.dto.response.CourseResponse;
@@ -15,10 +16,10 @@ import com.guzem.uzaktan.model.course.CourseReview;
 import com.guzem.uzaktan.repository.course.CourseRepository;
 import com.guzem.uzaktan.repository.course.CourseReviewRepository;
 import com.guzem.uzaktan.repository.course.EnrollmentRepository;
-import com.guzem.uzaktan.repository.instructor.InstructorRepository;
 import com.guzem.uzaktan.repository.user.UserRepository;
 import com.guzem.uzaktan.service.course.CourseService;
 import com.guzem.uzaktan.service.common.FileStorageService;
+import com.guzem.uzaktan.service.instructor.ZoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -32,6 +33,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -50,14 +52,14 @@ public class CourseServiceImpl implements CourseService {
     private final CourseReviewRepository courseReviewRepository;
     private final EnrollmentRepository enrollmentRepository;
     private final UserRepository userRepository;
-    private final InstructorRepository instructorRepository;
     private final FileStorageService fileStorageService;
     private final CourseMapper courseMapper;
+    private final ZoomService zoomService;
 
     @Override
     @Transactional(readOnly = true)
-    public Page<CourseSummaryResponse> findPublishedCourses(int page, int size) {
-        PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    public Page<CourseSummaryResponse> findPublishedCourses(String sort, int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size, resolveSort(sort));
         Page<Course> coursePage = courseRepository.findByStatus(CourseStatus.PUBLISHED, pageable);
         Map<Long, Long> counts = buildEnrollmentCountMap(coursePage.getContent().stream().map(Course::getId).toList());
         return coursePage.map(c -> courseMapper.toSummaryResponse(c, false, counts.getOrDefault(c.getId(), 0L)));
@@ -65,8 +67,8 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<CourseSummaryResponse> findByCategory(CourseCategory category, int page, int size) {
-        PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    public Page<CourseSummaryResponse> findByCategory(CourseCategory category, String sort, int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size, resolveSort(sort));
         Page<Course> coursePage = courseRepository.findByStatusAndCategory(CourseStatus.PUBLISHED, category, pageable);
         Map<Long, Long> counts = buildEnrollmentCountMap(coursePage.getContent().stream().map(Course::getId).toList());
         return coursePage.map(c -> courseMapper.toSummaryResponse(c, false, counts.getOrDefault(c.getId(), 0L)));
@@ -74,8 +76,8 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<CourseSummaryResponse> search(String keyword, int page, int size) {
-        PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    public Page<CourseSummaryResponse> search(String keyword, String sort, int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size, resolveSort(sort));
         Page<Course> coursePage = courseRepository.searchByKeyword(keyword, CourseStatus.PUBLISHED, pageable);
         Map<Long, Long> counts = buildEnrollmentCountMap(coursePage.getContent().stream().map(Course::getId).toList());
         return coursePage.map(c -> courseMapper.toSummaryResponse(c, false, counts.getOrDefault(c.getId(), 0L)));
@@ -83,8 +85,8 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<CourseSummaryResponse> findPublishedCoursesForUser(Long userId, int page, int size) {
-        PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+    public Page<CourseSummaryResponse> findPublishedCoursesForUser(Long userId, String sort, int page, int size) {
+        PageRequest pageable = PageRequest.of(page, size, resolveSort(sort));
         Page<Course> courses = courseRepository.findByStatus(CourseStatus.PUBLISHED, pageable);
 
         Set<Long> enrolledCourseIds = enrollmentRepository.findByUserIdWithCourse(userId).stream()
@@ -106,32 +108,26 @@ public class CourseServiceImpl implements CourseService {
 
     @Override
     @CacheEvict(value = {"publishedCourses", "coursesByCategory", "courseStats"}, allEntries = true)
-    public CourseResponse create(CourseCreateRequest request, MultipartFile image) {
+    public CourseResponse create(CourseCreateRequest request, MultipartFile image, Long creatorId) {
         validateCourseTypeFields(request.getCourseType(), request.getQuota(),
                 request.getStartDate(), request.getEndDate(), request.getLocation());
         normalizePrice(request);
         Course course = courseMapper.toEntity(request);
-        
-        // Tek eğitmen (User) ataması
-        if (request.getInstructorId() != null) {
-            User instructor = userRepository.findById(request.getInstructorId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", request.getInstructorId()));
+
+        // Eğitmen ataması — belirtilmemişse kursu oluşturan kullanıcı atanır
+        Long resolvedInstructorId = request.getInstructorId() != null ? request.getInstructorId() : creatorId;
+        if (resolvedInstructorId != null) {
+            User instructor = userRepository.findById(resolvedInstructorId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", resolvedInstructorId));
             course.setInstructor(instructor);
+            course.setInstructors(new ArrayList<>(List.of(instructor)));
+            course.setInstructorName(instructor.getFirstName() + " " + instructor.getLastName());
         }
-        
-        // Çoklu eğitmen (Instructor) ataması - mapper'da yapıldı, burada sadece sync
-        if (request.getInstructorIds() != null && !request.getInstructorIds().isEmpty()) {
-            var instructors = instructorRepository.findAllById(request.getInstructorIds());
-            course.setInstructors(instructors);
-            // instructorName'i ilk eğitmenin adıyla sync et
-            if (!instructors.isEmpty() && course.getInstructorName() == null) {
-                course.setInstructorName(instructors.get(0).getName());
-            }
-        }
-        
+
         Course saved = courseRepository.save(course);
         handleCourseImage(saved, image);
         saved = courseRepository.save(saved);
+        zoomService.generateScheduledMeetings(saved.getId());
         return courseMapper.toResponse(saved, 0);
     }
 
@@ -154,21 +150,13 @@ public class CourseServiceImpl implements CourseService {
         normalizePrice(request);
         courseMapper.updateEntity(course, request);
         
-        // Tek eğitmen (User) ataması
+        // Eğitmen ataması — seçilen kullanıcı hem primary hem de display listesine atanır
         if (request.getInstructorId() != null) {
             User instructor = userRepository.findById(request.getInstructorId())
                     .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "id", request.getInstructorId()));
             course.setInstructor(instructor);
-        }
-        
-        // Çoklu eğitmen (Instructor) ataması
-        if (request.getInstructorIds() != null) {
-            var instructors = instructorRepository.findAllById(request.getInstructorIds());
-            course.setInstructors(instructors);
-            // instructorName'i ilk eğitmenin adıyla sync et
-            if (!instructors.isEmpty()) {
-                course.setInstructorName(instructors.get(0).getName());
-            }
+            course.setInstructors(new ArrayList<>(List.of(instructor)));
+            course.setInstructorName(instructor.getFirstName() + " " + instructor.getLastName());
         }
         
         handleCourseImage(course, image);
@@ -214,9 +202,11 @@ public class CourseServiceImpl implements CourseService {
     })
     public void changeStatus(Long id, CourseStatus newStatus) {
         Course course = loadCourse(id);
+
         course.setStatus(newStatus);
         courseRepository.save(course);
     }
+
 
     @Override
     @Transactional(readOnly = true)
@@ -273,7 +263,7 @@ public class CourseServiceImpl implements CourseService {
     @Override
     @Transactional(readOnly = true)
     public List<CourseResponse> findByInstructor(Long instructorId) {
-        List<Course> courses = courseRepository.findByInstructorIdAndStatusNot(instructorId, CourseStatus.CANCELLED);
+        List<Course> courses = courseRepository.findByInstructorIdAndStatusNotWithCategory(instructorId, CourseStatus.CANCELLED);
         Map<Long, Long> enrollmentCounts = buildEnrollmentCountMap(
                 courses.stream().map(Course::getId).toList());
         return courses.stream()
@@ -333,10 +323,12 @@ public class CourseServiceImpl implements CourseService {
     private void validateCourseTypeFields(CourseType type, Integer quota,
             java.time.LocalDate startDate, java.time.LocalDate endDate, String location) {
         if (type == null || type == CourseType.ONLINE) {
-            return; // Online: tarih/kontenjan/konum zorunlu değil
+            return;
         }
         if (startDate == null)  throw new IllegalArgumentException("Başlangıç tarihi zorunludur.");
         if (endDate == null)    throw new IllegalArgumentException("Bitiş tarihi zorunludur.");
+        if (startDate.isAfter(endDate))
+            throw new IllegalArgumentException("Başlangıç tarihi, bitiş tarihinden sonra olamaz.");
         if (quota == null || quota < 1) throw new IllegalArgumentException("Kontenjan zorunludur.");
         if (type == CourseType.FACE_TO_FACE && (location == null || location.isBlank()))
             throw new IllegalArgumentException("Yüzyüze eğitimler için konum bilgisi zorunludur.");
@@ -349,6 +341,16 @@ public class CourseServiceImpl implements CourseService {
             map.put((Long) row[0], (Long) row[1]);
         }
         return map;
+    }
+
+    private Sort resolveSort(String sort) {
+        return switch (sort) {
+            case "az" -> Sort.by("title").ascending();
+            case "za" -> Sort.by("title").descending();
+            case "price-asc" -> Sort.by("price").ascending();
+            case "price-desc" -> Sort.by("price").descending();
+            default -> Sort.by("createdAt").descending();
+        };
     }
 
     private void normalizePrice(CourseCreateRequest request) {

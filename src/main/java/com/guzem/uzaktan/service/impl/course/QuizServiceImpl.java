@@ -1,9 +1,11 @@
 package com.guzem.uzaktan.service.impl.course;
 
+import com.guzem.uzaktan.dto.CurriculumModule;
 import com.guzem.uzaktan.dto.response.CertificateResponse;
 import com.guzem.uzaktan.dto.response.QuizQuestionResponse;
 import com.guzem.uzaktan.dto.response.QuizResultResponse;
 import com.guzem.uzaktan.exception.ResourceNotFoundException;
+import com.guzem.uzaktan.mapper.course.CourseMapper;
 import com.guzem.uzaktan.model.common.User;
 import com.guzem.uzaktan.model.course.*;
 import com.guzem.uzaktan.model.user.NotificationType;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -30,7 +33,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class QuizServiceImpl implements QuizService {
 
-    private static final int QUIZ_QUESTION_COUNT = 10;
+    private static final int QUESTIONS_PER_MODULE = 3;
     private static final int PASS_THRESHOLD = 80; // %80
     private static final int MAX_DAILY_ATTEMPTS = 3;
 
@@ -41,20 +44,34 @@ public class QuizServiceImpl implements QuizService {
     private final CourseRepository courseRepository;
     private final CertificateService certificateService;
     private final NotificationService notificationService;
+    private final CourseMapper courseMapper;
 
     @Override
     @Transactional(readOnly = true)
     public List<QuizQuestionResponse> startQuiz(Long userId, Long courseId) {
         validateEligibility(userId, courseId);
 
-        List<Question> allQuestions = questionRepository.findByCourseIdOrderByCreatedAtDesc(courseId);
-        if (allQuestions.size() < QUIZ_QUESTION_COUNT) {
-            throw new IllegalStateException(
-                    "Bu kurs için yeterli soru bulunmamaktadır. En az " + QUIZ_QUESTION_COUNT + " soru gereklidir.");
+        Course course = courseRepository.findById(courseId)
+                .orElseThrow(() -> new ResourceNotFoundException("Kurs", "id", courseId));
+        List<CurriculumModule> modules = courseMapper.parseCurriculumModules(course.getManualCurriculum());
+
+        if (modules.isEmpty()) {
+            throw new IllegalStateException("Bu kurs için müfredat modülü tanımlanmamıştır.");
         }
 
-        Collections.shuffle(allQuestions);
-        List<Question> selected = allQuestions.subList(0, QUIZ_QUESTION_COUNT);
+        List<Question> selected = new ArrayList<>();
+        for (int i = 0; i < modules.size(); i++) {
+            List<Question> moduleQuestions = questionRepository.findByCourseIdAndModuleIndex(courseId, i);
+            if (moduleQuestions.size() < QUESTIONS_PER_MODULE) {
+                throw new IllegalStateException(
+                        "\"" + modules.get(i).getTitle() + "\" modülünde yeterli soru yok. " +
+                        "En az " + QUESTIONS_PER_MODULE + " soru gereklidir.");
+            }
+            Collections.shuffle(moduleQuestions);
+            selected.addAll(moduleQuestions.subList(0, QUESTIONS_PER_MODULE));
+        }
+
+        Collections.shuffle(selected);
 
         return selected.stream()
                 .map(q -> QuizQuestionResponse.builder()
@@ -65,6 +82,8 @@ public class QuizServiceImpl implements QuizService {
                         .optionC(q.getOptionC())
                         .optionD(q.getOptionD())
                         .optionE(q.getOptionE())
+                        .imagePath(q.getImagePath())
+                        .videoPath(q.getVideoPath())
                         .build())
                 .toList();
     }
@@ -78,12 +97,12 @@ public class QuizServiceImpl implements QuizService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kurs", "id", courseId));
 
-        // Cevaplanan soruları yükle
+        // Cevaplanan soruları yükle ve bu kursa ait olduklarını doğrula
         Set<Long> questionIds = answers.keySet();
-        List<Question> questions = questionIds.stream()
-                .map(qId -> questionRepository.findById(qId)
-                        .orElseThrow(() -> new ResourceNotFoundException("Soru", "id", qId)))
-                .toList();
+        List<Question> questions = questionRepository.findByIdInAndCourseId(questionIds, courseId);
+        if (questions.size() != questionIds.size()) {
+            throw new IllegalArgumentException("Geçersiz soru gönderildi.");
+        }
 
         // Değerlendir
         int score = 0;
@@ -147,7 +166,7 @@ public class QuizServiceImpl implements QuizService {
     @Override
     @Transactional(readOnly = true)
     public int getRemainingAttempts(Long userId, Long courseId) {
-        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        LocalDateTime startOfDay = LocalDate.now(ZoneOffset.UTC).atStartOfDay();
         long todayAttempts = quizAttemptRepository.countTodayAttempts(userId, courseId, startOfDay);
         return Math.max(0, MAX_DAILY_ATTEMPTS - (int) todayAttempts);
     }
@@ -170,6 +189,11 @@ public class QuizServiceImpl implements QuizService {
         // Kayıt kontrolü
         Enrollment enrollment = enrollmentRepository.findByUserIdAndCourseId(userId, courseId)
                 .orElseThrow(() -> new IllegalStateException("Bu kursa kayıtlı değilsiniz."));
+
+        // Kayıt durumu kontrolü
+        if (enrollment.getStatus() != EnrollmentStatus.ACTIVE && enrollment.getStatus() != EnrollmentStatus.COMPLETED) {
+            throw new IllegalStateException("Kaydınız aktif değil.");
+        }
 
         // Kurs tamamlanma kontrolü (%100)
         if (enrollment.getProgressPercentage() < 100) {

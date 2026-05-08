@@ -3,6 +3,7 @@ package com.guzem.uzaktan.dto.response;
 import com.guzem.uzaktan.model.course.CorrectOption;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
@@ -22,6 +23,11 @@ public class QuestionResponse {
     private CorrectOption correctOption;
     private String correctOptionDisplayName;
     private String explanation;
+    private Integer moduleIndex;
+    @Setter
+    private String moduleTitle;
+    private String imagePath;
+    private String videoPath;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

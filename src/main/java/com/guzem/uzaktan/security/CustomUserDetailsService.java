@@ -3,11 +3,14 @@ package com.guzem.uzaktan.security;
 import com.guzem.uzaktan.model.common.User;
 import com.guzem.uzaktan.repository.user.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -24,12 +27,14 @@ public class CustomUserDetailsService implements UserDetailsService {
         boolean temporarilyLocked = user.getLockUntil() != null
                 && user.getLockUntil().isAfter(java.time.LocalDateTime.now());
 
-        return org.springframework.security.core.userdetails.User.builder()
-                .username(user.getEmail())
-                .password(user.getPassword())
-                .authorities(user.getRole().getAuthority())
-                .accountLocked(user.isLocked() || temporarilyLocked)
-                .disabled(!user.isEnabled())
-                .build();
+        return new CustomUserDetails(
+                user.getEmail(),
+                user.getPassword(),
+                user.isEnabled(),
+                !(user.isLocked() || temporarilyLocked),
+                List.of(new SimpleGrantedAuthority(user.getRole().getAuthority())),
+                user.getId(),
+                user.isPasswordResetRequired()
+        );
     }
 }

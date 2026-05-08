@@ -11,8 +11,6 @@ public interface EnrollmentService {
 
     EnrollmentResponse enroll(Long userId, Long courseId);
 
-
-
     List<EnrollmentResponse> findByUser(Long userId);
 
     Page<EnrollmentResponse> findByCourse(Long courseId, int page, int size);

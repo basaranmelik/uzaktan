@@ -2,6 +2,8 @@ package com.guzem.uzaktan.controller.advice;
 
 import com.guzem.uzaktan.dto.response.CartItemResponse;
 import com.guzem.uzaktan.dto.response.NotificationResponse;
+import com.guzem.uzaktan.dto.response.UserResponse;
+import com.guzem.uzaktan.security.CustomUserDetails;
 import com.guzem.uzaktan.service.user.CartService;
 import com.guzem.uzaktan.service.user.NotificationService;
 import com.guzem.uzaktan.service.user.UserService;
@@ -22,22 +24,25 @@ public class GlobalModelAdvice {
     private final CartService cartService;
     private final NotificationService notificationService;
 
-    // ── Kimlik & Rol ──────────────────────────────────────────────────────────
-
-    @ModelAttribute("currentUserFullName")
-    public String currentUserFullName(@AuthenticationPrincipal UserDetails principal) {
-        if (principal == null) return null;
-        return userService.findByEmail(principal.getUsername()).getFullName();
+    /**
+     * Single DB call per request — all other model attributes derive from this.
+     */
+    @ModelAttribute("currentUser")
+    public UserResponse currentUser(@AuthenticationPrincipal UserDetails principal) {
+        if (principal instanceof CustomUserDetails details) {
+            return userService.findById(details.getUserId());
+        }
+        return null;
     }
 
-    /**
-     * Oturum açmış kullanıcının veritabanı ID'si.
-     * Controller'larda Long userId = userService.findUserIdByEmail(...) yerine kullanılır.
-     */
     @ModelAttribute("currentUserId")
-    public Long currentUserId(@AuthenticationPrincipal UserDetails principal) {
-        if (principal == null) return null;
-        return userService.findUserIdByEmail(principal.getUsername());
+    public Long currentUserId(@ModelAttribute("currentUser") UserResponse currentUser) {
+        return currentUser != null ? currentUser.getId() : null;
+    }
+
+    @ModelAttribute("currentUserFullName")
+    public String currentUserFullName(@ModelAttribute("currentUser") UserResponse currentUser) {
+        return currentUser != null ? currentUser.getFullName() : null;
     }
 
     @ModelAttribute("isAdmin")
@@ -62,37 +67,32 @@ public class GlobalModelAdvice {
     }
 
     @ModelAttribute("cartItems")
-    public List<CartItemResponse> cartItems(@AuthenticationPrincipal UserDetails principal) {
-        if (principal == null) return List.of();
-        Long userId = userService.findUserIdByEmail(principal.getUsername());
-        return cartService.getCartItems(userId);
+    public List<CartItemResponse> cartItems(@ModelAttribute("currentUser") UserResponse currentUser) {
+        if (currentUser == null) return List.of();
+        return cartService.getCartItems(currentUser.getId());
     }
 
     @ModelAttribute("cartCount")
-    public int cartCount(@AuthenticationPrincipal UserDetails principal) {
-        if (principal == null) return 0;
-        Long userId = userService.findUserIdByEmail(principal.getUsername());
-        return cartService.getCartCount(userId);
+    public int cartCount(@ModelAttribute("currentUser") UserResponse currentUser) {
+        if (currentUser == null) return 0;
+        return cartService.getCartCount(currentUser.getId());
     }
 
     @ModelAttribute("cartTotal")
-    public BigDecimal cartTotal(@AuthenticationPrincipal UserDetails principal) {
-        if (principal == null) return BigDecimal.ZERO;
-        Long userId = userService.findUserIdByEmail(principal.getUsername());
-        return cartService.getCartTotalByUser(userId);
+    public BigDecimal cartTotal(@ModelAttribute("currentUser") UserResponse currentUser) {
+        if (currentUser == null) return BigDecimal.ZERO;
+        return cartService.getCartTotalByUser(currentUser.getId());
     }
 
     @ModelAttribute("unreadNotifCount")
-    public long unreadNotifCount(@AuthenticationPrincipal UserDetails principal) {
-        if (principal == null) return 0L;
-        Long userId = userService.findUserIdByEmail(principal.getUsername());
-        return notificationService.getUnreadCount(userId);
+    public long unreadNotifCount(@ModelAttribute("currentUser") UserResponse currentUser) {
+        if (currentUser == null) return 0L;
+        return notificationService.getUnreadCount(currentUser.getId());
     }
 
     @ModelAttribute("recentNotifications")
-    public List<NotificationResponse> recentNotifications(@AuthenticationPrincipal UserDetails principal) {
-        if (principal == null) return List.of();
-        Long userId = userService.findUserIdByEmail(principal.getUsername());
-        return notificationService.getRecent(userId);
+    public List<NotificationResponse> recentNotifications(@ModelAttribute("currentUser") UserResponse currentUser) {
+        if (currentUser == null) return List.of();
+        return notificationService.getRecent(currentUser.getId());
     }
 }

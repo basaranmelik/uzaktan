@@ -7,154 +7,6 @@
   <title th:text="${course.title} + ' — Soru Bankası'">Soru Bankası</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <style>
-    .sb-stats {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .sb-stat {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 1rem 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: 0.85rem;
-    }
-    .sb-stat-icon {
-      width: 42px; height: 42px; border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.15rem; flex-shrink: 0;
-    }
-    .sb-stat-value { font-size: 1.5rem; font-weight: 800; line-height: 1; color: var(--primary-800); }
-    .sb-stat-label { font-size: 0.72rem; font-weight: 600; color: var(--text-muted); margin-top: 0.15rem; text-transform: uppercase; letter-spacing: .04em; }
-
-    /* Soru kartları */
-    .q-list { display: flex; flex-direction: column; gap: 1rem; }
-
-    .q-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      overflow: hidden;
-      transition: box-shadow 0.2s;
-    }
-    .q-card:hover { box-shadow: 0 4px 20px rgba(17,58,113,0.08); }
-
-    .q-card-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      padding: 1.25rem 1.5rem 0.75rem;
-      gap: 1rem;
-    }
-    .q-number {
-      background: var(--primary-600);
-      color: #fff;
-      width: 32px; height: 32px;
-      border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.8rem; font-weight: 800;
-      flex-shrink: 0;
-    }
-    .q-text {
-      flex: 1;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: var(--primary-900);
-      line-height: 1.5;
-      word-break: break-word;
-    }
-    .q-actions {
-      display: flex; gap: 0.35rem; flex-shrink: 0;
-    }
-
-    /* Şıklar grid */
-    .q-options {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.5rem 1rem;
-      padding: 0 1.5rem 1rem;
-      margin-left: 44px;
-    }
-    @media (max-width: 600px) {
-      .q-options { grid-template-columns: 1fr; margin-left: 0; }
-      .q-card-header { flex-wrap: wrap; }
-    }
-
-    .q-option {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.5rem;
-      padding: 0.5rem 0.75rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      background: var(--bg-alt);
-      border: 1px solid transparent;
-      line-height: 1.4;
-    }
-    .q-option.correct {
-      background: #ebfbee;
-      border-color: #b2f2bb;
-      color: #2b8a3e;
-      font-weight: 600;
-    }
-    .q-option-letter {
-      font-weight: 800;
-      font-size: 0.78rem;
-      min-width: 18px;
-      flex-shrink: 0;
-    }
-
-    /* Açıklama */
-    .q-explanation {
-      margin: 0 1.5rem 1rem;
-      margin-left: calc(44px + 1.5rem);
-      padding: 0.75rem 1rem;
-      background: #fff9db;
-      border: 1px solid #ffe066;
-      border-radius: 8px;
-      font-size: 0.82rem;
-      color: #664d03;
-      line-height: 1.5;
-    }
-    .q-explanation i { margin-right: 0.35rem; }
-
-    @media (max-width: 600px) {
-      .q-explanation { margin-left: 1.5rem; }
-    }
-
-    /* Arama kutusu */
-    .sb-search {
-      position: relative;
-      max-width: 360px;
-    }
-    .sb-search input {
-      width: 100%;
-      padding: 0.6rem 1rem 0.6rem 2.4rem;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      font-size: 0.88rem;
-      background: var(--bg);
-      transition: border-color 0.2s;
-    }
-    .sb-search input:focus {
-      outline: none;
-      border-color: var(--primary-600);
-    }
-    .sb-search i {
-      position: absolute;
-      left: 0.85rem;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-muted);
-      font-size: 0.9rem;
-    }
-    .sb-hidden { display: none; }
-  </style>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -166,29 +18,32 @@
       <a th:href="@{/egitmen/kurslarim}">Kurslarım</a> <span class="separator">›</span>
       <span class="current" th:text="${course.title}">Kurs</span>
     </div>
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
-      <div>
+    <div class="qb-header-row">
+      <div class="qb-header-text">
         <h1><i class="bi bi-patch-question-fill"></i> Soru Bankası</h1>
-        <p style="margin:0;" th:text="${course.title}">Kurs Adı</p>
+        <p class="qb-subtitle" th:text="${course.title}">Kurs Adı</p>
       </div>
-      <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
-        <a th:href="@{/egitmen/kurslarim/{id}/soru-bankasi/yeni(id=${course.id})}"
-           class="btn btn-primary">
-          <i class="bi bi-plus-lg"></i> Yeni Soru Ekle
-        </a>
-        <button type="button" class="btn toggle-excel-panel-btn"
-                style="background:#198754;color:#fff;border:none;padding:0.5rem 1rem;border-radius:0.5rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:0.35rem;">
-          <i class="bi bi-file-earmark-excel"></i> Excel Yükle
-        </button>
-        <a th:href="@{/egitmen/kurslarim/{id}/soru-bankasi/excel-indir(id=${course.id})}"
-           class="btn" style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:0.5rem 1rem;border-radius:0.5rem;font-weight:600;display:inline-flex;align-items:center;gap:0.35rem;text-decoration:none;">
-          <i class="bi bi-download"></i> Excel İndir
-        </a>
-        <a th:href="@{/egitmen/soru-bankasi/excel-sablon}"
-           class="btn" style="background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;padding:0.5rem 1rem;border-radius:0.5rem;font-weight:600;display:inline-flex;align-items:center;gap:0.35rem;text-decoration:none;">
-          <i class="bi bi-file-earmark-arrow-down"></i> Şablon İndir
-        </a>
-      </div>
+    </div>
+    <div class="qb-action-group">
+      <a th:href="@{/egitmen/kurslarim/{id}/soru-bankasi/yeni(id=${course.id})}"
+         class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Yeni Soru
+      </a>
+      <a th:href="@{/egitmen/kurslarim/{id}/dokumanlar(id=${course.id})}"
+         class="btn btn-secondary">
+        <i class="bi bi-file-earmark-richtext"></i> Dokümanlar
+      </a>
+      <button type="button" class="btn btn-outline-success toggle-excel-panel-btn">
+        <i class="bi bi-file-earmark-excel"></i> Excel
+      </button>
+      <a th:href="@{/egitmen/kurslarim/{id}/soru-bankasi/excel-indir(id=${course.id})}"
+         class="btn btn-outline-secondary">
+        <i class="bi bi-download"></i> İndir
+      </a>
+      <a th:href="@{/egitmen/soru-bankasi/excel-sablon}"
+         class="btn btn-outline-secondary">
+        <i class="bi bi-file-earmark-arrow-down"></i> Şablon
+      </a>
     </div>
   </div>
 </section>
@@ -196,150 +51,262 @@
 <section class="section">
   <div class="container">
 
-    <!-- İstatistik -->
-    <div class="sb-stats">
-      <div class="sb-stat">
-        <div class="sb-stat-icon" style="background:#e7f5ff;color:#1971c2;">
-          <i class="bi bi-patch-question-fill"></i>
-        </div>
-        <div>
-          <div class="sb-stat-value" th:text="${#lists.size(questions)}">0</div>
-          <div class="sb-stat-label">Toplam Soru</div>
-        </div>
-      </div>
-    </div>
+    <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
 
     <!-- Excel Yükleme Paneli -->
-    <div id="excelUploadPanel" class="sb-hidden"
-         style="background:#fff;border:2px dashed #198754;border-radius:1rem;padding:1.5rem;margin-bottom:1.5rem;">
-      <div style="font-weight:700;font-size:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;color:#198754;">
-        <i class="bi bi-file-earmark-excel-fill"></i> Excel ile Toplu Soru Yükleme
+    <div id="excelUploadPanel" class="qb-excel-panel hidden" aria-hidden="true">
+      <div class="qb-excel-head">
+        <i class="bi bi-file-earmark-excel-fill"></i>
+        <span>Excel ile Toplu Soru Yükleme</span>
+        <button type="button" class="qb-excel-close toggle-excel-panel-btn" aria-label="Excel panelini kapat">&times;</button>
       </div>
       <form th:action="@{/egitmen/kurslarim/{id}/soru-bankasi/excel-yukle(id=${course.id})}"
             method="post" enctype="multipart/form-data"
-            style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;">
+            class="qb-excel-form">
         <input type="file" name="file" accept=".xlsx" required
-               style="flex:1;min-width:200px;padding:0.5rem;border:1px solid #dee2e6;border-radius:0.5rem;font-size:0.9rem;">
-        <button type="submit"
-                style="background:#198754;color:#fff;border:none;padding:0.6rem 1.5rem;border-radius:0.5rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:0.35rem;">
+               aria-label="Excel dosyası seçin"
+               class="qb-excel-input">
+        <button type="submit" class="btn btn-success">
           <i class="bi bi-upload"></i> Yükle
         </button>
       </form>
-      <p style="font-size:0.82rem;color:#64748b;margin:0.75rem 0 0;">
-        Sütunlar: <strong>Soru Metni | A Şıkkı | B Şıkkı | C Şıkkı | D Şıkkı | E Şıkkı | Doğru Cevap (A/B/C/D/E) | Açıklama</strong>.
-        ID sütunu dolu olan satırlar güncellenir, boş olanlar yeni soru olarak eklenir.
-        <a th:href="@{/egitmen/soru-bankasi/excel-sablon}" style="color:#198754;font-weight:600;">Şablon dosyasını indirin.</a>
+      <p class="qb-excel-hint">
+        Sütunlar: <strong>Soru Metni | A | B | C | D | E | Doğru Cevap | Açıklama | Modül No</strong>.
+        ID dolu satırlar güncellenir, boş olanlar yeni eklenir.
+        <a th:href="@{/egitmen/soru-bankasi/excel-sablon}" class="qb-excel-link">Şablonu indirin.</a>
       </p>
     </div>
 
     <!-- Import Hataları -->
     <div th:if="${importResult != null and importResult.errorCount > 0}"
-         style="background:#fff9db;border:1px solid #ffe066;border-radius:0.75rem;padding:1.25rem;margin-bottom:1.5rem;">
-      <div style="font-weight:700;margin-bottom:0.75rem;color:#664d03;display:flex;align-items:center;gap:0.5rem;">
-        <i class="bi bi-exclamation-triangle-fill"></i> İçe Aktarma Hataları
+         class="qb-import-errors" role="alert">
+      <div class="qb-import-errors-head">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        İçe Aktarma Hataları
+        <span class="qb-import-errors-count" th:text="${importResult.errorCount} + ' hata'">0 hata</span>
       </div>
-      <div style="overflow-x:auto;">
-        <table style="width:100%;font-size:0.85rem;border-collapse:collapse;">
+      <div class="qb-import-errors-table-wrap">
+        <table class="qb-import-table">
           <thead>
-            <tr style="background:#fef3c7;">
-              <th style="padding:0.5rem 0.75rem;text-align:left;font-weight:600;border-bottom:1px solid #fde68a;">Satır</th>
-              <th style="padding:0.5rem 0.75rem;text-align:left;font-weight:600;border-bottom:1px solid #fde68a;">Alan</th>
-              <th style="padding:0.5rem 0.75rem;text-align:left;font-weight:600;border-bottom:1px solid #fde68a;">Hata</th>
+            <tr>
+              <th>Satır</th>
+              <th>Alan</th>
+              <th>Hata</th>
             </tr>
           </thead>
           <tbody>
-            <tr th:each="err : ${importResult.errors}" style="border-bottom:1px solid #fef3c7;">
-              <td style="padding:0.5rem 0.75rem;" th:text="${err.rowNumber}">2</td>
-              <td style="padding:0.5rem 0.75rem;" th:text="${err.field != null ? err.field : '-'}">Alan</td>
-              <td style="padding:0.5rem 0.75rem;" th:text="${err.message}">Hata mesajı</td>
+            <tr th:each="err : ${importResult.errors}">
+              <td th:text="${err.rowNumber}">2</td>
+              <td th:text="${err.field != null ? err.field : '—'}">Alan</td>
+              <td th:text="${err.message}">Hata mesajı</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Arama -->
-    <div th:if="${!#lists.isEmpty(questions)}"
-         style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
-      <div class="sb-search">
-        <i class="bi bi-search"></i>
-        <input type="text" id="questionSearch" placeholder="Sorularda ara...">
+    <!-- Boş durum -->
+    <div th:if="${#lists.isEmpty(questions)}" class="qb-empty">
+      <div class="qb-empty-icon">
+        <i class="bi bi-patch-question"></i>
       </div>
-      <div style="font-size:0.85rem;color:var(--text-muted);">
-        <span id="visibleCount" th:text="${#lists.size(questions)}">0</span> soru gösteriliyor
+      <h3>Henüz Soru Eklenmemiş</h3>
+      <p>Bu kurs için henüz bir soru eklemediniz. Soru bankası oluşturarak öğrencileriniz için sınav hazırlayabilirsiniz.</p>
+      <div class="qb-empty-actions">
+        <a th:href="@{/egitmen/kurslarim/{id}/soru-bankasi/yeni(id=${course.id})}"
+           class="btn btn-primary btn-lg">
+          <i class="bi bi-plus-lg"></i> İlk Soruyu Ekle
+        </a>
+        <button type="button" class="btn btn-outline-secondary toggle-excel-panel-btn">
+          <i class="bi bi-file-earmark-excel"></i> Excel ile Toplu Yükle
+        </button>
       </div>
     </div>
 
-    <!-- Soru yoksa -->
-    <div th:if="${#lists.isEmpty(questions)}"
-         class="text-center" style="padding:4rem;color:var(--text-muted);">
-      <div style="font-size:3rem;margin-bottom:1rem;"><i class="bi bi-patch-question"></i></div>
-      <p>Bu kursa henüz soru eklenmemiş.</p>
-      <a th:href="@{/egitmen/kurslarim/{id}/soru-bankasi/yeni(id=${course.id})}"
-         class="btn btn-primary" style="margin-top:1rem;">
-        İlk Soruyu Ekle →
-      </a>
-    </div>
-
-    <!-- Soru Listesi -->
-    <div th:if="${!#lists.isEmpty(questions)}" class="q-list" id="questionList">
-
-      <div th:each="q, stat : ${questions}" class="q-card" th:data-search="${q.questionText}">
-
-        <!-- Soru başlığı + aksiyonlar -->
-        <div class="q-card-header">
-          <div class="q-number" th:text="${stat.count}">1</div>
-          <div class="q-text" th:text="${q.questionText}">Soru metni buraya gelecek</div>
-          <div class="q-actions">
-            <a th:href="@{/egitmen/sorular/{id}/duzenle(id=${q.id})}"
-               class="action-btn ab-edit" title="Düzenle">
-              <i class="bi bi-pencil"></i>
-            </a>
-            <form th:action="@{/egitmen/sorular/{id}/sil(id=${q.id})}" method="post" style="margin:0;">
-              <button type="submit" class="action-btn ab-del confirm-delete-btn" title="Sil">
-                <i class="bi bi-trash3"></i>
-              </button>
-            </form>
+    <div th:if="${!#lists.isEmpty(questions)}" id="qbMainContent">
+      <!-- Toolbar -->
+      <div class="qb-toolbar" id="qbToolbar">
+        <div class="qb-toolbar-left">
+          <div class="qb-search-wrap">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <input type="text" id="questionSearch"
+                   placeholder="Sorularda ara..."
+                   aria-label="Sorularda ara"
+                   class="qb-search-input">
+            <button type="button" id="qbSearchClear"
+                    class="qb-search-clear" title="Aramayı temizle"
+                    aria-label="Aramayı temizle" style="display:none;">
+              <i class="bi bi-x-lg"></i>
+            </button>
+          </div>
+          <span id="qbSearchStatus" class="qb-search-status" aria-live="polite"></span>
+        </div>
+        <div class="qb-toolbar-right">
+          <div class="qb-module-filter" id="qbModuleFilterWrap">
+            <i class="bi bi-funnel" aria-hidden="true"></i>
+            <select id="qbModuleFilter" class="qb-module-select" aria-label="Modül filtresi">
+              <option value="">Tüm Modüller</option>
+            </select>
+            <span class="qb-total-badge" th:text="${#lists.size(questions)} + ' soru'">0 soru</span>
           </div>
         </div>
+      </div>
 
-        <!-- Şıklar -->
-        <div class="q-options">
-          <div class="q-option" th:classappend="${q.correctOption.name() == 'A'} ? ' correct'">
-            <span class="q-option-letter">A)</span>
-            <span th:text="${q.optionA}">Şık A</span>
+      <!-- Navigasyon dots -->
+      <div class="qb-dots-scroll" id="qbDotsScroll">
+        <div class="qb-dots" id="qbDots" role="tablist" aria-label="Soru navigasyonu">
+          <button type="button" th:each="q, stat : ${questions}"
+                  class="qb-dot" role="tab"
+                  th:aria-selected="false"
+                  th:aria-label="'Soru ' + ${stat.count}"
+                  th:id="'qdot-' + ${stat.count}"
+                  th:data-index="${stat.index}"
+                  th:text="${stat.count}">1</button>
+        </div>
+      </div>
+
+      <!-- Soru Kartları -->
+      <div class="qb-card-list" id="questionList" role="tabpanel">
+
+        <article th:each="q, stat : ${questions}"
+                 class="qb-card"
+                 th:data-index="${stat.index}"
+                 th:data-search="${q.questionText}"
+                 th:data-module="${q.moduleTitle}"
+                 th:data-has-explanation="${q.explanation != null and !#strings.isEmpty(q.explanation)}"
+                 th:aria-labelledby="'qdot-' + ${stat.count}"
+                 role="tabpanel">
+
+          <!-- Görsel / Video -->
+          <div th:if="${q.imagePath != null}" class="qb-media">
+            <img th:src="@{'/uploads/' + ${q.imagePath}}"
+                 alt="Soru görseli" loading="lazy"
+                 class="qb-media-img">
           </div>
-          <div class="q-option" th:classappend="${q.correctOption.name() == 'B'} ? ' correct'">
-            <span class="q-option-letter">B)</span>
-            <span th:text="${q.optionB}">Şık B</span>
+          <div th:if="${q.videoPath != null}" class="qb-media">
+            <video th:src="@{'/uploads/' + ${q.videoPath}}"
+                   controls preload="metadata"
+                   class="qb-media-video"
+                   aria-label="Soru videosu">
+              Tarayıcınız video oynatmayı desteklemiyor.
+            </video>
           </div>
-          <div class="q-option" th:classappend="${q.correctOption.name() == 'C'} ? ' correct'">
-            <span class="q-option-letter">C)</span>
-            <span th:text="${q.optionC}">Şık C</span>
+
+          <!-- Soru başlığı -->
+          <div class="qb-card-top">
+            <div class="qb-card-meta">
+              <div class="qb-card-number" th:text="${stat.count}">1</div>
+              <div class="qb-card-tags">
+                <span th:if="${q.moduleTitle != null}"
+                      class="qb-tag qb-tag-module"
+                      th:text="${q.moduleTitle}">Modül</span>
+                <span th:if="${q.explanation != null and !#strings.isEmpty(q.explanation)}"
+                      class="qb-tag qb-tag-explained">
+                  <i class="bi bi-lightbulb-fill"></i> Açıklamalı
+                </span>
+              </div>
+            </div>
+            <div class="qb-card-actions">
+              <a th:href="@{/egitmen/sorular/{id}/duzenle(id=${q.id})}"
+                 class="qb-action-btn qb-action-edit"
+                 title="Soruyu düzenle" aria-label="Soruyu düzenle">
+                <i class="bi bi-pencil"></i>
+                <span>Düzenle</span>
+              </a>
+              <form th:action="@{/egitmen/sorular/{id}/sil(id=${q.id})}"
+                    method="post" style="margin:0;" class="confirm-delete-form">
+                <button type="submit"
+                        class="qb-action-btn qb-action-delete confirm-delete-btn"
+                        title="Soruyu sil" aria-label="Soruyu sil">
+                  <i class="bi bi-trash3"></i>
+                </button>
+              </form>
+            </div>
           </div>
-          <div class="q-option" th:classappend="${q.correctOption.name() == 'D'} ? ' correct'">
-            <span class="q-option-letter">D)</span>
-            <span th:text="${q.optionD}">Şık D</span>
+
+          <div class="qb-card-body">
+            <p class="qb-question-text" th:text="${q.questionText}">Soru metni buraya gelecek</p>
           </div>
-          <div class="q-option" th:classappend="${q.correctOption.name() == 'E'} ? ' correct'"
-               style="grid-column: span 2;">
-            <span class="q-option-letter">E)</span>
-            <span th:text="${q.optionE}">Şık E</span>
+
+          <!-- Şıklar -->
+          <div class="qb-option-grid">
+            <div class="qb-option" th:classappend="${q.correctOption.name() == 'A'} ? ' is-correct'">
+              <span class="qb-option-letter" aria-hidden="true">A</span>
+              <span class="qb-option-text" th:text="${q.optionA}">Şık A</span>
+              <i th:if="${q.correctOption.name() == 'A'}"
+                 class="bi bi-check-circle-fill qb-option-check" aria-label="Doğru cevap"></i>
+            </div>
+            <div class="qb-option" th:classappend="${q.correctOption.name() == 'B'} ? ' is-correct'">
+              <span class="qb-option-letter" aria-hidden="true">B</span>
+              <span class="qb-option-text" th:text="${q.optionB}">Şık B</span>
+              <i th:if="${q.correctOption.name() == 'B'}"
+                 class="bi bi-check-circle-fill qb-option-check" aria-label="Doğru cevap"></i>
+            </div>
+            <div class="qb-option" th:classappend="${q.correctOption.name() == 'C'} ? ' is-correct'">
+              <span class="qb-option-letter" aria-hidden="true">C</span>
+              <span class="qb-option-text" th:text="${q.optionC}">Şık C</span>
+              <i th:if="${q.correctOption.name() == 'C'}"
+                 class="bi bi-check-circle-fill qb-option-check" aria-label="Doğru cevap"></i>
+            </div>
+            <div class="qb-option" th:classappend="${q.correctOption.name() == 'D'} ? ' is-correct'">
+              <span class="qb-option-letter" aria-hidden="true">D</span>
+              <span class="qb-option-text" th:text="${q.optionD}">Şık D</span>
+              <i th:if="${q.correctOption.name() == 'D'}"
+                 class="bi bi-check-circle-fill qb-option-check" aria-label="Doğru cevap"></i>
+            </div>
+            <div class="qb-option" th:classappend="${q.correctOption.name() == 'E'} ? ' is-correct'">
+              <span class="qb-option-letter" aria-hidden="true">E</span>
+              <span class="qb-option-text" th:text="${q.optionE}">Şık E</span>
+              <i th:if="${q.correctOption.name() == 'E'}"
+                 class="bi bi-check-circle-fill qb-option-check" aria-label="Doğru cevap"></i>
+            </div>
           </div>
+
+          <!-- Açıklama -->
+          <div th:if="${q.explanation != null and !#strings.isEmpty(q.explanation)}"
+               class="qb-explanation">
+            <div class="qb-explanation-icon">
+              <i class="bi bi-lightbulb-fill"></i>
+            </div>
+            <p class="qb-explanation-text" th:text="${q.explanation}">Açıklama metni</p>
+          </div>
+        </article>
+      </div>
+
+      <!-- Alt Navigasyon -->
+      <div class="qb-bottom-nav">
+        <button type="button" class="qb-nav-btn qb-nav-prev" id="qbPrevBtn"
+                aria-label="Önceki soru">
+          <i class="bi bi-chevron-left" aria-hidden="true"></i>
+          <span>Önceki</span>
+        </button>
+
+        <div class="qb-bottom-nav-center">
+          <span class="qb-bottom-counter" id="qbBottomCounter" aria-live="polite">
+            <strong id="qbBottomCurrent">1</strong>
+            <span class="qb-counter-sep">/</span>
+            <span id="qbBottomTotal">0</span>
+          </span>
+          <span class="qb-keyboard-hint" title="Klavye kısayolu">
+            <i class="bi bi-keyboard"></i> <span>← →</span>
+          </span>
         </div>
 
-        <!-- Açıklama -->
-        <div th:if="${q.explanation != null and !#strings.isEmpty(q.explanation)}" class="q-explanation">
-          <i class="bi bi-lightbulb-fill"></i>
-          <span th:text="${q.explanation}">Açıklama metni</span>
-        </div>
-
+        <button type="button" class="qb-nav-btn qb-nav-next" id="qbNextBtn"
+                aria-label="Sonraki soru">
+          <span>Sonraki</span>
+          <i class="bi bi-chevron-right" aria-hidden="true"></i>
+        </button>
       </div>
     </div>
 
   </div>
 </section>
 
+<div id="qBankData"
+     th:data-total-questions="${#lists.size(questions)}"
+     th:data-course-id="${course.id}"
+     hidden></div>
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
 </body>

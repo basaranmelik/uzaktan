@@ -60,6 +60,13 @@ public class ZoomMeeting {
     @Column(name = "recording_url", length = 500)
     private String recordingUrl;
 
+    @Builder.Default
+    @Column(name = "host_joined", nullable = false)
+    private boolean hostJoined = false;
+
+    @Column(name = "started_at")
+    private LocalDateTime startedAt;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

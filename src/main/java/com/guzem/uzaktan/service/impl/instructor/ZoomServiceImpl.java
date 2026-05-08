@@ -6,7 +6,6 @@ import com.guzem.uzaktan.dto.response.ZoomMeetingResponse;
 import com.guzem.uzaktan.exception.ResourceNotFoundException;
 import com.guzem.uzaktan.exception.UnauthorizedActionException;
 import com.guzem.uzaktan.model.course.Course;
-import com.guzem.uzaktan.model.course.Enrollment;
 import com.guzem.uzaktan.model.instructor.ZoomMeeting;
 import com.guzem.uzaktan.model.instructor.ZoomMeetingStatus;
 import com.guzem.uzaktan.model.common.User;
@@ -19,14 +18,25 @@ import com.guzem.uzaktan.service.course.EnrollmentService;
 import com.guzem.uzaktan.service.user.NotificationService;
 import com.guzem.uzaktan.service.instructor.ZoomService;
 import com.guzem.uzaktan.service.client.ZoomApiClient;
+import com.guzem.uzaktan.model.course.CourseType;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ZoomServiceImpl implements ZoomService {
@@ -52,12 +62,17 @@ public class ZoomServiceImpl implements ZoomService {
             throw new UnauthorizedActionException("Bu kurs için Zoom toplantısı oluşturma yetkiniz yok.");
         }
 
+        String zoomUserId = course.getInstructor().getZoomEmail();
+        if (zoomUserId == null || zoomUserId.isBlank()) {
+            throw new IllegalStateException("Zoom hesabınız tanımlanmamış. Lütfen profilinize Zoom e-posta adresinizi ekleyin.");
+        }
+
         ZoomApiClient.ZoomApiMeetingRequest apiRequest = new ZoomApiClient.ZoomApiMeetingRequest();
         apiRequest.setTopic(request.getTopic());
         apiRequest.setStartTime(request.getScheduledAt().format(ZOOM_DT_FORMAT));
         apiRequest.setDuration(request.getDurationMinutes());
 
-        ZoomApiClient.ZoomApiMeetingResponse apiResponse = zoomApiClient.createMeeting(apiRequest);
+        ZoomApiClient.ZoomApiMeetingResponse apiResponse = zoomApiClient.createMeeting(zoomUserId, apiRequest);
 
         ZoomMeeting meeting = ZoomMeeting.builder()
                 .course(course)
@@ -101,8 +116,8 @@ public class ZoomServiceImpl implements ZoomService {
 
         try {
             zoomApiClient.updateMeeting(meeting.getZoomMeetingId(), apiRequest);
-        } catch (Exception ignored) {
-            // Zoom API güncellemesi başarısız olsa bile DB'yi güncelleriz
+        } catch (Exception e) {
+            log.warn("Zoom API güncelleme başarısız (meetingId={}): {}", meeting.getZoomMeetingId(), e.getMessage());
         }
 
         meeting.setTopic(request.getTopic());
@@ -132,8 +147,8 @@ public class ZoomServiceImpl implements ZoomService {
 
         try {
             zoomApiClient.deleteMeeting(meeting.getZoomMeetingId());
-        } catch (Exception ignored) {
-            // Zoom tarafında silinmişse devam et
+        } catch (Exception e) {
+            log.warn("Zoom API silme başarısız (meetingId={}): {}", meeting.getZoomMeetingId(), e.getMessage());
         }
 
         meeting.setStatus(ZoomMeetingStatus.CANCELLED);
@@ -232,6 +247,216 @@ public class ZoomServiceImpl implements ZoomService {
         return toResponse(meeting);
     }
 
+    @Override
+    @Transactional
+    public void processRecordingCompleted(String zoomMeetingId) {
+        ZoomMeeting meeting = zoomMeetingRepository.findByZoomMeetingId(zoomMeetingId).orElse(null);
+        if (meeting == null) {
+            log.warn("Zoom webhook: toplantı bulunamadı, zoomMeetingId={}", zoomMeetingId);
+            return;
+        }
+
+        ZoomApiClient.ZoomRecordingListResponse recordings;
+        try {
+            recordings = zoomApiClient.getMeetingRecordings(zoomMeetingId);
+        } catch (Exception e) {
+            log.error("Zoom recordings API hatası, meetingId={}: {}", zoomMeetingId, e.getMessage());
+            return;
+        }
+
+        String playUrl = recordings.getRecordingFiles().stream()
+                .filter(f -> "MP4".equalsIgnoreCase(f.getFileType())
+                        && "completed".equalsIgnoreCase(f.getStatus()))
+                .map(ZoomApiClient.ZoomRecordingFile::getPlayUrl)
+                .filter(url -> url != null && !url.isBlank())
+                .findFirst()
+                .orElse(null);
+
+        if (playUrl == null) {
+            log.warn("Zoom webhook: tamamlanmış MP4 kaydı bulunamadı, zoomMeetingId={}", zoomMeetingId);
+            return;
+        }
+
+        if (playUrl.length() > 500) {
+            playUrl = playUrl.substring(0, 500);
+        }
+
+        meeting.setRecordingUrl(playUrl);
+        zoomMeetingRepository.save(meeting);
+
+        notifyEnrolledStudents(meeting.getCourse(), NotificationType.RECORDING_READY,
+                "Ders Kaydı Hazır",
+                "\"" + meeting.getCourse().getTitle() + "\" kursunun \""
+                        + meeting.getTopic() + "\" ders kaydı izlemeye hazır.",
+                "/zoom/toplanti/" + meeting.getId() + "/katil");
+
+        log.info("Zoom kaydı otomatik eklendi, meetingId={}, internalId={}", zoomMeetingId, meeting.getId());
+    }
+
+    @Override
+    @Transactional
+    public void markMeetingAsStarted(String zoomMeetingId) {
+        ZoomMeeting meeting = zoomMeetingRepository.findByZoomMeetingId(zoomMeetingId).orElse(null);
+        if (meeting == null) {
+            log.warn("Zoom webhook: meeting.started — toplantı bulunamadı, zoomMeetingId={}", zoomMeetingId);
+            return;
+        }
+        if (meeting.isHostJoined()) {
+            return;
+        }
+        meeting.setHostJoined(true);
+        meeting.setStartedAt(LocalDateTime.now());
+        zoomMeetingRepository.save(meeting);
+        log.info("Zoom meeting.started kaydedildi, internalId={}, zoomMeetingId={}", meeting.getId(), zoomMeetingId);
+    }
+
+    @Override
+    @Async("taskExecutor")
+    public void generateScheduledMeetings(Long courseId) {
+        Course course = courseRepository.findById(courseId).orElse(null);
+        if (course == null) return;
+
+        // Guard: sadece HYBRID ve FACE_TO_FACE
+        if (course.getCourseType() != CourseType.HYBRID
+                && course.getCourseType() != CourseType.FACE_TO_FACE) {
+            return;
+        }
+
+        // Guard: schedule alanları dolu olmalı
+        if (course.getStartDate() == null || course.getEndDate() == null
+                || course.getScheduleDays() == null || course.getScheduleDays().isBlank()
+                || course.getScheduleStartTime() == null || course.getScheduleStartTime().isBlank()
+                || course.getScheduleEndTime() == null || course.getScheduleEndTime().isBlank()) {
+            log.info("Kurs #{} için zamanlama bilgileri eksik, Zoom toplantıları oluşturulmadı.", courseId);
+            return;
+        }
+
+        // Guard: instructor zoom email'i olmalı
+        User instructor = course.getInstructor();
+        if (instructor == null || instructor.getZoomEmail() == null || instructor.getZoomEmail().isBlank()) {
+            log.info("Kurs #{} eğitmeninin Zoom e-postası tanımlı değil, toplantılar oluşturulmadı.", courseId);
+            return;
+        }
+
+        // Guard: duplikasyon kontrolü
+        long activeCount = zoomMeetingRepository.countByCourseIdAndStatusNot(courseId, ZoomMeetingStatus.CANCELLED);
+        if (activeCount > 0) {
+            log.info("Kurs #{} için {} mevcut toplantı var, toplu oluşturma atlandı.", courseId, activeCount);
+            return;
+        }
+
+        String zoomUserId = instructor.getZoomEmail();
+
+        Set<DayOfWeek> days = Arrays.stream(course.getScheduleDays().split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(DayOfWeek::valueOf)
+                .collect(Collectors.toSet());
+
+        LocalTime startTime = LocalTime.parse(course.getScheduleStartTime());
+        LocalTime endTime = LocalTime.parse(course.getScheduleEndTime());
+        int durationMinutes = (int) Duration.between(startTime, endTime).toMinutes();
+
+        if (durationMinutes <= 0) {
+            log.warn("Kurs #{} için geçersiz ders süresi: {} dakika", courseId, durationMinutes);
+            return;
+        }
+
+        LocalDate current = course.getStartDate();
+        LocalDate end = course.getEndDate();
+        DateTimeFormatter dateFormat = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+        int created = 0;
+        int failed = 0;
+
+        while (!current.isAfter(end)) {
+            if (days.contains(current.getDayOfWeek())) {
+                LocalDateTime scheduledAt = LocalDateTime.of(current, startTime);
+                String topic = course.getTitle() + " - " + current.format(dateFormat);
+
+                try {
+                    ZoomApiClient.ZoomApiMeetingRequest apiRequest = new ZoomApiClient.ZoomApiMeetingRequest();
+                    apiRequest.setTopic(topic);
+                    apiRequest.setStartTime(scheduledAt.format(ZOOM_DT_FORMAT));
+                    apiRequest.setDuration(durationMinutes);
+
+                    ZoomApiClient.ZoomApiMeetingResponse apiResponse =
+                            zoomApiClient.createMeeting(zoomUserId, apiRequest);
+
+                    ZoomMeeting meeting = ZoomMeeting.builder()
+                            .course(course)
+                            .zoomMeetingId(apiResponse.getId())
+                            .topic(topic)
+                            .joinUrl(apiResponse.getJoinUrl())
+                            .startUrl(apiResponse.getStartUrl())
+                            .password(apiResponse.getPassword())
+                            .scheduledAt(scheduledAt)
+                            .durationMinutes(durationMinutes)
+                            .build();
+
+                    zoomMeetingRepository.save(meeting);
+                    created++;
+
+                    Thread.sleep(100); // Zoom rate limit: ~10 req/s
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    log.warn("Zoom toplantı oluşturma işlemi kesildi, kurs #{}", courseId);
+                    break;
+                } catch (Exception e) {
+                    failed++;
+                    log.error("Zoom toplantısı oluşturulamadı, kurs #{}, tarih={}: {}",
+                            courseId, current, e.getMessage());
+                }
+            }
+            current = current.plusDays(1);
+        }
+
+        log.info("Kurs #{} için {} Zoom toplantısı oluşturuldu, {} başarısız.", courseId, created, failed);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countAllMeetings() {
+        return zoomMeetingRepository.count();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countMissedMeetings() {
+        return zoomMeetingRepository.countByScheduledAtBeforeAndStatusAndHostJoinedFalse(
+                LocalDateTime.now(), ZoomMeetingStatus.SCHEDULED);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countRecordedMeetings() {
+        return zoomMeetingRepository.countByRecordingUrlIsNotNull();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countStartedMeetings() {
+        return zoomMeetingRepository.countByHostJoinedTrue();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ZoomMeetingResponse> findAllForAdmin() {
+        return zoomMeetingRepository.findAllWithCourse()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<ZoomMeetingResponse> findAllForAdminByCourse(Long courseId) {
+        return zoomMeetingRepository.findByCourseIdOrderByScheduledAtDesc(courseId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     // ---- Yardımcı metodlar ----
 
     private void notifyEnrolledStudents(Course course, NotificationType type,
@@ -273,6 +498,11 @@ public class ZoomServiceImpl implements ZoomService {
                 .recordingUrl(m.getRecordingUrl())
                 .past(past)
                 .live(live)
+                .hostJoined(m.isHostJoined())
+                .startedAt(m.getStartedAt())
+                .instructorName(m.getCourse().getInstructor() != null
+                        ? m.getCourse().getInstructor().getFirstName() + " " + m.getCourse().getInstructor().getLastName()
+                        : null)
                 .createdAt(m.getCreatedAt())
                 .build();
     }

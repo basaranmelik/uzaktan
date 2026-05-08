@@ -12,7 +12,7 @@ import org.springframework.web.client.RestClient;
 
 import java.time.Instant;
 import java.util.Base64;
-import java.util.Map;
+import java.util.List;
 
 @Component
 public class ZoomApiClient {
@@ -48,7 +48,7 @@ public class ZoomApiClient {
                 .body(TokenResponse.class);
 
         if (response == null || response.getAccessToken() == null) {
-            throw new RuntimeException("Zoom token alınamadı.");
+            throw new IllegalStateException("Zoom OAuth token alınamadı — credentials geçersiz veya API erişilemez.");
         }
 
         cachedToken = response.getAccessToken();
@@ -57,9 +57,9 @@ public class ZoomApiClient {
         return cachedToken;
     }
 
-    public ZoomApiMeetingResponse createMeeting(ZoomApiMeetingRequest request) {
+    public ZoomApiMeetingResponse createMeeting(String zoomUserId, ZoomApiMeetingRequest request) {
         return zoomRestClient.post()
-                .uri("/users/me/meetings")
+                .uri("/users/{userId}/meetings", zoomUserId)
                 .header("Authorization", "Bearer " + getAccessToken())
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(request)
@@ -85,6 +85,14 @@ public class ZoomApiClient {
                 .toBodilessEntity();
     }
 
+    public ZoomRecordingListResponse getMeetingRecordings(String zoomMeetingId) {
+        return zoomRestClient.get()
+                .uri("/meetings/{meetingId}/recordings", zoomMeetingId)
+                .header("Authorization", "Bearer " + getAccessToken())
+                .retrieve()
+                .body(ZoomRecordingListResponse.class);
+    }
+
     // ---- Inner DTOs ----
 
     @Getter
@@ -99,6 +107,19 @@ public class ZoomApiClient {
 
     @Getter
     @Setter
+    public static class Settings {
+        @JsonProperty("waiting_room")
+        private boolean waitingRoom = false;
+        @JsonProperty("join_before_host")
+        private boolean joinBeforeHost = false;
+        @JsonProperty("mute_upon_entry")
+        private boolean muteUponEntry = true;
+        @JsonProperty("auto_recording")
+        private String autoRecording = "cloud";
+    }
+
+    @Getter
+    @Setter
     public static class ZoomApiMeetingRequest {
         private String topic;
         private int type = 2; // Scheduled
@@ -106,11 +127,26 @@ public class ZoomApiClient {
         private String startTime; // ISO-8601: yyyy-MM-dd'T'HH:mm:ss
         private int duration;
         private String timezone = "Europe/Istanbul";
-        private Map<String, Object> settings = Map.of(
-                "waiting_room", false,
-                "join_before_host", false,
-                "mute_upon_entry", true
-        );
+        private Settings settings = new Settings();
+    }
+
+    @Getter
+    @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ZoomRecordingListResponse {
+        @JsonProperty("recording_files")
+        private List<ZoomRecordingFile> recordingFiles = List.of();
+    }
+
+    @Getter
+    @Setter
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ZoomRecordingFile {
+        @JsonProperty("file_type")
+        private String fileType;
+        private String status;
+        @JsonProperty("play_url")
+        private String playUrl;
     }
 
     @Getter

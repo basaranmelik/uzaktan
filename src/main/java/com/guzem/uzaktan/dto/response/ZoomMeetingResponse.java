@@ -23,5 +23,8 @@ public class ZoomMeetingResponse {
     private String recordingUrl;
     private boolean past;
     private boolean live;
+    private boolean hostJoined;
+    private LocalDateTime startedAt;
+    private String instructorName;
     private LocalDateTime createdAt;
 }

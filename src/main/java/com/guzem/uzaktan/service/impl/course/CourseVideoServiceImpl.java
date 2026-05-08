@@ -16,6 +16,7 @@ import com.guzem.uzaktan.service.course.CourseVideoService;
 import com.guzem.uzaktan.service.course.EnrollmentService;
 import com.guzem.uzaktan.service.common.FileStorageService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -44,13 +45,7 @@ public class CourseVideoServiceImpl implements CourseVideoService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kurs", "id", courseId));
 
-        int moduleCount = course.getModule() != null ? course.getModule() : 0;
         long existingCount = courseVideoRepository.countByCourseId(courseId);
-        if (moduleCount > 0 && existingCount >= moduleCount) {
-            throw new IllegalArgumentException(
-                    "Bu kursa en fazla " + moduleCount + " video eklenebilir. Mevcut: " + existingCount + ".");
-        }
-
         String filePath = fileStorageService.storeVideo(file, courseId, course.getTitle(), title);
         String originalFileName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "video";
 
@@ -78,16 +73,8 @@ public class CourseVideoServiceImpl implements CourseVideoService {
         Course course = courseRepository.findById(courseId)
                 .orElseThrow(() -> new ResourceNotFoundException("Kurs", "id", courseId));
 
-        int moduleCount = course.getModule() != null ? course.getModule() : 0;
         List<CourseVideo> existing = courseVideoRepository.findByCourseIdOrderByOrderIndex(courseId);
         int existingCount = existing.size();
-
-        long nonEmptyCount = java.util.Arrays.stream(files).filter(f -> !f.isEmpty()).count();
-        if (moduleCount > 0 && (existingCount + nonEmptyCount) > moduleCount) {
-            throw new IllegalArgumentException(
-                    "Bu kursa en fazla " + moduleCount + " video eklenebilir. " +
-                    "Mevcut: " + existingCount + ", eklenmek istenen: " + nonEmptyCount + ".");
-        }
 
         // Build pending list with desired positions
         record Pending(MultipartFile file, String title, int desiredPos) {}
@@ -199,12 +186,14 @@ public class CourseVideoServiceImpl implements CourseVideoService {
     @Override
     public void delete(Long videoId) {
         CourseVideo video = loadVideo(videoId);
+        String filePath = video.getFilePath();
 
-        // Önce bu videoya ait tüm izleme kayıtlarını sil (FK kısıtlaması)
+        // DB işlemlerini önce yap — hata olursa transaction geri alınır, dosya etkilenmez
         videoWatchRepository.deleteByVideoId(videoId);
-
-        fileStorageService.delete(video.getFilePath());
         courseVideoRepository.delete(video);
+
+        // Dosyayı en son sil; transaction commit'tendi, tutarsızlık riski minimumdur
+        fileStorageService.delete(filePath);
     }
 
     @Override
@@ -265,7 +254,12 @@ public class CourseVideoServiceImpl implements CourseVideoService {
 
         watch.setCompleted(true);
         watch.setAuthentic(true);
-        videoWatchRepository.save(watch);
+        try {
+            videoWatchRepository.save(watch);
+        } catch (OptimisticLockingFailureException e) {
+            // Başka bir istek aynı anda tamamladı — idempotent sonuç
+            return true;
+        }
 
         enrollmentService.recalculateProgress(userId, video.getCourse().getId());
         return true;

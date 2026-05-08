@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<body>
+
+  <div th:fragment="flashMessages" class="flash-banner-container" id="flashContainer">
+
+    <div th:if="${successMessage}" class="flash-banner flash-success" data-flash="true">
+      <div class="flash-icon">
+        <i class="bi bi-check-circle-fill"></i>
+      </div>
+      <span class="flash-text" th:text="${successMessage}"></span>
+      <button type="button" class="flash-close" aria-label="Kapat">&times;</button>
+    </div>
+
+    <div th:if="${errorMessage}" class="flash-banner flash-error" data-flash="true">
+      <div class="flash-icon">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+      </div>
+      <span class="flash-text" th:text="${errorMessage}"></span>
+      <button type="button" class="flash-close" aria-label="Kapat">&times;</button>
+    </div>
+
+    <div th:if="${warningMessage}" class="flash-banner flash-warning" data-flash="true">
+      <div class="flash-icon">
+        <i class="bi bi-info-circle-fill"></i>
+      </div>
+      <span class="flash-text" th:text="${warningMessage}"></span>
+      <button type="button" class="flash-close" aria-label="Kapat">&times;</button>
+    </div>
+
+    <div th:if="${infoMessage}" class="flash-banner flash-info" data-flash="true">
+      <div class="flash-icon">
+        <i class="bi bi-info-circle-fill"></i>
+      </div>
+      <span class="flash-text" th:text="${infoMessage}"></span>
+      <button type="button" class="flash-close" aria-label="Kapat">&times;</button>
+    </div>
+
+  </div>
+
+</body>
+
+</html>

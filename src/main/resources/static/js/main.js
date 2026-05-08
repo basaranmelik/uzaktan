@@ -318,7 +318,7 @@ function showToast(message, type = 'info', duration = 4000) {
     toast.innerHTML = `
         <i class="bi ${icon}"></i>
         <span style="flex: 1;">${message}</span>
-        <button class="toast-close" style="background: none; border: none; color: inherit; cursor: pointer; padding: 0; font-size: 1.2rem; opacity: 0.6;">×</button>
+        <button class="toast-close" style="background: none; border: none; color: inherit; cursor: pointer; padding: 0; font-size: 1.2rem; opacity: 0.5;">&times;</button>
     `;
 
     const closeBtn = toast.querySelector('.toast-close');
@@ -329,7 +329,9 @@ function showToast(message, type = 'info', duration = 4000) {
         if (!dismissed) {
             dismissed = true;
             toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
+            setTimeout(() => {
+                if (toast.parentNode) toast.remove();
+            }, 350);
             if (timeoutId) clearTimeout(timeoutId);
         }
     };
@@ -338,11 +340,114 @@ function showToast(message, type = 'info', duration = 4000) {
 
     container.appendChild(toast);
 
-    // Show
-    setTimeout(() => toast.classList.add('show'), 10);
+    requestAnimationFrame(() => {
+        toast.classList.add('show');
+    });
 
-    // Auto-hide
     timeoutId = setTimeout(removeToast, duration);
+}
+
+function handleAjaxResponse(data) {
+    if (!data) return;
+    const msg = data.message || '';
+    const type = data.type || (data.success ? 'success' : 'error');
+    if (msg) showToast(msg, type);
+}
+
+async function ajaxPost(url, body, options = {}) {
+    const csrfMeta = document.querySelector('meta[name="_csrf"]');
+    const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+    const csrf = csrfMeta ? csrfMeta.content : '';
+    const csrfHeader = csrfHeaderMeta ? csrfHeaderMeta.content : 'X-CSRF-TOKEN';
+
+    const headers = {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+        [csrfHeader]: csrf,
+        ...(options.headers || {})
+    };
+
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(body)
+        });
+        if (!res.ok) {
+            const text = await res.text();
+            let msg = text;
+            try { const j = JSON.parse(text); msg = j.message || text; } catch (_) {}
+            showToast(msg, 'error');
+            return null;
+        }
+        const data = await res.json();
+        handleAjaxResponse(data);
+        if (options.onSuccess) options.onSuccess(data);
+        return data;
+    } catch (err) {
+        showToast('Bağlantı hatası! Lütfen tekrar deneyin.', 'error');
+        if (options.onError) options.onError(err);
+        return null;
+    }
+}
+
+async function ajaxFormSubmit(form, options = {}) {
+    const csrfMeta = document.querySelector('meta[name="_csrf"]');
+    const csrfHeaderMeta = document.querySelector('meta[name="_csrf_header"]');
+    const csrf = csrfMeta ? csrfMeta.content : '';
+    const csrfHeader = csrfHeaderMeta ? csrfHeaderMeta.content : 'X-CSRF-TOKEN';
+
+    const formData = new FormData(form);
+
+    try {
+        const res = await fetch(form.action, {
+            method: form.method || 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                [csrfHeader]: csrf,
+                ...(options.headers || {})
+            },
+            body: formData
+        });
+        if (!res.ok) {
+            const text = await res.text();
+            let msg = text;
+            try { const j = JSON.parse(text); msg = j.message || text; } catch (_) {}
+            showToast(msg, 'error');
+            return null;
+        }
+        const data = await res.json();
+        handleAjaxResponse(data);
+        if (options.onSuccess) options.onSuccess(data);
+        return data;
+    } catch (err) {
+        showToast('Bağlantı hatası! Lütfen tekrar deneyin.', 'error');
+        if (options.onError) options.onError(err);
+        return null;
+    }
+}
+
+// ---------- Flash Banner Auto-Dismiss ----------
+function initFlashBanners() {
+    document.querySelectorAll('.flash-banner[data-flash]').forEach(banner => {
+        const closeBtn = banner.querySelector('.flash-close');
+        let timeoutId = null;
+
+        const dismiss = () => {
+            if (banner.classList.contains('flash-dismissing')) return;
+            banner.classList.add('flash-dismissing');
+            if (timeoutId) clearTimeout(timeoutId);
+            setTimeout(() => {
+                if (banner.parentNode) banner.remove();
+            }, 300);
+        };
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', dismiss);
+        }
+
+        timeoutId = setTimeout(dismiss, 6000);
+    });
 }
 
 // ---------- Video Locking Handler ----------
@@ -359,166 +464,9 @@ function initVideoLocking() {
 }
 
 // ---------- Global Toast Bridge ----------
-function initGlobalToasts() {
-    const navbar = document.getElementById('navbar');
-    if (navbar) {
-        const success = navbar.getAttribute('data-toast-success');
-        const error = navbar.getAttribute('data-toast-error');
-
-        if (success && success.trim() !== '') {
-            showToast(success, 'success');
-        }
-        if (error && error.trim() !== '') {
-            showToast(error, 'error');
-        }
-    }
-}
-
 // ============================================
 // COURSE LIST PAGE — Filtering & Sorting
 // ============================================
-function initCourseListFilters() {
-    const grid = document.getElementById('courses-grid');
-    if (!grid) return;
-
-    const searchInput = document.getElementById('course-search');
-    const noResultsMsg = document.getElementById('no-results-msg');
-    const resultCount = document.getElementById('result-count');
-    const filterBadge = document.getElementById('active-filter-badge');
-
-    if (!grid.querySelectorAll('.course-card').length) return; // Cards rendered server-side
-
-    let allCards = Array.from(grid.querySelectorAll('.course-card'));
-    let originalOrder = allCards.slice();
-    let activeSort = 'default';
-    let activeCategory = '';
-    let minPrice = 0;
-    let maxPrice = 200000;
-
-    function getPrice(card) {
-        return parseFloat(card.dataset.price) || 0;
-    }
-
-    function applyFilters() {
-        const q = searchInput ? searchInput.value.trim().toLowerCase() : '';
-        const isFiltered = q || minPrice > 0 || maxPrice < 200000 || activeSort !== 'default' || activeCategory;
-        if (filterBadge) filterBadge.style.display = isFiltered ? 'inline-block' : 'none';
-
-        let visible = allCards.filter(card => {
-            const price = getPrice(card);
-            const title = (card.dataset.title || '').toLowerCase();
-            const cat = (card.dataset.category || '').toLowerCase();
-            const matchPrice = price >= minPrice && price <= maxPrice;
-            const matchSearch = !q || title.includes(q);
-            const matchCategory = !activeCategory || cat === activeCategory;
-            return matchPrice && matchSearch && matchCategory;
-        });
-
-        // Sorting
-        if (activeSort === 'az')
-            visible.sort((a, b) => (a.dataset.title || '').localeCompare(b.dataset.title || '', 'tr'));
-        else if (activeSort === 'za')
-            visible.sort((a, b) => (b.dataset.title || '').localeCompare(a.dataset.title || '', 'tr'));
-        else if (activeSort === 'price-asc')
-            visible.sort((a, b) => getPrice(a) - getPrice(b));
-        else if (activeSort === 'price-desc')
-            visible.sort((a, b) => getPrice(b) - getPrice(a));
-        else
-            visible.sort((a, b) => originalOrder.indexOf(a) - originalOrder.indexOf(b));
-
-        // Update visibility
-        allCards.forEach(c => c.classList.add('course-card-hidden'));
-        visible.forEach(c => {
-            c.classList.remove('course-card-hidden');
-            grid.appendChild(c);
-        });
-
-        // Update count
-        const countSpan = resultCount ? resultCount.querySelector('span:first-child') : null;
-        if (countSpan) countSpan.textContent = visible.length;
-
-        // Empty state
-        if (noResultsMsg) noResultsMsg.style.display = visible.length === 0 ? 'block' : 'none';
-        grid.style.display = visible.length === 0 ? 'none' : '';
-    }
-
-    // Category filtering
-    document.querySelectorAll('.category-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            activeCategory = (btn.dataset.category || '').toLowerCase();
-            applyFilters();
-        });
-    });
-
-    // Sorting
-    document.querySelectorAll('.sort-option').forEach(opt => {
-        opt.addEventListener('click', () => {
-            document.querySelectorAll('.sort-option').forEach(o => o.classList.remove('active'));
-            opt.classList.add('active');
-            activeSort = opt.dataset.sort;
-            applyFilters();
-        });
-    });
-
-    // Price range
-    const minEl = document.getElementById('price-min');
-    const maxEl = document.getElementById('price-max');
-    const minLbl = document.getElementById('price-min-label');
-    const maxLbl = document.getElementById('price-max-label');
-
-    if (minEl && maxEl) {
-        minEl.addEventListener('input', () => {
-            minPrice = parseInt(minEl.value);
-            if (minPrice > maxPrice) { minPrice = maxPrice; minEl.value = minPrice; }
-            if (minLbl) minLbl.textContent = '₺' + minPrice.toLocaleString('tr-TR');
-            applyFilters();
-        });
-        maxEl.addEventListener('input', () => {
-            maxPrice = parseInt(maxEl.value);
-            if (maxPrice < minPrice) { maxPrice = minPrice; maxEl.value = maxPrice; }
-            if (maxLbl) maxLbl.textContent = '₺' + maxPrice.toLocaleString('tr-TR');
-            applyFilters();
-        });
-    }
-
-    // Price presets
-    document.querySelectorAll('.price-preset').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.price-preset').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            minPrice = parseInt(btn.dataset.min);
-            maxPrice = parseInt(btn.dataset.max);
-            if (minEl) { minEl.value = minPrice; if (minLbl) minLbl.textContent = '₺' + minPrice.toLocaleString('tr-TR'); }
-            if (maxEl) { maxEl.value = maxPrice; if (maxLbl) maxLbl.textContent = '₺' + maxPrice.toLocaleString('tr-TR'); }
-            applyFilters();
-        });
-    });
-
-    // Live search
-    if (searchInput) searchInput.addEventListener('input', applyFilters);
-
-    // Reset
-    const resetBtn = document.getElementById('reset-filters');
-    if (resetBtn) {
-        resetBtn.addEventListener('click', () => {
-            activeSort = 'default'; minPrice = 0; maxPrice = 200000; activeCategory = '';
-            document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-            const firstCat = document.querySelectorAll('.category-btn')[0];
-            if (firstCat) firstCat.classList.add('active');
-            document.querySelectorAll('.sort-option')[0]?.click();
-            document.querySelectorAll('.price-preset')[0]?.click();
-            if (minEl) { minEl.value = 0; if (minLbl) minLbl.textContent = '₺0'; }
-            if (maxEl) { maxEl.value = 200000; if (maxLbl) maxLbl.textContent = '₺200.000'; }
-            if (searchInput) searchInput.value = '';
-            applyFilters();
-        });
-    }
-
-    applyFilters();
-}
-
 // ============================================
 // SSS PAGE — Accordion
 // ============================================
@@ -936,15 +884,6 @@ function initAdminUsers() {
         });
     });
 
-    // Confirm delete buttons
-    document.querySelectorAll('.confirm-delete-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            if (!confirm('Bu kullanıcıyı silmek istediğinize emin misiniz?')) {
-                e.preventDefault();
-            }
-        });
-    });
-
     // Filter
     const filterInput = document.getElementById('user-filter');
     if (filterInput) {
@@ -985,6 +924,11 @@ function initAdminUsers() {
             btn.addEventListener('click', () => {
                 document.getElementById('modalFullName').textContent = btn.dataset.name || '-';
                 document.getElementById('modalEmail').textContent = btn.dataset.email || '-';
+                document.getElementById('modalZoomEmail').textContent = btn.dataset.zoomemail || 'Tanımlanmamış';
+                if (!btn.dataset.zoomemail) {
+                    document.getElementById('modalZoomEmail').style.color = '#f08c00';
+                    document.getElementById('modalZoomEmail').textContent = '⚠ Tanımlanmamış';
+                }
                 document.getElementById('modalPhone').textContent = btn.dataset.phone && btn.dataset.phone !== 'null' ? btn.dataset.phone : 'Belirtilmemiş';
                 document.getElementById('modalBirthDate').textContent = btn.dataset.birth && btn.dataset.birth !== 'null' ? btn.dataset.birth : 'Belirtilmemiş';
 
@@ -1050,20 +994,34 @@ function initCourseForms() {
             el.style.display = types.includes(selected) ? '' : 'none';
         });
 
-        // Update description label based on course type
+        const isOnline = selected === 'ONLINE';
+        const isFaceToFace = selected === 'FACE_TO_FACE';
+        const isHybrid = selected === 'HYBRID';
+
+        const descInput = document.getElementById('desc-input') || document.getElementById('desc-input-edit');
         const descLabel = document.getElementById('desc-label') || document.getElementById('desc-label-edit');
         const descHint = document.getElementById('desc-hint') || document.getElementById('desc-hint-edit');
         const quotaInput = document.getElementById('quota-input');
+        const startDateInput = document.getElementById('startDate-input');
+        const endDateInput = document.getElementById('endDate-input');
+        const locationInput = document.getElementById('location-input');
 
-        if (selected === 'REMOTE_FORMAL') {
+        if (isHybrid) {
             if (descLabel) descLabel.textContent = 'Açıklama';
             if (descHint) descHint.style.display = 'block';
+            if (descInput) descInput.removeAttribute('required');
             if (quotaInput) quotaInput.required = true;
         } else {
-            if (descLabel) descLabel.textContent = 'Açıklama';
+            if (descLabel) descLabel.textContent = 'Açıklama *';
             if (descHint) descHint.style.display = 'none';
-            if (quotaInput) quotaInput.required = (selected !== 'ONLINE');
+            if (descInput) descInput.required = true;
+            if (quotaInput) quotaInput.required = !isOnline;
         }
+
+        if (startDateInput) startDateInput.required = !isOnline;
+        if (endDateInput) endDateInput.required = !isOnline;
+
+        if (locationInput) locationInput.required = isFaceToFace;
     }
 
     document.querySelectorAll('input[name="courseType"]').forEach(r => {
@@ -1071,12 +1029,26 @@ function initCourseForms() {
     });
     updateTypeFields();
 
-    // Update scheduleDays hidden field when form is submitted
-    courseForm.addEventListener('submit', () => {
+    // Update scheduleDays hidden field and validate dates when form is submitted
+    courseForm.addEventListener('submit', (e) => {
         const days = Array.from(document.querySelectorAll('input[name="scheduleDaysArray"]:checked'))
             .map(cb => cb.value).join(',');
         const scheduleDaysInput = document.getElementById('scheduleDays');
         if (scheduleDaysInput) scheduleDaysInput.value = days;
+
+        // Validate startDate < endDate
+        const startDateInput = document.getElementById('startDate-input');
+        const endDateInput = document.getElementById('endDate-input');
+        if (startDateInput && endDateInput && startDateInput.required && endDateInput.required) {
+            const start = startDateInput.value;
+            const end = endDateInput.value;
+            if (start && end && start > end) {
+                e.preventDefault();
+                alert('Başlangıç tarihi, bitiş tarihinden sonra olamaz.');
+                endDateInput.focus();
+                return;
+            }
+        }
     });
 }
 
@@ -1146,25 +1118,223 @@ function initPhoneInput() {
 }
 
 // ============================================
-// EĞİTMEN — Question Search
+// EĞİTMEN — Question Bank (search + single-nav)
 // ============================================
-function initQuestionSearch() {
-    const searchInput = document.getElementById('questionSearch');
-    if (!searchInput) return;
+function initQuestionBank() {
+    const qBankData = document.getElementById('qBankData');
+    if (!qBankData) return;
 
-    searchInput.addEventListener('input', function() {
-        const term = this.value.toLowerCase();
-        const cards = document.querySelectorAll('.q-card');
-        let visible = 0;
-        cards.forEach(function(card) {
-            const text = card.getAttribute('data-search')?.toLowerCase() || '';
-            const match = text.includes(term);
-            card.style.display = match ? '' : 'none';
-            if (match) visible++;
+    const totalQuestions = parseInt(qBankData.dataset.totalQuestions) || 0;
+    if (totalQuestions === 0) return;
+
+    let currentIndex = 0;
+    let isSearching = false;
+    let activeModuleFilter = '';
+    const cards = document.querySelectorAll('#questionList .qb-card');
+    const dots = document.querySelectorAll('#qbDots .qb-dot');
+    const prevBtn = document.getElementById('qbPrevBtn');
+    const nextBtn = document.getElementById('qbNextBtn');
+    const counterBottom = document.getElementById('qbBottomCurrent');
+    const counterTotal = document.getElementById('qbBottomTotal');
+    const counterTop = document.getElementById('currentQ');
+    const dotsScroll = document.getElementById('qbDotsScroll');
+    const searchInput = document.getElementById('questionSearch');
+    const searchClear = document.getElementById('qbSearchClear');
+    const searchStatus = document.getElementById('qbSearchStatus');
+    const moduleFilter = document.getElementById('qbModuleFilter');
+    const totalBadge = document.querySelector('.qb-total-badge');
+
+    function getVisibleCards() {
+        const arr = [];
+        cards.forEach((c, i) => {
+            if (c.dataset.filtered !== 'false') arr.push({ card: c, index: i });
         });
-        const countEl = document.getElementById('visibleCount');
-        if (countEl) countEl.textContent = visible;
+        return arr;
+    }
+
+    function updateCounterUI(visibleCount, num) {
+        if (counterBottom) counterBottom.textContent = num;
+        if (counterTotal) counterTotal.textContent = visibleCount;
+        if (counterTop) counterTop.textContent = num;
+        if (totalBadge) totalBadge.textContent = visibleCount + ' soru';
+        if (prevBtn) prevBtn.disabled = num <= 1;
+        if (nextBtn) nextBtn.disabled = num >= visibleCount;
+    }
+
+    function showCardByIndex(index) {
+        const visible = getVisibleCards();
+        if (visible.length === 0) return;
+        // Find the card with matching dataset.index
+        const match = visible.find(v => parseInt(v.card.dataset.index) === index);
+        if (!match) return;
+        currentIndex = index;
+        const num = visible.findIndex(v => v.card === match.card) + 1;
+        cards.forEach(c => c.style.display = 'none');
+        match.card.style.display = 'block';
+        updateDots(index);
+        updateCounterUI(visible.length, num);
+    }
+
+    function updateDots(activeDataIndex) {
+        dots.forEach((dot, i) => {
+            const idx = parseInt(dot.dataset.index);
+            const active = idx === activeDataIndex;
+            dot.classList.toggle('active', active);
+            dot.setAttribute('aria-selected', active ? 'true' : 'false');
+            if (active) {
+                dot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        });
+    }
+
+    function applyModuleFilter(moduleName) {
+        activeModuleFilter = moduleName;
+        isSearching = false;
+        if (searchInput) searchInput.value = '';
+        if (searchClear) searchClear.style.display = 'none';
+        if (searchStatus) searchStatus.textContent = '';
+
+        const lower = moduleName.toLowerCase();
+        let firstIdx = -1;
+        cards.forEach((card, i) => {
+            const mod = (card.dataset.module || '').toLowerCase();
+            const show = !moduleName || mod === lower;
+            card.dataset.filtered = show ? 'true' : 'false';
+            card.style.display = 'none';
+            if (dots[i]) dots[i].style.display = show ? '' : 'none';
+            if (show && firstIdx === -1) firstIdx = i;
+        });
+        if (firstIdx >= 0) showCardByIndex(firstIdx);
+        updateCounterUI(getVisibleCards().length, firstIdx >= 0 ? 1 : 0);
+    }
+
+    function updateUI(index) {
+        currentIndex = index;
+        const visible = getVisibleCards();
+        const pos = visible.findIndex(v => parseInt(v.card.dataset.index) === index);
+        const num = pos >= 0 ? pos + 1 : 1;
+        cards.forEach(c => c.style.display = 'none');
+        if (pos >= 0) visible[pos].card.style.display = 'block';
+        else if (visible.length > 0) visible[0].card.style.display = 'block';
+        updateDots(index);
+        updateCounterUI(visible.length, num);
+    }
+
+    function goTo(index) {
+        const visible = getVisibleCards();
+        if (visible.length === 0 || index < 0 || index >= cards.length) return;
+        if (isSearching) clearSearch();
+        // Find visible card at or after given index
+        const after = visible.filter(v => parseInt(v.card.dataset.index) >= index);
+        const target = after.length > 0 ? after[0] : visible[0];
+        showCardByIndex(parseInt(target.card.dataset.index));
+    }
+
+    function goRelative(delta) {
+        const visible = getVisibleCards();
+        if (visible.length === 0) return;
+        const curPos = visible.findIndex(v => parseInt(v.card.dataset.index) === currentIndex);
+        const newPos = curPos + delta;
+        if (newPos < 0 || newPos >= visible.length) return;
+        showCardByIndex(parseInt(visible[newPos].card.dataset.index));
+    }
+
+    function clearSearch() {
+        if (searchInput) searchInput.value = '';
+        if (searchClear) searchClear.style.display = 'none';
+        if (searchStatus) searchStatus.textContent = '';
+        isSearching = false;
+        applyModuleFilter(activeModuleFilter);
+    }
+
+    // Build module filter options
+    if (moduleFilter) {
+        const modulesMap = new Map();
+        cards.forEach(card => {
+            const mod = card.dataset.module;
+            if (mod && mod !== 'null' && mod !== '') modulesMap.set(mod, (modulesMap.get(mod) || 0) + 1);
+        });
+        modulesMap.forEach((count, mod) => {
+            const opt = document.createElement('option');
+            opt.value = mod;
+            opt.textContent = mod + ' (' + count + ')';
+            moduleFilter.appendChild(opt);
+        });
+        moduleFilter.addEventListener('change', function() {
+            applyModuleFilter(this.value);
+        });
+    }
+
+    if (prevBtn) prevBtn.addEventListener('click', () => goRelative(-1));
+    if (nextBtn) nextBtn.addEventListener('click', () => goRelative(1));
+
+    dots.forEach(dot => {
+        dot.addEventListener('click', function() {
+            if (this.style.display === 'none') return;
+            showCardByIndex(parseInt(this.dataset.index));
+        });
     });
+
+    document.addEventListener('keydown', function(e) {
+        const visible = Array.from(cards).find(c => c.style.display === 'block');
+        if (!visible) return;
+        if (e.key === 'ArrowLeft') { e.preventDefault(); goRelative(-1); }
+        if (e.key === 'ArrowRight') { e.preventDefault(); goRelative(1); }
+    });
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            const term = this.value.trim();
+            if (searchClear) searchClear.style.display = term ? '' : 'none';
+
+            if (!term) {
+                clearSearch();
+                return;
+            }
+
+            isSearching = true;
+            const lower = term.toLowerCase();
+            let matchCount = 0;
+            let firstMatch = -1;
+
+            cards.forEach(function(card, i) {
+                const text = card.getAttribute('data-search')?.toLowerCase() || '';
+                const modOk = !activeModuleFilter || (card.dataset.module || '').toLowerCase() === activeModuleFilter.toLowerCase();
+                const match = modOk && text.includes(lower);
+                card.dataset.filtered = match ? 'true' : 'false';
+                card.style.display = 'none';
+                if (dots[i]) dots[i].style.display = match ? '' : 'none';
+                if (match) {
+                    matchCount++;
+                    if (firstMatch === -1) firstMatch = i;
+                }
+            });
+
+            if (searchStatus) {
+                searchStatus.textContent = matchCount > 0
+                    ? matchCount + ' soru bulundu'
+                    : 'Sonuç bulunamadı';
+            }
+            if (totalBadge) totalBadge.textContent = matchCount + ' soru';
+
+            if (firstMatch >= 0) showCardByIndex(firstMatch);
+        });
+
+        if (searchClear) {
+            searchClear.addEventListener('click', function() {
+                clearSearch();
+                searchInput.focus();
+            });
+        }
+    }
+
+    // Initial - show first card
+    if (cards.length > 0) {
+        cards.forEach(c => c.style.display = 'none');
+        cards[0].style.display = 'block';
+    }
+    updateCounterUI(cards.length, 1);
+    updateDots(0);
 }
 
 // ============================================
@@ -1282,7 +1452,8 @@ function initExcelPanelToggle() {
         btn.addEventListener('click', function() {
             const panel = document.getElementById('excelUploadPanel');
             if (panel) {
-                panel.classList.toggle('sb-hidden');
+                const expanded = panel.classList.toggle('hidden');
+                panel.setAttribute('aria-hidden', expanded ? 'true' : 'false');
             }
         });
     });
@@ -1350,13 +1521,76 @@ function initQuizExam() {
 
     const totalQuestions = parseInt(examData.dataset.totalQuestions) || 0;
     let answered = new Set();
+    let currentIndex = 0;
+
+    const cards = document.querySelectorAll('.exam-q-card');
+    const navDots = document.querySelectorAll('.exam-nav-dot');
+    const submitArea = document.querySelector('.exam-submit-area');
+
+    function showQuestion(index) {
+        currentIndex = index;
+        cards.forEach((card, i) => {
+            card.style.display = i === index ? 'block' : 'none';
+        });
+        navDots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+
+        const counter = document.getElementById('currentQ');
+        if (counter) counter.textContent = index + 1;
+
+        const card = cards[index];
+        if (card) {
+            const prevBtn = card.querySelector('.prev-btn');
+            const nextBtn = card.querySelector('.next-btn');
+            const submitWrap = card.querySelector('.exam-submit-area');
+
+            if (prevBtn) prevBtn.disabled = index === 0;
+            if (nextBtn) nextBtn.style.display = index === totalQuestions - 1 ? 'none' : '';
+            if (submitWrap) submitWrap.style.display = index === totalQuestions - 1 ? '' : 'none';
+        }
+    }
+
+    function goTo(index) {
+        if (index < 0 || index >= totalQuestions) return;
+        showQuestion(index);
+    }
+
+    // Prev/next buttons
+    document.querySelectorAll('.prev-btn').forEach(btn => {
+        btn.addEventListener('click', () => goTo(currentIndex - 1));
+    });
+    document.querySelectorAll('.next-btn').forEach(btn => {
+        btn.addEventListener('click', () => goTo(currentIndex + 1));
+    });
+
+    // Navigation dots
+    navDots.forEach(dot => {
+        dot.addEventListener('click', function() {
+            const idx = parseInt(this.dataset.index);
+            goTo(idx);
+        });
+    });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', function(e) {
+        if (!document.querySelector('.exam-q-card') || document.querySelector('.exam-q-card').style.display === 'none') {
+            const visible = Array.from(document.querySelectorAll('.exam-q-card')).find(c => c.style.display !== 'none' || c.style.display === '');
+            if (!visible) return;
+        }
+        if (e.key === 'ArrowLeft') goTo(currentIndex - 1);
+        if (e.key === 'ArrowRight') goTo(currentIndex + 1);
+    });
 
     function markAnswered(radio) {
         const qnum = radio.dataset.qnum;
         answered.add(qnum);
 
-        const card = document.getElementById('q' + qnum);
-        if (card) card.classList.add('answered');
+        const idx = parseInt(radio.dataset.index);
+        if (!isNaN(idx)) {
+            const card = cards[idx];
+            if (card) card.classList.add('answered');
+        }
 
         const dot = document.getElementById('nav-' + qnum);
         if (dot) dot.classList.add('answered');
@@ -1392,6 +1626,9 @@ function initQuizExam() {
     document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
         markAnswered(radio);
     });
+
+    // Show first question
+    showQuestion(0);
 }
 
 // ============================================
@@ -1406,24 +1643,33 @@ function initCurriculumBuilder() {
         const modules = [];
         builder.querySelectorAll('.cm-module').forEach(card => {
             const title = card.querySelector('.cm-title-input').value.trim();
-            const description = card.querySelector('.cm-desc').value.trim();
-            const topics = Array.from(card.querySelectorAll('.cm-topic-input'))
+            const description = card.querySelector('.cm-desc-main') ? card.querySelector('.cm-desc-main').value.trim() : '';
+            const topics = Array.from(card.querySelectorAll('.cm-topics .cm-topic-input'))
                 .map(i => i.value.trim()).filter(v => v);
-            if (title) modules.push({ title, description, topics });
+            const purpose = card.querySelector('.cm-purpose') ? card.querySelector('.cm-purpose').value.trim() : '';
+            const durationRaw = card.querySelector('.cm-duration') ? card.querySelector('.cm-duration').value.trim() : '';
+            const durationHours = durationRaw ? parseFloat(durationRaw) : null;
+            const activities = Array.from(card.querySelectorAll('.cm-activities .cm-topic-input'))
+                .map(i => i.value.trim()).filter(v => v);
+            const outcomes = Array.from(card.querySelectorAll('.cm-outcomes .cm-topic-input'))
+                .map(i => i.value.trim()).filter(v => v);
+            if (title) modules.push({ title, description, topics, purpose, durationHours, activities, outcomes });
         });
         return modules;
     }
 
-    function addTopic(topicsDiv) {
+    function addListRow(container, placeholder, value) {
         const row = document.createElement('div');
         row.className = 'cm-topic-row';
-        row.innerHTML = `
-            <input class="cm-topic-input" type="text" placeholder="Konu başlığı...">
-            <button type="button" class="cm-topic-remove" title="Konuyu Sil"><i class="bi bi-x-lg"></i></button>
-        `;
+        row.innerHTML = `<input class="cm-topic-input" type="text" placeholder="${escHtml(placeholder)}"><button type="button" class="cm-topic-remove" title="Sil"><i class="bi bi-x-lg"></i></button>`;
         row.querySelector('.cm-topic-remove').onclick = () => row.remove();
-        topicsDiv.appendChild(row);
+        if (value) row.querySelector('.cm-topic-input').value = value;
+        container.appendChild(row);
         return row.querySelector('.cm-topic-input');
+    }
+
+    function addTopic(topicsDiv) {
+        return addListRow(topicsDiv, 'Konu başlığı...');
     }
 
     function addModule(data = {}) {
@@ -1437,19 +1683,48 @@ function initCurriculumBuilder() {
                 <button type="button" class="cm-delete-module" title="Modülü Sil"><i class="bi bi-trash3"></i></button>
             </div>
             <div class="cm-module-body">
-                <textarea class="cm-desc" rows="2" placeholder="Modül açıklaması (isteğe bağlı)...">${escHtml(data.description||'')}</textarea>
-                <div class="cm-topics"></div>
-                <button type="button" class="cm-add-topic"><i class="bi bi-plus-sm"></i> Konu Ekle</button>
+                <div class="cm-field-group">
+                    <label class="cm-field-label">Açıklama</label>
+                    <textarea class="cm-desc cm-desc-main" rows="2" placeholder="Modül açıklaması (isteğe bağlı)...">${escHtml(data.description||'')}</textarea>
+                </div>
+                <div class="cm-field-group">
+                    <label class="cm-field-label">Modül Amacı</label>
+                    <textarea class="cm-desc cm-purpose" rows="2" placeholder="Bu modülün amacı...">${escHtml(data.purpose||'')}</textarea>
+                </div>
+                <div class="cm-field-group" style="display:flex;gap:1rem;align-items:flex-end;">
+                    <div style="flex:1;">
+                        <label class="cm-field-label">Süre (Saat)</label>
+                        <input class="cm-topic-input cm-duration" type="number" step="0.5" min="0" placeholder="1.5" value="${escHtml(String(data.durationHours != null ? data.durationHours : ''))}" style="width:120px;">
+                    </div>
+                </div>
+                <div class="cm-field-group">
+                    <label class="cm-field-label">Konu Başlıkları</label>
+                    <div class="cm-topics"></div>
+                    <button type="button" class="cm-add-topic cm-add-list-btn"><i class="bi bi-plus-circle-fill"></i> Konu Ekle</button>
+                </div>
+                <div class="cm-field-group">
+                    <label class="cm-field-label">Uygulama / Etkinlikler</label>
+                    <div class="cm-activities cm-topics"></div>
+                    <button type="button" class="cm-add-activity cm-add-list-btn"><i class="bi bi-plus-circle-fill"></i> Etkinlik Ekle</button>
+                </div>
+                <div class="cm-field-group">
+                    <label class="cm-field-label">Modül Kazanımları</label>
+                    <div class="cm-outcomes cm-topics"></div>
+                    <button type="button" class="cm-add-outcome cm-add-list-btn"><i class="bi bi-plus-circle-fill"></i> Kazanım Ekle</button>
+                </div>
             </div>
         `;
-        card.querySelector('.cm-delete-module').onclick = () => {
-            card.remove();
-            renumberModules();
-        };
+        card.querySelector('.cm-delete-module').onclick = () => { card.remove(); renumberModules(); };
         const topicsDiv = card.querySelector('.cm-topics');
-        card.querySelector('.cm-add-topic').onclick = () => addTopic(topicsDiv).focus();
-        (data.topics || []).forEach(t => { addTopic(topicsDiv).value = t; });
-        if (!data.topics || !data.topics.length) addTopic(topicsDiv);
+        const activitiesDiv = card.querySelector('.cm-activities');
+        const outcomesDiv = card.querySelector('.cm-outcomes');
+        card.querySelector('.cm-add-topic').onclick = () => addListRow(topicsDiv, 'Konu başlığı...').focus();
+        card.querySelector('.cm-add-activity').onclick = () => addListRow(activitiesDiv, 'Uygulama veya etkinlik...').focus();
+        card.querySelector('.cm-add-outcome').onclick = () => addListRow(outcomesDiv, 'Modül kazanımı...').focus();
+        (data.topics || []).forEach(t => addListRow(topicsDiv, 'Konu başlığı...', t));
+        if (!data.topics || !data.topics.length) addListRow(topicsDiv, 'Konu başlığı...');
+        (data.activities || []).forEach(a => addListRow(activitiesDiv, 'Uygulama veya etkinlik...', a));
+        (data.outcomes || []).forEach(o => addListRow(outcomesDiv, 'Modül kazanımı...', o));
         builder.appendChild(card);
     }
 
@@ -1487,6 +1762,104 @@ function initCurriculumBuilder() {
         }
     } else {
         addModule();
+    }
+}
+
+// ============================================
+// UZEM Form — Dynamic List Builders
+// ============================================
+function initUzemForm() {
+    const courseForm = document.getElementById('courseForm');
+    if (!courseForm) return;
+
+    // Check for UZEM hidden inputs
+    const uzemFields = ['targetAudience', 'contentTopics', 'learningOutcomes', 'prerequisites'];
+    const hasUzem = document.getElementById('targetAudienceJson');
+    if (!hasUzem) return;
+
+    function escStr(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // Generic string-list row adder
+    window.addUzemItem = function(fieldId, placeholder, value) {
+        const builder = document.getElementById(fieldId + '-builder');
+        if (!builder) return;
+        const row = document.createElement('div');
+        row.className = 'uzem-item-row';
+        row.innerHTML = '<input class="uzem-item-input" type="text" placeholder="' + escStr(placeholder) + '">' +
+            '<button type="button" class="uzem-item-remove" title="Sil"><i class="bi bi-x-lg"></i></button>';
+        if (value) row.querySelector('.uzem-item-input').value = value;
+        row.querySelector('.uzem-item-remove').onclick = function() { row.remove(); };
+        builder.appendChild(row);
+    };
+
+    // Assessment item row adder
+    var assessBuilder = document.getElementById('assessmentItems-builder');
+    window.addAssessmentItem = function(data) {
+        data = data || {};
+        var row = document.createElement('div');
+        row.className = 'assess-row';
+        row.innerHTML =
+            '<input class="assess-input" type="text" placeholder="Quiz, Ödev..." value="' + escStr(data.type) + '">' +
+            '<input class="assess-input" type="text" placeholder="Açıklama..." value="' + escStr(data.description) + '">' +
+            '<input class="assess-input" type="number" min="0" max="100" placeholder="20" value="' + escStr(data.weight != null ? data.weight : '') + '">' +
+            '<button type="button" class="uzem-item-remove" title="Sil"><i class="bi bi-x-lg"></i></button>';
+        row.querySelector('.uzem-item-remove').onclick = function() { row.remove(); };
+        if (assessBuilder) assessBuilder.appendChild(row);
+    };
+
+    // Serialize on form submit (runs before manualCurriculum serializer via capture)
+    courseForm.addEventListener('submit', function() {
+        uzemFields.forEach(function(id) {
+            var jsonInput = document.getElementById(id + 'Json');
+            if (!jsonInput) return;
+            var items = Array.from(document.querySelectorAll('#' + id + '-builder .uzem-item-input'))
+                .map(function(i) { return i.value.trim(); })
+                .filter(function(v) { return v.length > 0; });
+            jsonInput.value = JSON.stringify(items);
+        });
+        if (assessBuilder) {
+            var aItems = Array.from(assessBuilder.querySelectorAll('.assess-row')).map(function(row) {
+                var inputs = row.querySelectorAll('.assess-input');
+                var wRaw = inputs[2].value.trim();
+                return { type: inputs[0].value.trim(), description: inputs[1].value.trim(), weight: wRaw ? parseInt(wRaw, 10) : null };
+            }).filter(function(a) { return a.type || a.description; });
+            var aiJson = document.getElementById('assessmentItemsJson');
+            if (aiJson) aiJson.value = JSON.stringify(aItems);
+        }
+    }, true);
+
+    // Load existing data (edit form uses data-existing-* attributes on builder divs)
+    uzemFields.forEach(function(id) {
+        var builder = document.getElementById(id + '-builder');
+        if (!builder) return;
+        var existing = builder.dataset.existing;
+        var placeholder = builder.dataset.placeholder || 'Girin...';
+        if (existing && existing.trim().startsWith('[')) {
+            try {
+                var items = JSON.parse(existing);
+                if (items.length > 0) {
+                    items.forEach(function(v) { window.addUzemItem(id, placeholder, v); });
+                    return;
+                }
+            } catch(e) {}
+        }
+        window.addUzemItem(id, placeholder);
+    });
+
+    if (assessBuilder) {
+        var existingAI = assessBuilder.dataset.existing;
+        if (existingAI && existingAI.trim().startsWith('[')) {
+            try {
+                var parsed = JSON.parse(existingAI);
+                if (parsed.length > 0) {
+                    parsed.forEach(function(a) { window.addAssessmentItem(a); });
+                    return;
+                }
+            } catch(e) {}
+        }
+        window.addAssessmentItem();
     }
 }
 
@@ -1576,7 +1949,6 @@ function initInstructorMultiSelect() {
 // ============================================
 function initContactForm() {
     const form = document.getElementById('contact-form');
-    const formSuccess = document.getElementById('formSuccess');
     if (!form) return;
 
     form.addEventListener('submit', (e) => {
@@ -1612,28 +1984,16 @@ function initContactForm() {
             btn.disabled = false;
 
             if (data.success) {
-                formSuccess.style.display = 'block';
-                formSuccess.style.background = '#e6fcf5';
-                formSuccess.style.color = '#0a7a5a';
-                formSuccess.style.borderColor = '#20c997';
-                formSuccess.innerHTML = '<i class="bi bi-check-circle-fill"></i> ' + data.message;
                 form.reset();
-
-                setTimeout(() => {
-                    formSuccess.style.display = 'none';
-                }, 6000);
+                showToast(data.message || 'Mesajınız başarıyla iletildi!', 'success');
             } else {
-                throw new Error(data.message);
+                showToast(data.message || 'Mesaj gönderilemedi.', 'error');
             }
         })
         .catch(error => {
             btn.innerHTML = originalText;
             btn.disabled = false;
-            formSuccess.style.display = 'block';
-            formSuccess.style.background = '#fff5f5';
-            formSuccess.style.color = '#c92a2a';
-            formSuccess.style.borderColor = '#ffa8a8';
-            formSuccess.innerHTML = '<i class="bi bi-exclamation-triangle-fill"></i> Hata: ' + (error.message || 'Mesaj gönderilemedi.');
+            showToast('Bağlantı hatası! Lütfen daha sonra tekrar deneyin.', 'error');
         });
     });
 }
@@ -1647,13 +2007,92 @@ function initHomeCounters() {
     }
 }
 
+// ============================================
+// Course Detail — Course Info Toggle
+// ============================================
+function initCourseInfoToggle() {
+    const toggleHeader = document.querySelector('[data-course-info-toggle]');
+    if (!toggleHeader) return;
+
+    toggleHeader.addEventListener('click', function() {
+        const body = document.querySelector('[data-course-info-body]');
+        const chevron = document.querySelector('[data-course-info-chevron]');
+
+        if (body && body.style.display === 'none') {
+            body.style.display = 'block';
+            if (chevron) chevron.style.transform = 'rotate(180deg)';
+            toggleHeader.style.borderRadius = '12px 12px 0 0';
+        } else if (body) {
+            body.style.display = 'none';
+            if (chevron) chevron.style.transform = 'rotate(0deg)';
+            toggleHeader.style.borderRadius = '12px';
+        }
+    });
+}
+
+// ============================================
+// CSP-Safe Event Delegation (replaces inline handlers)
+// ============================================
+function initCspSafeHandlers() {
+    // UZEM add-item buttons: data-uzem-field + data-uzem-placeholder
+    document.querySelectorAll('[data-uzem-field]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const field = btn.dataset.uzemField;
+            const placeholder = btn.dataset.uzemPlaceholder || '';
+            if (window.addUzemItem) window.addUzemItem(field, placeholder);
+        });
+    });
+
+    // Assessment item add button: data-action="addAssessmentItem"
+    document.querySelectorAll('[data-action="addAssessmentItem"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (window.addAssessmentItem) window.addAssessmentItem();
+        });
+    });
+
+    // Copy password button (instructors page)
+    const copyPwdBtn = document.getElementById('copyPasswordBtn');
+    if (copyPwdBtn) {
+        copyPwdBtn.addEventListener('click', () => {
+            const pwd = document.getElementById('teacher-pwd');
+            if (pwd) {
+                navigator.clipboard.writeText(pwd.textContent).then(() => {
+                    copyPwdBtn.innerHTML = '<i class="bi bi-check-lg"></i>';
+                    setTimeout(() => { copyPwdBtn.innerHTML = '<i class="bi bi-clipboard"></i>'; }, 2000);
+                });
+            }
+        });
+    }
+
+    // Close credentials modal button
+    const closeModalBtn = document.getElementById('closeCredentialsModalBtn');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            const backdrop = document.getElementById('credentials-modal-backdrop');
+            if (backdrop) backdrop.remove();
+        });
+    }
+
+    // Go back button (course detail)
+    const goBackBtn = document.getElementById('goBackBtn');
+    if (goBackBtn) {
+        goBackBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            history.back();
+        });
+    }
+
+    // Prevent default on # links with role="button" (category filters)
+    document.querySelectorAll('a[href="#"][role="button"]').forEach(link => {
+        link.addEventListener('click', (e) => e.preventDefault());
+    });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initScrollAnimations();
     initAccordions();
     setActiveNavLink();
     initVideoLocking();
-    initGlobalToasts();
-    initCourseListFilters();
     initSssAccordion();
     initAdminCourseVideos();
     initVideoUpload();
@@ -1664,7 +2103,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initAutoSubmitSelects();
     initConfirmDeleteBtns();
     initPhoneInput();
-    initQuestionSearch();
+    initQuestionBank();
     initQuestionFormPreview();
     initZoomCopyLink();
     initDemoAlerts();
@@ -1674,8 +2113,70 @@ document.addEventListener('DOMContentLoaded', () => {
     initTheaterModeToggle();
     initQuizExam();
     initCurriculumBuilder();
+    initUzemForm();
     initInstructorMultiSelect();
     initContactForm();
     initHomeCounters();
+    initCourseInfoToggle();
+    initCspSafeHandlers();
+    initProfilePicturePreview();
+    initPasswordChangeForm();
+    initFlashBanners();
 });
+
+// ============================================
+// Profile Picture Preview (egitmen/profilim)
+// ============================================
+function initProfilePicturePreview() {
+    var input = document.getElementById('profilePicture');
+    if (!input) return;
+    input.addEventListener('change', function () {
+        var file = this.files[0];
+        if (!file) return;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var wrap = document.getElementById('avatar-preview');
+            var existing = document.getElementById('avatar-img');
+            var icon = document.getElementById('avatar-icon');
+            if (icon) icon.style.display = 'none';
+            if (existing) {
+                existing.src = e.target.result;
+            } else {
+                var img = document.createElement('img');
+                img.id = 'avatar-img';
+                img.src = e.target.result;
+                img.alt = 'Profil';
+                wrap.appendChild(img);
+            }
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+// ============================================
+// Password Change Form Validation (auth/sifre-degistir)
+// ============================================
+function initPasswordChangeForm() {
+    var pwdInput = document.getElementById('newPassword');
+    if (!pwdInput) return;
+    var form = pwdInput.closest('form');
+    if (!form) return;
+    form.addEventListener('submit', function(e) {
+        var pwd = document.getElementById('newPassword').value;
+        var cpwd = document.getElementById('confirmPassword').value;
+        var err = document.getElementById('client-error');
+        var pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+        if (!pattern.test(pwd)) {
+            e.preventDefault();
+            err.textContent = 'Şifre en az 8 karakter olmalı, büyük harf, küçük harf ve rakam içermelidir.';
+            err.style.display = 'block';
+            return;
+        }
+        if (pwd !== cpwd) {
+            e.preventDefault();
+            err.textContent = 'Şifreler eşleşmiyor.';
+            err.style.display = 'block';
+        }
+    });
+}
 

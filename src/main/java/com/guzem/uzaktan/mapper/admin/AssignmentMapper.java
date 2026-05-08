@@ -58,7 +58,6 @@ public class AssignmentMapper {
                 .score(s.getScore())
                 .feedback(s.getFeedback())
                 .submittedAt(s.getSubmittedAt())
-                .gradedAt(s.getGradedAt())
                 .build();
     }
 }

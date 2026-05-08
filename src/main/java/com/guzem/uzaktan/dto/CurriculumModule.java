@@ -28,4 +28,16 @@ public class CurriculumModule {
 
     /** Modül konuları / başlıkları — ör. ["Mikroservis vs Monolitik", ...] */
     private List<String> topics = new ArrayList<>();
+
+    /** Modül amacı */
+    private String purpose;
+
+    /** Uygulama / etkinlikler */
+    private List<String> activities = new ArrayList<>();
+
+    /** Modül kazanımları */
+    private List<String> outcomes = new ArrayList<>();
+
+    /** Süre (saat) */
+    private Double durationHours;
 }

@@ -35,4 +35,7 @@ public interface EmailService {
 
     /** Kursa yeni ödev eklendiğinde öğrenciye bildirim */
     void sendNewAssignmentNotification(User student, com.guzem.uzaktan.model.admin.Assignment assignment);
+
+    /** Yeni oluşturulan eğitmen hesabına geçici şifre bildirimi */
+    void sendTeacherWelcomeEmail(String toEmail, String fullName, String tempPassword);
 }

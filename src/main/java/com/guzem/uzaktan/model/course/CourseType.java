@@ -1,9 +1,9 @@
 package com.guzem.uzaktan.model.course;
 
 public enum CourseType {
-    ONLINE("Online Eğitim"),
-    FACE_TO_FACE("Yüzyüze Eğitim"),
-    REMOTE_FORMAL("Uzaktan Örgün Eğitim");
+    ONLINE("Online"),
+    HYBRID("Hibrit"),
+    FACE_TO_FACE("Yüzyüze");
 
     private final String displayName;
 

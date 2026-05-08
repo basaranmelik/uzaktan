@@ -10,44 +10,7 @@
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   
-  <style>
-    .accordion-container {
-        display: flex; flex-direction: column; gap: 16px;
-    }
-    .accordion-item {
-        background: var(--bg); border: 1px solid var(--border);
-        border-radius: 12px; overflow: hidden; transition: 0.3s;
-    }
-    .accordion-header {
-        padding: 20px 24px; cursor: pointer; display: flex;
-        justify-content: space-between; align-items: center;
-        background: var(--bg-alt); transition: 0.3s;
-    }
-    .accordion-header:hover {
-        background: var(--primary-50);
-    }
-    .accordion-header h4 {
-        margin: 0; font-size: 16px; color: var(--primary-800);
-    }
-    .accordion-icon {
-        font-size: 14px; transition: transform 0.3s;
-    }
-    .accordion-body {
-        max-height: 0; overflow: hidden; transition: max-height 0.3s ease-out;
-    }
-    .accordion-item.active .accordion-header {
-        background: var(--primary-50); border-bottom: 1px solid var(--border);
-    }
-    .accordion-item.active .accordion-icon {
-        transform: rotate(180deg);
-    }
-    .accordion-item.active .accordion-body {
-        max-height: 500px; /* Yaklaşık yükseklik, içerik için yeterli */
-    }
-    .accordion-content-inner {
-        padding: 24px; color: var(--text-muted); line-height: 1.6;
-    }
-  </style>
+  
 </head>
 <body>
 

@@ -10,6 +10,8 @@ public interface CertificateService {
 
     List<CertificateResponse> findByUser(Long userId);
 
+    CertificateResponse findByUserAndCourse(Long userId, Long courseId);
+
     CertificateResponse findByCode(String code);
 
     List<CertificateResponse> findAll();

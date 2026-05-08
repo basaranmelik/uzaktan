@@ -26,7 +26,7 @@ import java.util.Set;
 public class QuestionExcelServiceImpl implements QuestionExcelService {
 
     private static final String[] HEADERS = {
-            "ID", "Soru Metni", "A Şıkkı", "B Şıkkı", "C Şıkkı", "D Şıkkı", "E Şıkkı", "Doğru Cevap", "Açıklama"
+            "ID", "Soru Metni", "A Şıkkı", "B Şıkkı", "C Şıkkı", "D Şıkkı", "E Şıkkı", "Doğru Cevap", "Açıklama", "Modül No"
     };
 
     private static final Set<String> VALID_OPTIONS = Set.of("A", "B", "C", "D", "E");
@@ -66,6 +66,7 @@ public class QuestionExcelServiceImpl implements QuestionExcelService {
                     String optionE = getCellValue(row, 6, formatter).trim();
                     String correctOption = getCellValue(row, 7, formatter).trim().toUpperCase();
                     String explanation = getCellValue(row, 8, formatter).trim();
+                    String moduleIndexStr = getCellValue(row, 9, formatter).trim();
 
                     // Validasyon
                     List<RowError> rowErrors = new ArrayList<>();
@@ -97,6 +98,16 @@ public class QuestionExcelServiceImpl implements QuestionExcelService {
                         rowErrors.add(RowError.builder().rowNumber(displayRow).field("Açıklama").message("En fazla 5000 karakter olabilir.").build());
                     }
 
+                    Integer moduleIndex = null;
+                    if (moduleIndexStr.isEmpty()) {
+                        rowErrors.add(RowError.builder().rowNumber(displayRow).field("Modül No").message("Modül numarası zorunludur (0'dan başlar).").build());
+                    } else {
+                        moduleIndex = parseModuleIndex(moduleIndexStr);
+                        if (moduleIndex == null || moduleIndex < 0) {
+                            rowErrors.add(RowError.builder().rowNumber(displayRow).field("Modül No").message("Geçerli bir modül numarası giriniz (0, 1, 2, ...).").build());
+                        }
+                    }
+
                     if (!rowErrors.isEmpty()) {
                         errors.addAll(rowErrors);
                         continue;
@@ -119,6 +130,7 @@ public class QuestionExcelServiceImpl implements QuestionExcelService {
                         updateReq.setOptionE(optionE);
                         updateReq.setCorrectOption(CorrectOption.valueOf(correctOption));
                         updateReq.setExplanation(explanation.isEmpty() ? null : explanation);
+                        updateReq.setModuleIndex(moduleIndex);
 
                         questionBankService.updateQuestion(questionId, updateReq, requestingUserId);
                         updateCount++;
@@ -132,6 +144,7 @@ public class QuestionExcelServiceImpl implements QuestionExcelService {
                         createReq.setOptionE(optionE);
                         createReq.setCorrectOption(CorrectOption.valueOf(correctOption));
                         createReq.setExplanation(explanation.isEmpty() ? null : explanation);
+                        createReq.setModuleIndex(moduleIndex);
 
                         questionBankService.createQuestion(courseId, createReq, requestingUserId);
                         successCount++;
@@ -188,6 +201,7 @@ public class QuestionExcelServiceImpl implements QuestionExcelService {
                 row.createCell(6).setCellValue(q.getOptionE());
                 row.createCell(7).setCellValue(q.getCorrectOption().name());
                 row.createCell(8).setCellValue(q.getExplanation() != null ? q.getExplanation() : "");
+                row.createCell(9).setCellValue(q.getModuleIndex() != null ? q.getModuleIndex() : 0);
             }
 
             autoSizeColumns(sheet);
@@ -222,6 +236,7 @@ public class QuestionExcelServiceImpl implements QuestionExcelService {
             exampleRow.createCell(6).setCellValue("Antalya");
             exampleRow.createCell(7).setCellValue("B");
             exampleRow.createCell(8).setCellValue("Ankara, 1923'ten beri Türkiye'nin başkentidir.");
+            exampleRow.createCell(9).setCellValue(0);
 
             // Doğru Cevap sütununa dropdown validation (1000 satır)
             DataValidationHelper dvHelper = sheet.getDataValidationHelper();
@@ -291,6 +306,17 @@ public class QuestionExcelServiceImpl implements QuestionExcelService {
     private void validateLength(List<RowError> errors, int rowNumber, String value, String fieldName, int maxLength) {
         if (value.length() > maxLength) {
             errors.add(RowError.builder().rowNumber(rowNumber).field(fieldName).message("En fazla " + maxLength + " karakter olabilir.").build());
+        }
+    }
+
+    private Integer parseModuleIndex(String str) {
+        try {
+            if (str.contains(".")) {
+                str = str.substring(0, str.indexOf('.'));
+            }
+            return Integer.parseInt(str);
+        } catch (NumberFormatException e) {
+            return null;
         }
     }
 

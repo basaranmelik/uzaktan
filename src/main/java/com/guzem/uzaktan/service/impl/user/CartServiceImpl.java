@@ -114,7 +114,6 @@ public class CartServiceImpl implements CartService {
                 .courseTitle(c.getTitle())
                 .categoryDisplayName(c.getCategory() != null ? c.getCategory().getDisplayName() : null)
                 .price(c.getPrice())
-                .addedAt(item.getAddedAt())
                 .build();
     }
 }

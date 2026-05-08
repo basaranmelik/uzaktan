@@ -1,5 +1,6 @@
 package com.guzem.uzaktan.dto.request;
 
+import com.guzem.uzaktan.service.common.PasswordPolicy;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -20,8 +21,8 @@ public class RegisterRequest {
 
     @NotBlank(message = "Şifre boş olamaz.")
     @jakarta.validation.constraints.Pattern(
-            regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$",
-            message = "Şifre en az 8 karakter uzunluğunda olmalı ve en az 1 büyük harf, 1 küçük harf, 1 rakam, 1 özel karakter (@$!%*?&) içermelidir."
+            regexp = PasswordPolicy.REGEX,
+            message = PasswordPolicy.MESSAGE
     )
     private String password;
 

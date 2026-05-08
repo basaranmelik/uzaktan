@@ -25,6 +25,10 @@ public class AssignmentSubmission {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(name = "version")
+    private Integer version;
+
     @Nationalized
     @Column(name = "text_answer", columnDefinition = "NVARCHAR(MAX)")
     private String textAnswer;

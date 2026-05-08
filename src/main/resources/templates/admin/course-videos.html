@@ -10,96 +10,7 @@
   <title th:text="${course.title} + ' — Videolar'">Kurs Videoları</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <style>
-    .upload-form {
-      border:1px solid var(--border); border-radius:12px;
-      padding:1.5rem; background:var(--bg); margin-bottom:2rem;
-    }
-    .upload-form-title {
-      font-size:0.72rem; font-weight:700; text-transform:uppercase;
-      letter-spacing:0.8px; color:var(--text-muted); margin:0 0 1.25rem 0;
-      padding-bottom:0.75rem; border-bottom:1px solid var(--gray-100);
-      display:flex; align-items:center; gap:6px;
-    }
-    .progress-bar-wrap {
-      background:var(--gray-100); border-radius:99px; height:6px; overflow:hidden;
-    }
-    .progress-bar-fill {
-      background:var(--primary-600); height:100%; border-radius:99px;
-    }
-
-    /* ── Video list (drag-and-drop) ── */
-    .vl-wrap {
-      border:1px solid var(--border); border-radius:12px;
-      /* overflow:hidden kaldırıldı — SortableJS ghost elementi klipleniyor */
-    }
-    .vl-row:first-child { border-radius:12px 12px 0 0; }
-    .vl-row:last-child  { border-radius:0 0 12px 12px; border-bottom:none; }
-    .vl-row {
-      display:grid;
-      grid-template-columns: 36px 44px 1fr auto auto;
-      align-items:center; gap:0.75rem;
-      padding:0.85rem 1.25rem;
-      border-bottom:1px solid var(--gray-100);
-      background:var(--bg);
-      transition:background 0.15s;
-    }
-    .vl-row:last-child { border-bottom:none; }
-    .vl-row.sortable-ghost { background:var(--primary-50); opacity:0.7; }
-    .vl-row.sortable-drag  { box-shadow:0 4px 16px rgba(0,0,0,0.12); border-radius:8px; }
-    .vl-handle {
-      cursor:grab; color:var(--gray-400); font-size:1.1rem;
-      display:flex; align-items:center; justify-content:center;
-      padding:0.25rem;
-      border-radius:4px;
-      transition:color 0.15s, background 0.15s;
-    }
-    .vl-handle:hover { color:var(--primary-500); background:var(--primary-50); }
-    .vl-num {
-      width:32px; height:32px; border-radius:8px;
-      background:var(--bg-alt); color:var(--text-muted);
-      font-size:0.75rem; font-weight:700;
-      display:flex; align-items:center; justify-content:center;
-      flex-shrink:0;
-    }
-    .vl-info-title { font-weight:600; font-size:0.9rem; color:var(--text); }
-    .vl-info-desc  { font-size:0.76rem; color:var(--text-muted); margin-top:2px;
-                     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:400px; }
-    .vl-info-file  { font-size:0.72rem; color:var(--text-muted); margin-top:2px; }
-    .vl-actions    { display:flex; gap:0.4rem; flex-shrink:0; }
-
-    /* "Sırayı Kaydet" pill */
-    #saveOrderBar {
-      display:none;
-      background:var(--primary-50); border:1px solid var(--primary-200);
-      border-radius:10px; padding:0.75rem 1.25rem;
-      margin-bottom:1.25rem;
-      align-items:center; justify-content:space-between; gap:1rem;
-      flex-wrap:wrap;
-    }
-    #saveOrderBar.visible { display:flex; }
-
-    /* Edit modal */
-    .vl-modal-backdrop {
-      display:none; position:fixed; inset:0;
-      background:rgba(0,0,0,0.45); z-index:9000;
-      align-items:center; justify-content:center;
-    }
-    .vl-modal-backdrop.open { display:flex; }
-    .vl-modal {
-      background:var(--bg); border-radius:14px;
-      padding:2rem; width:100%; max-width:480px;
-      box-shadow:0 20px 60px rgba(0,0,0,0.2);
-      position:relative;
-    }
-    .vl-modal h3 { margin:0 0 1.5rem; font-size:1.1rem; color:var(--text); }
-    .vl-modal-close {
-      position:absolute; top:1rem; right:1rem;
-      background:none; border:none; font-size:1.25rem;
-      color:var(--text-muted); cursor:pointer; line-height:1;
-    }
-    .vl-modal-close:hover { color:var(--text); }
-  </style>
+  
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -131,7 +42,7 @@
 <section class="section">
   <div class="container">
 
-
+    <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
 
     <!-- Upload Form — modül sayısı dolduğunda gizle -->
     <div th:if="${course.module != null and videos.size() >= course.module}"

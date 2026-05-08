@@ -23,6 +23,9 @@ public class QuestionMapper {
                 .correctOption(q.getCorrectOption())
                 .correctOptionDisplayName(q.getCorrectOption().getDisplayName())
                 .explanation(q.getExplanation())
+                .moduleIndex(q.getModuleIndex())
+                .imagePath(q.getImagePath())
+                .videoPath(q.getVideoPath())
                 .createdAt(q.getCreatedAt())
                 .updatedAt(q.getUpdatedAt())
                 .build();
@@ -38,6 +41,7 @@ public class QuestionMapper {
                 .optionE(req.getOptionE())
                 .correctOption(req.getCorrectOption())
                 .explanation(req.getExplanation())
+                .moduleIndex(req.getModuleIndex())
                 .course(course)
                 .build();
     }

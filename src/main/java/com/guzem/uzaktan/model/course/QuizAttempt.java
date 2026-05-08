@@ -24,6 +24,10 @@ public class QuizAttempt {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(name = "version")
+    private Integer version;
+
     @Column(name = "score", nullable = false)
     private Integer score;
 

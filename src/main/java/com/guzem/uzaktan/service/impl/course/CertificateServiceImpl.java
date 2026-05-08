@@ -13,14 +13,18 @@ import com.guzem.uzaktan.repository.user.UserRepository;
 import com.guzem.uzaktan.service.course.CertificateService;
 import com.guzem.uzaktan.service.user.NotificationService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -31,8 +35,10 @@ public class CertificateServiceImpl implements CertificateService {
     private final CourseRepository courseRepository;
     private final CertificateMapper certificateMapper;
     private final NotificationService notificationService;
+    private final CacheManager cacheManager;
 
     @Override
+    @CacheEvict(value = "userCertificates", key = "#userId")
     public CertificateResponse issueCertificate(Long userId, Long courseId) {
         // İdempotent: zaten varsa mevcut sertifikayı döndür
         return certificateRepository.findByUserIdAndCourseId(userId, courseId)
@@ -43,8 +49,7 @@ public class CertificateServiceImpl implements CertificateService {
                     Course course = courseRepository.findById(courseId)
                             .orElseThrow(() -> new ResourceNotFoundException("Kurs", "id", courseId));
 
-                    String code = "GAZI-" + courseId + "-" + userId + "-"
-                            + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+                    String code = UUID.randomUUID().toString().replace("-", "").toUpperCase();
 
                     Certificate certificate = Certificate.builder()
                             .certificateCode(code)
@@ -52,12 +57,20 @@ public class CertificateServiceImpl implements CertificateService {
                             .course(course)
                             .build();
 
-                    CertificateResponse saved = certificateMapper.toResponse(certificateRepository.save(certificate));
-                    notificationService.create(user, com.guzem.uzaktan.model.user.NotificationType.CERTIFICATE_ISSUED,
-                            "Sertifikanız Hazır",
-                            "\"" + course.getTitle() + "\" kursuna ait sertifikanız oluşturuldu.",
-                            "/sertifikalarim");
-                    return saved;
+                    try {
+                        CertificateResponse saved = certificateMapper.toResponse(certificateRepository.save(certificate));
+                        notificationService.create(user, com.guzem.uzaktan.model.user.NotificationType.CERTIFICATE_ISSUED,
+                                "Sertifikanız Hazır",
+                                "\"" + course.getTitle() + "\" kursuna ait sertifikanız oluşturuldu.",
+                                "/sertifikalarim");
+                        return saved;
+                    } catch (DataIntegrityViolationException e) {
+                        // Concurrent issuance: another thread beat us — return the existing record
+                        log.debug("Concurrent certificate issuance for user={} course={}, returning existing", userId, courseId);
+                        return certificateRepository.findByUserIdAndCourseId(userId, courseId)
+                                .map(certificateMapper::toResponse)
+                                .orElseThrow(() -> e);
+                    }
                 });
     }
 
@@ -82,7 +95,18 @@ public class CertificateServiceImpl implements CertificateService {
     public void revoke(Long certificateId) {
         Certificate certificate = certificateRepository.findById(certificateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sertifika", "id", certificateId));
+        Long userId = certificate.getUser().getId();
         certificateRepository.delete(certificate);
+        var cache = cacheManager.getCache("userCertificates");
+        if (cache != null) cache.evict(userId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public CertificateResponse findByUserAndCourse(Long userId, Long courseId) {
+        return certificateRepository.findByUserIdAndCourseId(userId, courseId)
+                .map(certificateMapper::toResponse)
+                .orElse(null);
     }
 
     @Override

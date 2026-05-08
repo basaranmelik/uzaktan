@@ -20,8 +20,13 @@
     </div>
     <div>
       <h1><i class="bi bi-person-check-fill"></i> Kayıt Yönetimi</h1>
-      <p style="margin:0;color:var(--text-muted);">
+      <p style="margin:0;">
         Toplam <strong th:text="${enrollments.totalElements}">0</strong> kayıt
+        <span th:if="${enrollments.totalElements > 0}">
+          · <a th:href="@{/admin/kayitlar/export-csv}" style="color:rgba(255,255,255,0.9);font-weight:600;">
+              <i class="bi bi-download"></i> Tümünü CSV İndir
+            </a>
+        </span>
       </p>
     </div>
   </div>
@@ -30,7 +35,7 @@
 <section class="section">
   <div class="container">
 
-
+    <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
 
     <div class="admin-search-bar">
       <input type="text" id="enrollment-filter" placeholder="Kullanıcı e-postası veya kurs adı ara..." autocomplete="off">
@@ -46,8 +51,14 @@
     <div th:if="${enrollments.totalElements > 0}">
       <div th:each="entry : ${groupedEnrollments}" class="enrollment-group" style="margin-bottom: 2.5rem;"
            th:attr="data-course=${#strings.toLowerCase(entry.key)}">
-        <h3 style="margin-bottom: 1rem; color: var(--primary-700); border-bottom: 2px solid var(--border); padding-bottom: 0.5rem;"
-            th:text="${entry.key}">Kurs Adı</h3>
+        <h3 style="margin-bottom: 1rem; color: var(--primary-700); border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+            <span th:text="${entry.key}">Kurs Adı</span>
+            <a th:href="@{/admin/kayitlar/kurs/{courseId}/export-csv(courseId=${entry.value[0].courseId})}"
+               class="btn btn-secondary" style="font-size:0.78rem;padding:0.3rem 0.7rem;"
+               title="Bu kursun kayıtlarını CSV indir">
+              <i class="bi bi-download"></i> CSV
+            </a>
+          </h3>
         
         <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border);">
           <table class="admin-table">

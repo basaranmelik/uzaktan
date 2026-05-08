@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequestMapping("/odevlerim")
 @RequiredArgsConstructor
-@PreAuthorize("isAuthenticated()")
+@PreAuthorize("hasRole('USER')")
 public class AssignmentController {
 
     private final AssignmentService assignmentService;

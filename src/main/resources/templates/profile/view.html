@@ -23,8 +23,7 @@
 <section class="section">
   <div class="container">
 
-    <div th:if="${successMessage}" class="alert alert-success" style="margin-bottom:1.5rem;" th:text="${successMessage}"></div>
-    <div th:if="${errorMessage}"   class="alert alert-danger"  style="margin-bottom:1.5rem;" th:text="${errorMessage}"></div>
+    <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
 
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;">
 
@@ -56,6 +55,10 @@
           <div style="display:flex;gap:1rem;">
             <span style="color:var(--text-muted);min-width:120px;">Kayıt Tarihi</span>
             <strong th:text="${#temporals.format(user.createdAt, 'dd.MM.yyyy')}">Tarih</strong>
+          </div>
+          <div style="display:flex;gap:1rem;" th:if="${user.role.name() == 'TEACHER'}">
+            <span style="color:var(--text-muted);min-width:120px;">Zoom E-posta</span>
+            <strong th:text="${user.zoomEmail} ?: '—'">zoom</strong>
           </div>
         </div>
       </div>
@@ -113,10 +116,25 @@
             </div>
           </div>
 
+          <div class="form-row">
+            <div class="form-group">
+              <label>Posta Kodu</label>
+              <input type="text" th:field="*{zipCode}" class="form-control" maxlength="10" placeholder="06000">
+            </div>
+            <div class="form-group"></div>
+          </div>
+
           <div class="form-group">
             <label>Açık Adres</label>
             <textarea th:field="*{fullAddress}" class="form-control" rows="3"
                       placeholder="Mahalle, cadde, sokak, bina no..."></textarea>
+          </div>
+
+          <div class="form-group" th:if="${user.role.name() == 'TEACHER'}">
+            <label>Zoom E-posta Adresi</label>
+            <input type="email" th:field="*{zoomEmail}" class="form-control"
+                   placeholder="ornek@zoom.us">
+            <small style="color: var(--text-muted);">Toplantılar bu Zoom hesabı altında oluşturulur.</small>
           </div>
 
           <button type="submit" class="btn btn-primary" style="width:100%;">Kaydet</button>

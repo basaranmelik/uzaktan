@@ -21,10 +21,9 @@ WORKDIR /app
 # Builder'dan jar dosyasını kopyala
 COPY --from=builder /app/target/*.jar app.jar
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-  CMD java -cp app.jar org.springframework.boot.loader.launch.JarLauncher \
-  || exit 1
+# Health check — verify port 8080 is accepting connections
+HEALTHCHECK --interval=15s --timeout=5s --start-period=40s --retries=5 \
+  CMD bash -c 'echo > /dev/tcp/localhost/8080' || exit 1
 
 # Port
 EXPOSE 8080

@@ -33,7 +33,7 @@ public class AdminCategoryController {
         try {
             categoryService.create(displayName);
             redirectAttributes.addFlashAttribute("successMessage", "Kategori oluşturuldu.");
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/admin/kategoriler";
@@ -45,7 +45,7 @@ public class AdminCategoryController {
             categoryService.delete(id);
             redirectAttributes.addFlashAttribute("successMessage", "Kategori silindi.");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            redirectAttributes.addFlashAttribute("errorMessage", "Kategori silinirken hata oluştu: " + e.getMessage());
         }
         return "redirect:/admin/kategoriler";
     }

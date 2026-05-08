@@ -6,7 +6,6 @@ import com.guzem.uzaktan.model.course.CourseStatus;
 import com.guzem.uzaktan.model.course.CourseType;
 import com.guzem.uzaktan.model.common.Role;
 import com.guzem.uzaktan.service.course.CourseCategoryService;
-import com.guzem.uzaktan.service.instructor.InstructorService;
 import com.guzem.uzaktan.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -26,7 +25,6 @@ public class AdminCourseModelAdvice {
 
     private final CourseCategoryService categoryService;
     private final UserService userService;
-    private final InstructorService instructorService;
 
     /** Kurs formu açılış seçenekleri — statik enum değerleri */
     @ModelAttribute("courseTypes")
@@ -56,9 +54,4 @@ public class AdminCourseModelAdvice {
         return userService.findUsersByRole(Role.TEACHER);
     }
 
-    /** Instructor profil listesi */
-    @ModelAttribute("instructors")
-    public List<?> instructors() {
-        return instructorService.findAll();
-    }
 }

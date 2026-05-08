@@ -5,6 +5,7 @@ import com.guzem.uzaktan.service.user.UserService;
 import com.guzem.uzaktan.util.PhoneUtils;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -22,17 +23,30 @@ public class AuthController {
 
     @GetMapping("/giris")
     public String loginForm(@AuthenticationPrincipal UserDetails principal) {
-        if (principal != null) return "redirect:/panom";
+        if (principal != null) return "redirect:" + panelUrlForRole(principal);
         return "auth/login";
     }
 
     @GetMapping("/kayit-ol")
     public String registerForm(@AuthenticationPrincipal UserDetails principal, Model model) {
-        if (principal != null) return "redirect:/panom";
+        if (principal != null) return "redirect:" + panelUrlForRole(principal);
         RegisterRequest req = new RegisterRequest();
         req.setPhoneNumber("+90 ");
         model.addAttribute("registerRequest", req);
         return "auth/register";
+    }
+
+    private String panelUrlForRole(UserDetails principal) {
+        return principal.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(auth -> {
+                    if (auth.equals("ROLE_ADMIN")) return "/admin";
+                    if (auth.equals("ROLE_TEACHER")) return "/egitmen/panel";
+                    if (auth.equals("ROLE_FIRM")) return "/admin/kurslar";
+                    return "/panom";
+                })
+                .findFirst()
+                .orElse("/panom");
     }
 
     @PostMapping("/kayit-ol")

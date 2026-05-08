@@ -28,10 +28,28 @@ public class LocalFileStorageService implements FileStorageService {
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS =
             Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
 
+    private static final Set<String> ALLOWED_VIDEO_MIME_TYPES =
+            Set.of("video/mp4", "video/webm", "video/x-msvideo", "video/x-matroska", "video/quicktime");
+
+    private static final Set<String> ALLOWED_DOCUMENT_MIME_TYPES =
+            Set.of("application/pdf", "application/msword",
+                    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    "application/vnd.ms-powerpoint",
+                    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+                    "application/vnd.ms-excel",
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    "text/plain", "application/zip", "application/x-zip-compressed");
+
+    private static final Set<String> ALLOWED_IMAGE_MIME_TYPES =
+            Set.of("image/jpeg", "image/png", "image/gif", "image/webp");
+
     private final Path baseDir;
+    private final FileContentValidator fileContentValidator;
 
     public LocalFileStorageService(
-            @Value("${app.upload.dir:${user.home}/guzem-uploads}") String uploadDir) {
+            @Value("${app.upload.dir:${user.home}/guzem-uploads}") String uploadDir,
+            FileContentValidator fileContentValidator) {
+        this.fileContentValidator = fileContentValidator;
         this.baseDir = Paths.get(uploadDir).toAbsolutePath().normalize();
         try {
             Files.createDirectories(baseDir);
@@ -44,6 +62,7 @@ public class LocalFileStorageService implements FileStorageService {
     public String store(MultipartFile file, Long assignmentId, String courseTitle) throws IOException {
         String extension = extractExtension(file.getOriginalFilename(), "");
         validateExtension(extension, ALLOWED_DOCUMENT_EXTENSIONS, "ödev");
+        fileContentValidator.validate(file, ALLOWED_DOCUMENT_MIME_TYPES, "ödev");
         String storedName = generateFileName("sub", extension);
         String courseSlug = sanitizeFileName(courseTitle);
         return storeFile(file, "odevler/" + courseSlug + "_" + assignmentId + "/" + storedName);
@@ -53,7 +72,8 @@ public class LocalFileStorageService implements FileStorageService {
     public String storeWithName(MultipartFile file, Long assignmentId, String courseTitle, String baseName) throws IOException {
         String extension = extractExtension(file.getOriginalFilename(), "");
         validateExtension(extension, ALLOWED_DOCUMENT_EXTENSIONS, "ödev");
-        String storedName = sanitizeFileName(baseName) + "_" + (System.currentTimeMillis() % 100000) + extension;
+        fileContentValidator.validate(file, ALLOWED_DOCUMENT_MIME_TYPES, "ödev");
+        String storedName = sanitizeFileName(baseName) + "_" + UUID.randomUUID().toString().replace("-", "") + extension;
         String courseSlug = sanitizeFileName(courseTitle);
         return storeFile(file, "odevler/" + courseSlug + "_" + assignmentId + "/" + storedName);
     }
@@ -67,10 +87,11 @@ public class LocalFileStorageService implements FileStorageService {
     public String storeVideo(MultipartFile file, Long courseId, String courseTitle, String videoTitle) throws IOException {
         String extension = extractExtension(file.getOriginalFilename(), ".mp4");
         validateExtension(extension, ALLOWED_VIDEO_EXTENSIONS, "video");
+        fileContentValidator.validate(file, ALLOWED_VIDEO_MIME_TYPES, "video");
 
         String courseSlug = sanitizeFileName(courseTitle) + "_" + courseId;
         String videoSlug = sanitizeFileName(videoTitle);
-        String finalFileName = videoSlug + "_" + (System.currentTimeMillis() % 100000) + extension;
+        String finalFileName = videoSlug + "_" + UUID.randomUUID().toString().replace("-", "") + extension;
 
         return storeFile(file, "videolar/" + courseSlug + "/" + finalFileName);
     }
@@ -79,6 +100,7 @@ public class LocalFileStorageService implements FileStorageService {
     public String storeImage(MultipartFile file) throws IOException {
         String extension = extractExtension(file.getOriginalFilename(), ".jpg");
         validateExtension(extension, ALLOWED_IMAGE_EXTENSIONS, "görsel");
+        fileContentValidator.validate(file, ALLOWED_IMAGE_MIME_TYPES, "görsel");
         String storedName = generateFileName("img", extension);
         return storeFile(file, "images/egitmenler/" + storedName);
     }
@@ -92,11 +114,25 @@ public class LocalFileStorageService implements FileStorageService {
     public String storeCourseImage(MultipartFile file, Long courseId, String courseTitle) throws IOException {
         String extension = extractExtension(file.getOriginalFilename(), ".jpg");
         validateExtension(extension, ALLOWED_IMAGE_EXTENSIONS, "görsel");
+        fileContentValidator.validate(file, ALLOWED_IMAGE_MIME_TYPES, "görsel");
 
         String courseSlug = sanitizeFileName(courseTitle) + "_" + courseId;
-        String finalFileName = "kapak_" + (System.currentTimeMillis() % 100000) + extension;
+        String finalFileName = "kapak_" + UUID.randomUUID().toString().replace("-", "") + extension;
 
         return storeFile(file, "images/kurslar/" + courseSlug + "/" + finalFileName);
+    }
+
+    @Override
+    public String storeCourseDocument(MultipartFile file, Long courseId, String courseTitle) throws IOException {
+        String extension = extractExtension(file.getOriginalFilename(), ".pdf");
+        validateExtension(extension, ALLOWED_DOCUMENT_EXTENSIONS, "doküman");
+        fileContentValidator.validate(file, ALLOWED_DOCUMENT_MIME_TYPES, "doküman");
+
+        String courseSlug = sanitizeFileName(courseTitle) + "_" + courseId;
+        String finalFileName = sanitizeFileName(file.getOriginalFilename()) + "_"
+                + UUID.randomUUID().toString().substring(0, 8) + extension;
+
+        return storeFile(file, "documents/" + courseSlug + "/" + finalFileName);
     }
 
     @Override
@@ -128,8 +164,7 @@ public class LocalFileStorageService implements FileStorageService {
     }
 
     private String generateFileName(String prefix, String extension) {
-        return prefix + "_" + System.currentTimeMillis()
-                + "_" + UUID.randomUUID().toString().substring(0, 8) + extension;
+        return prefix + "_" + UUID.randomUUID().toString().replace("-", "") + extension;
     }
 
     public static String sanitizeFileName(String input) {

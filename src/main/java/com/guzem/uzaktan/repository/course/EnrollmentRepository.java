@@ -58,4 +58,10 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
     List<User> findActiveUsersWithoutSubmission(
             @Param("courseId") Long courseId,
             @Param("assignmentId") Long assignmentId);
+
+    @Query("SELECT e FROM Enrollment e JOIN FETCH e.user JOIN FETCH e.course ORDER BY e.enrollmentDate DESC")
+    List<Enrollment> findAllWithDetails();
+
+    @Query("SELECT e FROM Enrollment e JOIN FETCH e.user JOIN FETCH e.course WHERE e.course.id = :courseId ORDER BY e.enrollmentDate DESC")
+    List<Enrollment> findByCourseIdWithDetails(@Param("courseId") Long courseId);
 }

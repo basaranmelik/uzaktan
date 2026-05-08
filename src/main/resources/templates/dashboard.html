@@ -10,150 +10,7 @@
   <title>Panom | Gazi Üniversitesi</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <style>
-    .dashboard-layout {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2.5rem;
-      align-items: start;
-    }
-    @media (min-width: 992px) {
-      .dashboard-layout {
-        grid-template-columns: 2fr 1.1fr;
-      }
-    }
-    @media (min-width: 2560px) {
-      .dashboard-layout {
-        grid-template-columns: 2.2fr 1fr;
-        gap: 4rem;
-      }
-    }
-
-    .course-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 1.5rem;
-    }
-    @media (max-width: 480px) {
-      .course-grid {
-        grid-template-columns: 1fr;
-      }
-      .ux-card:hover { transform: none; }
-    }
-
-    .ux-card {
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-      border: 1px solid #ced4da;
-      overflow: hidden;
-      transition: all 0.3s ease;
-      display: flex;
-      flex-direction: column;
-    }
-    
-    .ux-card:hover {
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-      transform: translateY(-4px);
-    }
-
-    .course-banner {
-      height: 120px;
-      background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 3.5rem;
-    }
-
-    .status-badge {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      background: #ffffff;
-      padding: 0.3rem 0.8rem;
-      border-radius: 20px;
-      font-size: 0.75rem;
-      font-weight: 700;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    .ux-widget {
-      background: #ffffff;
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-      border: 1px solid #ced4da;
-      padding: 1.5rem;
-    }
-    .stat-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
-    .widget-title {
-      font-size: 1.2rem;
-      font-weight: 700;
-      color: var(--primary-900);
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .task-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
-    .task-item {
-      padding: 1rem;
-      border-radius: 12px;
-      border: 1px solid #ced4da;
-      transition: all 0.2s ease;
-      background: #ffffff;
-    }
-    .task-item:hover {
-      border-color: var(--primary-400);
-      background: #fafafc;
-      transform: translateY(-3px);
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
-    }
-    .task-item-course {
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-weight: 600;
-      color: var(--primary-600);
-      margin-bottom: 0.3rem;
-    }
-    .task-item-title {
-      font-weight: 700;
-      color: var(--text);
-      font-size: 0.95rem;
-      margin-bottom: 0.4rem;
-    }
-    
-    .btn-full {
-      width: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .feedback-box {
-      margin-top: 1rem;
-      padding: 0.8rem;
-      background: #f8f9fa;
-      border-left: 3px solid var(--primary-500);
-      border-radius: 4px 8px 8px 4px;
-      font-size: 0.85rem;
-    }
-  </style>
+  
 </head>
 <body>
 
@@ -258,7 +115,7 @@
                  <i class="bi bi-wallet2"></i> İşleminiz onay bekliyor.
               </div>
 
-              <!-- Kurs Takvimi (Yüzyüze ve Uzaktan Örgün İçin) -->
+              <!-- Kurs Takvimi (Hibrit ve Yüzyüze İçin) -->
               <div th:if="${enrollment.courseType != null and enrollment.courseType.name() != 'ONLINE'}" style="margin-bottom:1rem; padding:0.75rem; background:#f8f9fa; border-radius:8px; border:1px solid #e9ecef; font-size:0.8rem; color:var(--text);">
                  <div style="font-weight:600; margin-bottom:0.4rem; color:var(--primary-700);"><i class="bi bi-calendar-event"></i> Eğitim Takvimi</div>
                  <div th:if="${enrollment.startDate != null and enrollment.endDate != null}" style="margin-bottom:0.2rem;">
@@ -301,8 +158,8 @@
                 </a>
               </div>
 
-              <!-- Uzaktan Örgün: Kayıtları İzle / Kayıt Yok -->
-              <div th:if="${enrollment.status.name() == 'ACTIVE' and enrollment.courseType != null and enrollment.courseType.name() == 'REMOTE_FORMAL'}">
+              <!-- Hibrit: Kayıtları İzle / Kayıt Yok -->
+              <div th:if="${enrollment.status.name() == 'ACTIVE' and enrollment.courseType != null and enrollment.courseType.name() == 'HYBRID'}">
                 <a th:if="${enrollment.hasVideos}" th:href="@{/egitimler/izle/{id}(id=${enrollment.courseId})}" class="btn btn-primary btn-full shadow-sm" style="border-radius:10px; font-weight:600; font-size:0.9rem;">
                   <i class="bi bi-camera-video"></i> Kayıtları İzle
                 </a>
@@ -328,7 +185,7 @@
                 </a>
               </div>
 
-              <!-- Uzaktan/Yüzyüze tamamlandı: sadece Sertifika -->
+              <!-- Yüzyüze/Hibrit tamamlandı: sadece Sertifika -->
               <div th:if="${enrollment.status.name() == 'COMPLETED' and enrollment.courseType != null and enrollment.courseType.name() != 'ONLINE'}">
                 <a th:href="@{/profilim}" class="btn btn-primary btn-full shadow-sm" style="border-radius:10px; font-size:0.85rem; font-weight:600;">
                    <i class="bi bi-award-fill" style="margin-right:0.3rem;"></i> Sertifika
@@ -437,12 +294,7 @@
           </div>
         </div>
 
-        <style>
-          @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-          }
-        </style>
+        
         
         <!-- Bekleyen Ödevler -->
         <div class="ux-widget border-top border-primary border-4" style="border-top-color: var(--primary-600) !important; border-top-style: solid; border-top-width: 4px;">

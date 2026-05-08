@@ -4,10 +4,12 @@ services:
   sqlserver:
     image: mcr.microsoft.com/azure-sql-edge:latest
     container_name: uzaktan-sqlserver
+    env_file: .env.docker
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "verYs3cret"
       MSSQL_PID: "Developer"
+      MSSQL_MEMORY_LIMIT_MB: "1500"
+    mem_limit: 2g
     ports:
       - "1433:1433"
     volumes:
@@ -15,13 +17,11 @@ services:
     networks:
       - uzaktan-network
     healthcheck:
-      test: ["CMD", "/opt/mssql-tools/bin/sqlcmd",
-             "-S", "localhost", "-U", "sa", "-P", "verYs3cret",
-             "-Q", "SELECT 1", "-b"]
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/1433' 2>/dev/null && echo ok || exit 1"]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 45s
+      retries: 15
+      start_period: 60s
     restart: unless-stopped
 
   # ── Spring Boot App ──────────────────────────────────────────────────────────
@@ -33,13 +33,8 @@ services:
     depends_on:
       sqlserver:
         condition: service_healthy
+    env_file: .env.docker
     environment:
-      # Veritabanı
-      SPRING_DATASOURCE_URL: "jdbc:sqlserver://sqlserver:1433;databaseName=master;encrypt=true;trustServerCertificate=true;"
-      SPRING_DATASOURCE_USERNAME: "sa"
-      SPRING_DATASOURCE_PASSWORD: "verYs3cret"
-      DB_PASSWORD: "verYs3cret"
-
       # JPA
       SPRING_JPA_DATABASE_PLATFORM: "org.hibernate.dialect.SQLServerDialect"
       SPRING_JPA_HIBERNATE_DDL_AUTO: "update"
@@ -47,16 +42,6 @@ services:
 
       # Dosya yükleme
       JAVA_TOOL_OPTIONS: "-Dapp.upload.dir=/app/uploads"
-
-      # Mail (kapalı — açmak istersen MAIL_ENABLED=true yap ve bilgileri gir)
-      MAIL_USERNAME: "noreply@gazi.edu.tr"
-      MAIL_PASSWORD: "dummy"
-      MAIL_ENABLED: "false"
-
-      # Zoom (kapalı — kullanmak istersen doldur)
-      ZOOM_ACCOUNT_ID: "dummy"
-      ZOOM_CLIENT_ID: "dummy"
-      ZOOM_CLIENT_SECRET: "dummy"
 
       # Uygulama
       APP_BASE_URL: "http://localhost:8080"
@@ -73,6 +58,12 @@ services:
       - ./logs:/app/logs
     networks:
       - uzaktan-network
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c 'echo > /dev/tcp/localhost/8080' || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
     restart: unless-stopped
 
 volumes:

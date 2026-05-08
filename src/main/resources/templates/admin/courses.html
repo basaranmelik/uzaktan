@@ -8,14 +8,7 @@
   <title>Kurs Yönetimi — GUZEM Admin</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <style>
-    .admin-table tbody tr.row-cancelled { opacity:0.55; }
-    .quick-status select {
-      font-size:0.78rem; padding:0.25rem 0.4rem;
-      border:1px solid var(--border); border-radius:6px;
-      background:var(--bg); color:var(--text); cursor:pointer;
-    }
-  </style>
+  
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -30,7 +23,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
       <div>
         <h1><i class="bi bi-collection-fill"></i> Kurs Yönetimi</h1>
-        <p style="margin:0;color:var(--text-muted);">
+        <p style="margin:0;">
           Toplam <strong th:text="${courses.totalElements}">0</strong> kurs
         </p>
       </div>
@@ -44,13 +37,7 @@
 <section class="section">
   <div class="container">
 
-
-
-    <!-- Arama -->
-    <div class="admin-search-bar">
-      <input type="text" id="course-filter" placeholder="Kurs başlığı veya eğitmen ara..." autocomplete="off">
-      <span style="font-size:0.82rem;color:var(--text-muted);" id="filter-count"></span>
-    </div>
+    <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
 
     <div th:if="${courses.totalElements == 0}"
          class="text-center" style="padding:4rem;color:var(--text-muted);">
@@ -67,6 +54,7 @@
           <tr>
             <th>Kurs</th>
             <th>Kategori</th>
+            <th>Tür</th>
             <th>Eğitmen</th>
             <th>Fiyat</th>
             <th>Kayıt / Kontenjan</th>
@@ -95,6 +83,17 @@
             </td>
 
             <td th:text="${course.categoryDisplayName}" style="white-space:nowrap;">Kategori</td>
+
+            <td style="white-space:nowrap;">
+              <span th:if="${course.courseType != null}"
+                    th:text="${course.courseTypeDisplayName}"
+                    th:style="${course.courseType.name() == 'ONLINE'} ?
+                                'background:#d0ebff;color:#1864ab;padding:0.15rem 0.5rem;border-radius:12px;font-size:0.72rem;font-weight:700;' :
+                                (${course.courseType.name() == 'HYBRID'} ?
+                                'background:#d3f9d8;color:#2b8a3e;padding:0.15rem 0.5rem;border-radius:12px;font-size:0.72rem;font-weight:700;' :
+                                'background:#f3d9fa;color:#862e9c;padding:0.15rem 0.5rem;border-radius:12px;font-size:0.72rem;font-weight:700;')">Tür</span>
+              <span th:if="${course.courseType == null}" style="color:var(--text-muted);">—</span>
+            </td>
 
             <td class="row-instructor">
               <span th:if="${course.instructorName != null and !#strings.isEmpty(course.instructorName)}"
@@ -155,6 +154,9 @@
               <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
                 <a th:href="@{/admin/kurslar/{id}/videolar(id=${course.id})}" class="action-btn ab-view">
                   <i class="bi bi-play-circle"></i> Videolar
+                </a>
+                <a th:href="@{/admin/toplantilar/kurs/{id}(id=${course.id})}" class="action-btn ab-view">
+                  <i class="bi bi-camera-video"></i> Toplantılar
                 </a>
                 <a th:href="@{/admin/kurslar/{id}/duzenle(id=${course.id})}" class="action-btn ab-edit">
                   <i class="bi bi-pencil"></i> Düzenle

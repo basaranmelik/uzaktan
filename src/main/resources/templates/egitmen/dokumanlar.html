@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="${course.title} + ' — Dokümanlar'">Kurs Dokümanları</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+  <div class="container">
+    <div class="breadcrumb">
+      <a th:href="@{/egitmen/panel}">Eğitmen Paneli</a> <span class="separator">›</span>
+      <a th:href="@{/egitmen/kurslarim}">Kurslarım</a> <span class="separator">›</span>
+      <span class="current" th:text="${course.title}">Kurs</span>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;">
+      <div>
+        <h1><i class="bi bi-file-earmark-richtext-fill"></i> Ders Dokümanları</h1>
+        <p style="margin:0;" th:text="${course.title}">Kurs Adı</p>
+      </div>
+      <div style="display:flex;gap:0.5rem;">
+        <a th:href="@{/egitmen/kurslarim/{id}/soru-bankasi(id=${course.id})}" class="btn btn-secondary">
+          <i class="bi bi-patch-question"></i> Soru Bankası
+        </a>
+        <a th:href="@{/egitmen/zoom/kurslarim/{id}(id=${course.id})}" class="btn btn-secondary">
+          <i class="bi bi-camera-video"></i> Toplantılar
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+
+    <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
+
+    <!-- Yükleme Formu -->
+    <div style="background:#fff;border:2px dashed var(--primary-300);border-radius:1rem;padding:1.5rem;margin-bottom:2rem;">
+      <div style="font-weight:700;font-size:1rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+        <i class="bi bi-cloud-upload-fill"></i> Yeni Doküman Yükle
+      </div>
+      <form th:action="@{/egitmen/kurslarim/{id}/dokumanlar(id=${course.id})}"
+            method="post" enctype="multipart/form-data">
+        <div style="display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap;">
+          <div style="flex:1;min-width:200px;">
+            <label for="title" style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:0.3rem;">
+              Doküman Adı
+            </label>
+            <input type="text" id="title" name="title" class="form-control"
+                   placeholder="örn: 1. Hafta Sunumu" maxlength="200">
+          </div>
+          <div style="flex:2;min-width:250px;">
+            <label for="file" style="font-weight:600;font-size:0.85rem;display:block;margin-bottom:0.3rem;">
+              Dosya Seç (PDF, Word, PPT, resim, ZIP — maks. 50 MB)
+            </label>
+            <input type="file" id="file" name="file" class="form-control"
+                   accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip,.jpg,.jpeg,.png,.webp" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="white-space:nowrap;">
+            <i class="bi bi-upload"></i> Yükle
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Belge Listesi -->
+    <div th:if="${#lists.isEmpty(documents)}"
+         class="text-center" style="padding:3rem;color:var(--text-muted);">
+      <div style="font-size:2.5rem;margin-bottom:0.75rem;"><i class="bi bi-file-earmark-x"></i></div>
+      <p>Bu kursa henüz doküman eklenmemiş.</p>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(documents)}" class="q-list">
+      <div th:each="doc : ${documents}" class="q-card" style="display:block;padding:0;">
+        <div style="display:flex;align-items:center;gap:1rem;padding:1rem 1.25rem;">
+          <div th:switch="${#strings.toLowerCase(doc.fileType)}"
+               style="width:48px;height:48px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">
+            <i th:case="'application/pdf'" class="bi bi-file-pdf-fill" style="color:#dc2626;"></i>
+            <i th:case="'application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'"
+               class="bi bi-file-word-fill" style="color:#2563eb;"></i>
+            <i th:case="'application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation'"
+               class="bi bi-file-ppt-fill" style="color:#ea580c;"></i>
+            <i th:case="'application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'"
+               class="bi bi-file-excel-fill" style="color:#16a34a;"></i>
+            <i th:case="'image/jpeg','image/png','image/webp','image/gif'"
+               class="bi bi-file-image-fill" style="color:#8b5cf6;"></i>
+            <i th:case="'text/plain'" class="bi bi-file-text-fill" style="color:#64748b;"></i>
+            <i th:case="'application/zip','application/x-zip-compressed'"
+               class="bi bi-file-zip-fill" style="color:#a16207;"></i>
+            <i th:case="*" class="bi bi-file-earmark-fill" style="color:var(--text-muted);"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:0.95rem;word-break:break-word;"
+                 th:text="${doc.title}">Doküman Adı</div>
+            <div style="font-size:0.78rem;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:0.75rem;margin-top:0.3rem;">
+              <span th:text="${doc.originalFileName}">dosya.pdf</span>
+              <span th:text="${#numbers.formatDecimal(doc.fileSize / 1024.0, 1, 1) + ' KB'}">250 KB</span>
+              <span th:text="${#temporals.format(doc.createdAt, 'dd.MM.yyyy HH:mm')}">Tarih</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:0.4rem;flex-shrink:0;">
+            <a th:href="@{'/uploads/' + ${doc.filePath}}" class="action-btn ab-view" title="İndir">
+              <i class="bi bi-download"></i>
+            </a>
+            <form th:action="@{/egitmen/kurslarim/{cid}/dokumanlar/{did}/sil(cid=${course.id}, did=${doc.id})}"
+                  method="post" style="margin:0;">
+              <button type="submit" class="action-btn ab-del confirm-delete-btn" title="Sil">
+                <i class="bi bi-trash3"></i>
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

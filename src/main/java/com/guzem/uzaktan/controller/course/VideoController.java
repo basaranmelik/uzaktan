@@ -1,9 +1,9 @@
 package com.guzem.uzaktan.controller.course;
 
 import com.guzem.uzaktan.dto.request.VideoProgressRequest;
-import com.guzem.uzaktan.dto.response.CourseResponse;
 import com.guzem.uzaktan.dto.response.CourseVideoResponse;
 import com.guzem.uzaktan.exception.ResourceNotFoundException;
+import com.guzem.uzaktan.service.course.CourseAccessService;
 import com.guzem.uzaktan.service.course.CourseService;
 import com.guzem.uzaktan.service.course.CourseVideoService;
 import com.guzem.uzaktan.service.course.EnrollmentService;
@@ -23,6 +23,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 
 import java.net.MalformedURLException;
 import java.nio.file.Path;
@@ -39,6 +40,7 @@ public class VideoController {
     private final EnrollmentService enrollmentService;
     private final FileStorageService fileStorageService;
     private final CourseService courseService;
+    private final CourseAccessService courseAccessService;
 
     @GetMapping("/{id}")
     public String watchVideo(@PathVariable Long id,
@@ -47,23 +49,9 @@ public class VideoController {
                              HttpServletRequest request,
                              Model model) {
         CourseVideoResponse video = courseVideoService.findById(id);
+        boolean isPrivileged = courseAccessService.isTeacherOrAdminForCourse(currentUserId, video.getCourseId());
 
-        // Eğitmen/Admin/Firma için kurs sahibi kontrolü, öğrenci için kayıt kontrolü
-        boolean isPrivileged = principal.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER") || a.getAuthority().equals("ROLE_FIRM"));
-
-        if (isPrivileged) {
-            // Admin ve Firma her kursu görebilir, eğitmen kendi kursunu görebilir
-            boolean isAdminOrFirm = principal.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_FIRM"));
-            if (!isAdminOrFirm) {
-                CourseResponse course = courseService.findById(video.getCourseId());
-                if (course.getInstructorId() == null || !course.getInstructorId().equals(currentUserId)) {
-                    throw new ResourceNotFoundException("Video", "id", id);
-                }
-            }
-        } else {
-            // Öğrenci kayıtlı olmalı
+        if (!isPrivileged) {
             if (!enrollmentService.isActiveEnrollment(currentUserId, video.getCourseId())) {
                 throw new ResourceNotFoundException("Video", "id", id);
             }
@@ -95,8 +83,6 @@ public class VideoController {
         model.addAttribute("nextVideo", currentIndex < allVideos.size() - 1 ? allVideos.get(currentIndex + 1) : null);
         model.addAttribute("alreadyWatched", currentVideo.isWatched());
         model.addAttribute("isTeacherOrAdmin", isPrivileged);
-
-        // Gerçek TCP bağlantı adresi — kullanıcı tarafından manipüle edilemez
         model.addAttribute("clientIp", request.getRemoteAddr());
 
         return "video/izle";
@@ -110,22 +96,13 @@ public class VideoController {
             @ModelAttribute("currentUserId") Long currentUserId,
             @RequestHeader(value = HttpHeaders.RANGE, required = false) String rangeHeader) throws java.io.IOException {
         CourseVideoResponse video = courseVideoService.findById(id);
-
-        // Eğitmen/Admin/Firma kontrol
-        boolean isPrivileged = principal.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER") || a.getAuthority().equals("ROLE_FIRM"));
+        boolean isPrivileged = courseAccessService.isTeacherOrAdminForCourse(currentUserId, video.getCourseId());
 
         if (!isPrivileged) {
             if (!enrollmentService.isActiveEnrollment(currentUserId, video.getCourseId())) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
             if (!courseVideoService.canAccessVideo(id, currentUserId)) {
-                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-            }
-        } else if (!principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_FIRM"))) {
-            // Eğitmen - kendi kursunu kontrol et
-            CourseResponse course = courseService.findById(video.getCourseId());
-            if (course.getInstructorId() == null || !course.getInstructorId().equals(currentUserId)) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         }
@@ -141,7 +118,6 @@ public class VideoController {
             long fileLength = resource.contentLength();
 
             if (rangeHeader == null) {
-                // Full file request
                 return ResponseEntity.ok()
                         .contentType(MediaType.parseMediaType(contentType))
                         .header(HttpHeaders.CONTENT_DISPOSITION, "inline")
@@ -150,9 +126,8 @@ public class VideoController {
                         .body(new ResourceRegion(resource, 0, fileLength));
             }
 
-            // Range request handling
             long start = 0, end = fileLength - 1;
-            if (rangeHeader != null && rangeHeader.startsWith("bytes=")) {
+            if (rangeHeader.startsWith("bytes=")) {
                 String range = rangeHeader.substring("bytes=".length());
                 String[] parts = range.split("-");
                 try {
@@ -188,23 +163,18 @@ public class VideoController {
     @PostMapping("/{id}/izlendi")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> markWatched(@PathVariable Long id,
-                                                            @AuthenticationPrincipal UserDetails principal,
                                                             @ModelAttribute("currentUserId") Long currentUserId) {
         CourseVideoResponse video = courseVideoService.findById(id);
 
-        // Eğitmen/Admin/Firma için tracking yapılmaz
-        boolean isPrivileged = principal.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER") || a.getAuthority().equals("ROLE_FIRM"));
-
-        if (isPrivileged) {
-            return ResponseEntity.ok(Map.of("success", true)); // Tracking yapılmaz
+        if (courseAccessService.isTeacherOrAdminForCourse(currentUserId, video.getCourseId())) {
+            return ResponseEntity.ok(Map.of("success", true));
         }
 
         if (!enrollmentService.isActiveEnrollment(currentUserId, video.getCourseId())) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("success", false));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("success", false));
         }
         if (!courseVideoService.canAccessVideo(id, currentUserId)) {
-            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(Map.of("success", false));
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("success", false));
         }
 
         boolean success = courseVideoService.markWatched(id, currentUserId);
@@ -214,17 +184,12 @@ public class VideoController {
     @PostMapping("/{id}/progress")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> recordProgress(@PathVariable Long id,
-                                                               @AuthenticationPrincipal UserDetails principal,
                                                                @ModelAttribute("currentUserId") Long currentUserId,
-                                                               @RequestBody VideoProgressRequest req) {
+                                                               @Valid @RequestBody VideoProgressRequest req) {
         CourseVideoResponse video = courseVideoService.findById(id);
 
-        // Eğitmen/Admin/Firma için tracking yapılmaz
-        boolean isPrivileged = principal.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER") || a.getAuthority().equals("ROLE_FIRM"));
-
-        if (isPrivileged) {
-            return ResponseEntity.ok(Map.of("ok", true)); // Tracking yapılmaz
+        if (courseAccessService.isTeacherOrAdminForCourse(currentUserId, video.getCourseId())) {
+            return ResponseEntity.ok(Map.of("ok", true));
         }
 
         if (!enrollmentService.isActiveEnrollment(currentUserId, video.getCourseId())) {

@@ -1,11 +1,11 @@
 package com.guzem.uzaktan.controller.instructor;
 
-import com.guzem.uzaktan.service.instructor.InstructorService;
+import com.guzem.uzaktan.model.common.Role;
+import com.guzem.uzaktan.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
@@ -13,13 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequiredArgsConstructor
 public class InstructorController {
 
-    private final InstructorService instructorService;
+    private final UserService userService;
 
     @GetMapping
     public String list(Model model) {
-        model.addAttribute("instructors", instructorService.findAll());
+        model.addAttribute("instructors", userService.findUsersByRole(Role.TEACHER));
         return "egitmenler/liste";
     }
-
-
 }

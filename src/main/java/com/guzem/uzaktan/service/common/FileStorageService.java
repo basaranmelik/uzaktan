@@ -22,6 +22,8 @@ public interface FileStorageService {
 
     String storeCourseImage(MultipartFile file, Long courseId, String courseTitle) throws IOException;
 
+    String storeCourseDocument(MultipartFile file, Long courseId, String courseTitle) throws IOException;
+
     Path resolve(String relativePath);
 
     void delete(String relativePath);

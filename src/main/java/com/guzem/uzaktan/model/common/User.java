@@ -2,7 +2,12 @@ package com.guzem.uzaktan.model.common;
 
 import com.guzem.uzaktan.model.admin.AssignmentSubmission;
 import com.guzem.uzaktan.model.course.Certificate;
+import com.guzem.uzaktan.model.course.CourseReview;
 import com.guzem.uzaktan.model.course.Enrollment;
+import com.guzem.uzaktan.model.course.QuizAttempt;
+import com.guzem.uzaktan.model.course.VideoWatch;
+import com.guzem.uzaktan.model.user.CartItem;
+import com.guzem.uzaktan.model.user.Notification;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -18,7 +23,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = {"certificates", "enrollments", "submissions"})
+@ToString(exclude = {"certificates", "enrollments", "submissions", "cartItems", "notifications", "quizAttempts", "reviews", "videoWatches"})
 @Builder
 @Entity
 @Table(name = "users")
@@ -58,6 +63,24 @@ public class User {
     @Embedded
     private Address address;
 
+    @Nationalized
+    @Column(name = "bio", columnDefinition = "NVARCHAR(MAX)")
+    private String bio;
+
+    @Column(name = "profile_picture_url", length = 500)
+    private String profilePictureUrl;
+
+    @Column(name = "zoom_email", length = 254)
+    private String zoomEmail;
+
+    @Nationalized
+    @Column(name = "skills", columnDefinition = "NVARCHAR(MAX)")
+    private String skills;
+
+    @Builder.Default
+    @Column(name = "is_password_reset_required", nullable = false)
+    private boolean isPasswordResetRequired = false;
+
     // Spring security
     @Builder.Default
     @Column(name = "is_enabled", nullable = false)
@@ -94,4 +117,24 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<AssignmentSubmission> submissions = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<CartItem> cartItems = new HashSet<>();
+
+    @OneToMany(mappedBy = "recipient", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<Notification> notifications = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<QuizAttempt> quizAttempts = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<CourseReview> reviews = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<VideoWatch> videoWatches = new HashSet<>();
 }

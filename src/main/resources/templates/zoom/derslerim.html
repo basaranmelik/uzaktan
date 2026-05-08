@@ -7,31 +7,7 @@
   <title>Canlı Derslerim | Gazi Üniversitesi</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <style>
-    .meeting-card {
-      display:flex; align-items:flex-start; gap:1.25rem;
-      padding:1.25rem 1.5rem; border:1px solid var(--border);
-      border-radius:12px; background:var(--bg);
-      transition: border-color 0.15s, box-shadow 0.15s;
-      margin-bottom:0.75rem;
-    }
-    .meeting-card:hover { border-color:var(--primary-300); box-shadow:0 2px 12px rgba(0,0,0,0.06); }
-    .meeting-card.live { border-color:#2b8a3e; background:#f0fdf4; }
-    .meet-icon {
-      width:48px; height:48px; border-radius:12px;
-      background:var(--primary-100); color:var(--primary-600);
-      display:flex; align-items:center; justify-content:center;
-      font-size:1.3rem; flex-shrink:0;
-    }
-    .meet-icon.live-icon { background:#dcfce7; color:#16a34a; }
-    .live-pulse {
-      display:inline-flex; align-items:center; gap:5px;
-      background:#2b8a3e; color:#fff; font-size:0.72rem;
-      font-weight:700; padding:2px 9px; border-radius:20px;
-    }
-    .live-dot { width:7px; height:7px; border-radius:50%; background:#fff; animation: pulse 1s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
-  </style>
+  
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -91,6 +67,33 @@
              style="font-size:0.88rem;padding:0.45rem 1.1rem;">
             <i class="bi bi-box-arrow-up-right"></i>
             <span th:text="${m.live} ? 'Hemen Katıl' : 'Derse Katıl'">Derse Katıl</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ders Kayıtları -->
+    <div th:if="${!#lists.isEmpty(pastMeetings)}" style="margin-top:2.5rem;">
+      <h3 style="margin-bottom:1rem;">
+        <i class="bi bi-play-circle-fill" style="color:var(--primary-600);"></i>
+        Ders Kayıtları
+      </h3>
+      <div th:each="m : ${pastMeetings}" class="meeting-card past">
+        <div class="meet-icon">
+          <i class="bi bi-play-circle-fill"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:0.78rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:0.2rem;"
+               th:text="${m.courseTitle}">Kurs</div>
+          <div style="font-weight:700;font-size:1rem;margin-bottom:0.4rem;"
+               th:text="${m.topic}">Konu</div>
+          <div style="font-size:0.84rem;color:var(--text-muted);margin-bottom:0.75rem;">
+            <i class="bi bi-calendar-event"></i>
+            <span th:text="${#temporals.format(m.scheduledAt, 'dd.MM.yyyy HH:mm')}">-</span>
+          </div>
+          <a th:href="@{/zoom/toplanti/{id}/katil(id=${m.id})}"
+             class="btn btn-secondary" style="font-size:0.88rem;padding:0.45rem 1.1rem;">
+            <i class="bi bi-play-circle"></i> Kaydı İzle
           </a>
         </div>
       </div>

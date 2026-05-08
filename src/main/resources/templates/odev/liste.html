@@ -8,6 +8,7 @@
   <title>Ödevlerim | Gazi Üniversitesi</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  
 </head>
 <body>
 
@@ -50,7 +51,7 @@
         <!-- O Kurs İçindeki Alt Ödev Kartları -->
         <div style="padding:1.5rem; display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:1rem; background:#ffffff;">
 
-          <div th:each="a : ${courseEntry.value}" style="border:1px solid #ced4da; border-radius:12px; padding:1.25rem; transition:transform 0.2s, box-shadow 0.2s; background:#fdfdfd; display:flex; flex-direction:column;" class="task-card" onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 15px rgba(0,0,0,0.04)'; this.style.borderColor='var(--primary-300)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none'; this.style.borderColor='#ced4da';">
+          <div th:each="a : ${courseEntry.value}" style="border:1px solid #ced4da; border-radius:12px; padding:1.25rem; transition:transform 0.2s, box-shadow 0.2s, border-color 0.2s; background:#fdfdfd; display:flex; flex-direction:column;" class="task-card">
             
             <h4 style="margin:0 0 0.5rem; font-size:1.1rem; color:var(--text); flex:1;" th:text="${a.title}">Ödev Başlığı</h4>
             <div th:style="'font-size:0.8rem;margin-bottom:1rem;display:flex;align-items:center;gap:0.4rem;padding-bottom:0.5rem;border-bottom:1px dashed rgba(0,0,0,0.1);' + (${a.dueDate.isBefore(#temporals.createNow())} ? 'color:#e03131;font-weight:600;' : 'color:var(--primary-600);font-weight:500;')">

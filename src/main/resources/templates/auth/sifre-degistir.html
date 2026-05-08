@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Şifre Değiştir | Gazi Üniversitesi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body class="auth-page">
+<div class="auth-card">
+    <a class="auth-logo" th:href="@{/}">
+        <img th:src="@{/images/gazi-logo.png}" alt="Logo">
+        <div class="auth-logo-divider"></div>
+        <span>GUZEM</span>
+    </a>
+    <div class="auth-title">
+        <h1>Şifre Değiştir</h1>
+        <p>Devam etmek için yeni bir şifre belirleyin</p>
+    </div>
+
+    <div th:replace="~{fragments/auth-alerts :: authAlertsPassword}"></div>
+
+    <form th:action="@{/sifre-degistir}" method="post">
+        <div class="form-group" th:unless="${forced}">
+            <label for="currentPassword">Mevcut Şifre</label>
+            <input type="password" id="currentPassword" name="currentPassword"
+                   th:required="${!forced}" placeholder="Mevcut şifrenizi girin">
+        </div>
+        <div class="form-group">
+            <label for="newPassword">Yeni Şifre</label>
+            <input type="password" id="newPassword" name="newPassword" required minlength="8"
+                   placeholder="En az 8 karakter">
+            <small style="display:block;margin-top:6px;color:rgba(255,255,255,0.45);font-size:12px;">
+                En az 8 karakter, büyük harf, küçük harf ve rakam içermelidir.
+            </small>
+        </div>
+        <div class="form-group">
+            <label for="confirmPassword">Yeni Şifre (Tekrar)</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8"
+                   placeholder="Şifrenizi tekrar girin">
+        </div>
+        <div id="client-error" class="error-msg" style="display:none;"></div>
+        <button type="submit" class="btn-submit">Şifreyi Değiştir</button>
+    </form>
+</div>
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

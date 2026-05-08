@@ -1,5 +1,6 @@
 package com.guzem.uzaktan.controller.instructor;
 
+import com.guzem.uzaktan.dto.CurriculumModule;
 import com.guzem.uzaktan.dto.request.QuestionCreateRequest;
 import com.guzem.uzaktan.dto.request.QuestionUpdateRequest;
 import com.guzem.uzaktan.dto.response.CourseResponse;
@@ -20,7 +21,15 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.guzem.uzaktan.model.course.CorrectOption;
+import com.guzem.uzaktan.model.common.Role;
+import org.apache.tika.Tika;
+import org.springframework.security.core.context.SecurityContextHolder;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Eğitmen soru bankası yönetimi — soru CRUD işlemleri.
@@ -62,6 +71,9 @@ public class TeacherQuestionBankController {
             return "redirect:/egitmen/panel";
         }
         model.addAttribute("course", course);
+        model.addAttribute("curriculumModules", course.getCurriculumModules() != null ? course.getCurriculumModules() : Collections.emptyList());
+        model.addAttribute("moduleOptions", buildModuleOptionsHtml(course));
+        model.addAttribute("correctOptions", Arrays.asList(CorrectOption.values()));
         model.addAttribute("questionCreateRequest", new QuestionCreateRequest());
         return "egitmen/soru-form";
     }
@@ -74,11 +86,20 @@ public class TeacherQuestionBankController {
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("course", courseService.findById(courseId));
+            CourseResponse course = courseService.findById(courseId);
+            model.addAttribute("course", course);
+            model.addAttribute("curriculumModules", course.getCurriculumModules() != null ? course.getCurriculumModules() : Collections.emptyList());
+            model.addAttribute("moduleOptions", buildModuleOptionsHtml(course));
+            model.addAttribute("correctOptions", Arrays.asList(CorrectOption.values()));
             return "egitmen/soru-form";
         }
-        questionBankService.createQuestion(courseId, request, currentUserId);
-        redirectAttributes.addFlashAttribute("successMessage", "Soru başarıyla eklendi.");
+        try {
+            questionBankService.createQuestion(courseId, request, currentUserId);
+            redirectAttributes.addFlashAttribute("successMessage", "Soru başarıyla eklendi.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/egitmen/kurslarim/" + courseId + "/soru-bankasi/yeni";
+        }
         return "redirect:/egitmen/kurslarim/" + courseId + "/soru-bankasi";
     }
 
@@ -88,6 +109,11 @@ public class TeacherQuestionBankController {
                                    Model model) {
         QuestionResponse question = questionBankService.findById(id, currentUserId);
         model.addAttribute("question", question);
+        CourseResponse editCourse = courseService.findById(question.getCourseId());
+        model.addAttribute("course", editCourse);
+        model.addAttribute("curriculumModules", editCourse.getCurriculumModules() != null ? editCourse.getCurriculumModules() : Collections.emptyList());
+        model.addAttribute("moduleOptions", buildModuleOptionsHtml(editCourse));
+        model.addAttribute("correctOptions", Arrays.asList(CorrectOption.values()));
         QuestionUpdateRequest dto = new QuestionUpdateRequest();
         dto.setQuestionText(question.getQuestionText());
         dto.setOptionA(question.getOptionA());
@@ -97,6 +123,7 @@ public class TeacherQuestionBankController {
         dto.setOptionE(question.getOptionE());
         dto.setCorrectOption(question.getCorrectOption());
         dto.setExplanation(question.getExplanation());
+        dto.setModuleIndex(question.getModuleIndex());
         model.addAttribute("questionUpdateRequest", dto);
         return "egitmen/soru-duzenle";
     }
@@ -109,10 +136,22 @@ public class TeacherQuestionBankController {
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("question", questionBankService.findById(id, currentUserId));
+            QuestionResponse question = questionBankService.findById(id, currentUserId);
+            model.addAttribute("question", question);
+            CourseResponse updateCourse = courseService.findById(question.getCourseId());
+            model.addAttribute("course", updateCourse);
+            model.addAttribute("curriculumModules", updateCourse.getCurriculumModules() != null ? updateCourse.getCurriculumModules() : Collections.emptyList());
+            model.addAttribute("moduleOptions", buildModuleOptionsHtml(updateCourse));
+            model.addAttribute("correctOptions", Arrays.asList(CorrectOption.values()));
             return "egitmen/soru-duzenle";
         }
-        QuestionResponse updated = questionBankService.updateQuestion(id, request, currentUserId);
+        QuestionResponse updated;
+        try {
+            updated = questionBankService.updateQuestion(id, request, currentUserId);
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return "redirect:/egitmen/sorular/" + id + "/duzenle";
+        }
         redirectAttributes.addFlashAttribute("successMessage", "Soru güncellendi.");
         return "redirect:/egitmen/kurslarim/" + updated.getCourseId() + "/soru-bankasi";
     }
@@ -149,6 +188,16 @@ public class TeacherQuestionBankController {
         String originalFilename = file.getOriginalFilename();
         if (originalFilename == null || !originalFilename.toLowerCase().endsWith(".xlsx")) {
             redirectAttributes.addFlashAttribute("errorMessage", "Sadece .xlsx dosyaları desteklenmektedir.");
+            return "redirect:/egitmen/kurslarim/" + courseId + "/soru-bankasi";
+        }
+
+        if (!isValidExcelMime(file)) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Geçersiz Excel dosyası. Lütfen geçerli bir .xlsx dosyası yükleyin.");
+            return "redirect:/egitmen/kurslarim/" + courseId + "/soru-bankasi";
+        }
+
+        if (file.getSize() > 10 * 1024 * 1024) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Excel dosyası en fazla 10 MB olabilir.");
             return "redirect:/egitmen/kurslarim/" + courseId + "/soru-bankasi";
         }
 
@@ -201,6 +250,36 @@ public class TeacherQuestionBankController {
     }
 
     private boolean isCourseOwnerOrAdmin(CourseResponse course, Long userId) {
-        return course.getInstructorId() != null && course.getInstructorId().equals(userId);
+        return (course.getInstructorId() != null && course.getInstructorId().equals(userId))
+                || currentUserIsAdmin();
+    }
+
+    private boolean currentUserIsAdmin() {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null && auth.getAuthorities().stream()
+                .anyMatch(g -> g.getAuthority().equals(Role.ADMIN.getAuthority()));
+    }
+
+    private boolean isValidExcelMime(MultipartFile file) {
+        try {
+            String mimeType = new Tika().detect(file.getBytes());
+            return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet".equals(mimeType);
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    private String buildModuleOptionsHtml(CourseResponse course) {
+        List<CurriculumModule> modules = course.getCurriculumModules();
+        if (modules == null || modules.isEmpty()) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < modules.size(); i++) {
+            sb.append("<option value=\"").append(i).append("\">")
+              .append(modules.get(i).getTitle())
+              .append("</option>");
+        }
+        return sb.toString();
     }
 }

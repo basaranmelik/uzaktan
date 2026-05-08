@@ -23,6 +23,10 @@ public class Certificate {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    @Column(name = "version")
+    private Integer version;
+
     @Column(name = "certificate_code", nullable = false, unique = true, length = 50)
     private String certificateCode;
 

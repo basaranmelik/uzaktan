@@ -27,4 +27,22 @@ public interface ZoomService {
     List<ZoomMeetingResponse> getAllForStudent(Long studentUserId);
 
     ZoomMeetingResponse findByIdForTeacher(Long meetingId, Long teacherUserId);
+
+    void processRecordingCompleted(String zoomMeetingId);
+
+    void markMeetingAsStarted(String zoomMeetingId);
+
+    void generateScheduledMeetings(Long courseId);
+
+    long countAllMeetings();
+
+    long countMissedMeetings();
+
+    long countRecordedMeetings();
+
+    long countStartedMeetings();
+
+    List<ZoomMeetingResponse> findAllForAdmin();
+
+    List<ZoomMeetingResponse> findAllForAdminByCourse(Long courseId);
 }

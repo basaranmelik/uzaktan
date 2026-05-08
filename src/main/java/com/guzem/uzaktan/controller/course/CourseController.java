@@ -7,7 +7,9 @@ import com.guzem.uzaktan.dto.response.EnrollmentResponse;
 import com.guzem.uzaktan.dto.response.UserResponse;
 import com.guzem.uzaktan.model.course.CourseCategory;
 import com.guzem.uzaktan.model.course.EnrollmentStatus;
+import com.guzem.uzaktan.service.course.CourseAccessService;
 import com.guzem.uzaktan.service.course.CourseCategoryService;
+import com.guzem.uzaktan.service.course.CourseDocumentService;
 import com.guzem.uzaktan.service.course.CourseReviewService;
 import com.guzem.uzaktan.service.course.CourseService;
 import com.guzem.uzaktan.service.course.CourseVideoService;
@@ -21,6 +23,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -36,18 +39,19 @@ public class CourseController {
     private final UserService userService;
     private final EnrollmentService enrollmentService;
     private final CourseVideoService courseVideoService;
+    private final CourseDocumentService courseDocumentService;
     private final CourseReviewService courseReviewService;
+    private final CourseAccessService courseAccessService;
     private final com.guzem.uzaktan.service.user.CartService cartService;
-    private final com.guzem.uzaktan.service.instructor.InstructorService instructorService;
 
     @GetMapping
-    public String listCourses(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size,
-            @RequestParam(required = false) String categoryName,
-            @RequestParam(required = false) String keyword,
-            @AuthenticationPrincipal UserDetails principal,
-            Model model) {
+    public String listCourses(@RequestParam(value = "keyword", required = false) String keyword,
+                              @RequestParam(value = "category", required = false) String categoryName,
+                              @RequestParam(value = "sort", required = false, defaultValue = "default") String sort,
+                              @RequestParam(value = "page", defaultValue = "0") int page,
+                              @RequestParam(value = "size", defaultValue = "12") int size,
+                              @AuthenticationPrincipal UserDetails principal,
+                              Model model) {
 
         Page<CourseSummaryResponse> courses;
         CourseCategory selectedCategory = null;
@@ -56,19 +60,19 @@ public class CourseController {
             if (keyword.length() > 100) {
                 keyword = keyword.substring(0, 100);
             }
-            courses = courseService.search(keyword, page, size);
+            courses = courseService.search(keyword, sort, page, size);
         } else if (categoryName != null && !categoryName.isBlank()) {
             try {
                 selectedCategory = categoryService.findByDisplayName(categoryName);
-                courses = courseService.findByCategory(selectedCategory, page, size);
+                courses = courseService.findByCategory(selectedCategory, sort, page, size);
             } catch (Exception e) {
-                courses = courseService.findPublishedCourses(page, size);
+                courses = courseService.findPublishedCourses(sort, page, size);
             }
         } else if (principal != null) {
             UserResponse user = userService.findByEmail(principal.getUsername());
-            courses = courseService.findPublishedCoursesForUser(user.getId(), page, size);
+            courses = courseService.findPublishedCoursesForUser(user.getId(), sort, page, size);
         } else {
-            courses = courseService.findPublishedCourses(page, size);
+            courses = courseService.findPublishedCourses(sort, page, size);
         }
 
         model.addAttribute("courses", courses);
@@ -76,6 +80,7 @@ public class CourseController {
         model.addAttribute("selectedCategory", selectedCategory);
         model.addAttribute("keyword", keyword);
         model.addAttribute("currentPage", page);
+        model.addAttribute("sort", sort);
         model.addAttribute("totalPages", courses.getTotalPages());
         return "course/list";
     }
@@ -86,35 +91,23 @@ public class CourseController {
                                Model model) {
         CourseResponse course = courseService.findById(id);
 
-        if (course.getInstructorName() != null) {
-            instructorService.findByName(course.getInstructorName())
-                .ifPresent(ins -> course.setInstructorImage(ins.getPhotoUrl()));
+        if (course.getInstructors() != null && !course.getInstructors().isEmpty()) {
+            course.setInstructorImage(course.getInstructors().get(0).getPhotoUrl());
         }
 
         model.addAttribute("course", course);
-        // Video başlıklarını göstermek için (kilitli preview olarak)
         model.addAttribute("videos", courseVideoService.findByCourse(id));
+        model.addAttribute("documents", courseDocumentService.findByCourse(id));
 
-        boolean isTeacherOrAdmin = false;
         if (principal != null) {
             UserResponse user = userService.findByEmail(principal.getUsername());
-            isTeacherOrAdmin = principal.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER"));
+            boolean isTeacherOrAdmin = courseAccessService.isTeacherOrAdminForCourse(user.getId(), id);
 
             Optional<EnrollmentResponse> enrollmentOpt =
                     enrollmentService.findByUserAndCourse(user.getId(), id);
-            boolean enrolled = enrollmentOpt.isPresent();
-            boolean isActiveEnrolled = enrollmentOpt
+            boolean enrolled = enrollmentOpt.isPresent() || isTeacherOrAdmin;
+            boolean isActiveEnrolled = isTeacherOrAdmin || enrollmentOpt
                     .map(e -> e.getStatus() == EnrollmentStatus.ACTIVE).orElse(false);
-
-            // Eğitmen/Admin Kontrolü
-            if (isTeacherOrAdmin) {
-                boolean isAdmin = principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-                if (isAdmin || (course.getInstructorId() != null && course.getInstructorId().equals(user.getId()))) {
-                    isActiveEnrolled = true;
-                    enrolled = true; // Butonların görünmesi için kayıtlı gibi davranıyoruz
-                }
-            }
 
             model.addAttribute("isEnrolled", enrolled);
             model.addAttribute("isActiveEnrolled", isActiveEnrolled);
@@ -124,7 +117,8 @@ public class CourseController {
             model.addAttribute("hasReviewed", courseReviewService.hasUserReviewed(id, user.getId()));
             model.addAttribute("isInCart", cartService.isInCart(user.getId(), id));
             model.addAttribute("isTeacherOrAdmin", isTeacherOrAdmin);
-            model.addAttribute("isAdmin", principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")));
+            model.addAttribute("isAdmin", principal.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")));
         } else {
             model.addAttribute("hasReviewed", false);
             model.addAttribute("isActiveEnrolled", false);
@@ -146,11 +140,6 @@ public class CourseController {
         return "course/detail";
     }
 
-    /**
-     * Aktif kayıtlı öğrencinin kurs video sayfası.
-     * URL: /egitimler/izle/{id}  (id = kurs id'si)
-     * Eğitmen kendi kursunu izleyebilir.
-     */
     @GetMapping("/izle/{id}")
     @PreAuthorize("isAuthenticated()")
     public String myCoursePlayer(@PathVariable Long id,
@@ -158,33 +147,14 @@ public class CourseController {
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
         UserResponse user = userService.findByEmail(principal.getUsername());
-        CourseResponse course = courseService.findById(id);
 
-        // Eğitmen/Admin kontrolü
-        boolean isTeacherOrAdmin = principal.getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_TEACHER"));
-
-        boolean isActive = false;
-        if (isTeacherOrAdmin) {
-            // Admin her kursa erişebilir, eğitmen kendi kursuna
-            if (principal.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
-                isActive = true;
-            } else if (course.getInstructorId() != null && course.getInstructorId().equals(user.getId())) {
-                isActive = true; // Eğitmen kendi kursu
-            }
-        } else {
-            // Öğrenci - kayıtlı olmalı
-            Optional<EnrollmentResponse> enrollmentOpt =
-                    enrollmentService.findByUserAndCourse(user.getId(), id);
-            isActive = enrollmentOpt
-                    .map(e -> e.getStatus() == EnrollmentStatus.ACTIVE || e.getStatus() == EnrollmentStatus.COMPLETED).orElse(false);
-        }
-
-        if (!isActive) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Bu eğitime ait içeriklere erişmek için öncelikle kayıt olmanız gerekmektedir.");
+        if (!courseAccessService.hasActiveAccess(user.getId(), id)) {
+            redirectAttributes.addFlashAttribute("errorMessage",
+                    "Bu eğitime ait içeriklere erişmek için öncelikle kayıt olmanız gerekmektedir.");
             return "redirect:/egitimler/" + id;
         }
 
+        boolean isTeacherOrAdmin = courseAccessService.isTeacherOrAdminForCourse(user.getId(), id);
         var videos = isTeacherOrAdmin
             ? courseVideoService.findByCourse(id)
             : courseVideoService.findByCourseForStudent(id, user.getId());
@@ -197,7 +167,7 @@ public class CourseController {
         var firstUnwatched = videos.stream()
                 .filter(v -> !v.isWatched())
                 .findFirst()
-                .orElse(videos.get(0)); // Hepsi izlendiyse ilkine git
+                .orElse(videos.get(0));
 
         return "redirect:/videolar/" + firstUnwatched.getId();
     }
@@ -206,8 +176,14 @@ public class CourseController {
     @PreAuthorize("isAuthenticated()")
     public String submitReview(@PathVariable Long id,
                                @Valid @ModelAttribute("reviewRequest") CourseReviewRequest request,
+                               BindingResult bindingResult,
                                @AuthenticationPrincipal UserDetails principal,
                                RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            bindingResult.getAllErrors().forEach(err ->
+                    redirectAttributes.addFlashAttribute("errorMessage", err.getDefaultMessage()));
+            return "redirect:/egitimler/" + id;
+        }
         UserResponse user = userService.findByEmail(principal.getUsername());
 
         Optional<EnrollmentResponse> enrollmentOpt =

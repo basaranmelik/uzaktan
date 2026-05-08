@@ -16,6 +16,8 @@ import com.guzem.uzaktan.service.user.UserService;
 import com.guzem.uzaktan.service.instructor.ZoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
@@ -47,11 +49,12 @@ public class HomeController {
 
     @GetMapping({"/", "/home"})
     public String home(Model model) {
-        model.addAttribute("featuredCourses", courseService.findPublishedCourses(0, 6).getContent());
+        model.addAttribute("featuredCourses", courseService.findPublishedCourses("default", 0, 6).getContent());
         return "home";
     }
 
     @GetMapping("/panom")
+    @PreAuthorize("hasRole('USER')")
     public String dashboard(@AuthenticationPrincipal UserDetails principal,
                             @ModelAttribute("currentUserId") Long currentUserId,
                             Model model) {
@@ -121,5 +124,10 @@ public class HomeController {
     @GetMapping("/gizlilik")
     public String gizlilik() {
         return "gizlilik";
+    }
+
+    @GetMapping("/hata/404")
+    public String notFound() {
+        return "error/404";
     }
 }

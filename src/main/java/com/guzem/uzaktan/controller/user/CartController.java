@@ -1,5 +1,6 @@
 package com.guzem.uzaktan.controller.user;
 
+import com.guzem.uzaktan.dto.response.AjaxResult;
 import com.guzem.uzaktan.service.user.CartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,19 @@ public class CartController {
             ra.addFlashAttribute("errorMessage", e.getMessage());
         }
         return "redirect:/egitimler/" + courseId;
+    }
+
+    @PostMapping(value = "/ekle-ajax", produces = "application/json")
+    @ResponseBody
+    public AjaxResult addToCartAjax(@RequestParam Long courseId,
+                                    @ModelAttribute("currentUserId") Long currentUserId) {
+        try {
+            cartService.addToCart(currentUserId, courseId);
+            int count = cartService.getCartCount(currentUserId);
+            return AjaxResult.success("Kurs sepete eklendi.", Map.of("count", count));
+        } catch (IllegalStateException e) {
+            return AjaxResult.error(e.getMessage());
+        }
     }
 
     @PostMapping("/kaldir")

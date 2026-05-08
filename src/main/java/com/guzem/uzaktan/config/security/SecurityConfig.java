@@ -1,7 +1,9 @@
 package com.guzem.uzaktan.config.security;
 
 import com.guzem.uzaktan.model.common.Role;
+import com.guzem.uzaktan.security.CustomUserDetails;
 import com.guzem.uzaktan.security.CustomUserDetailsService;
+import com.guzem.uzaktan.security.PasswordResetFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 
 @Configuration
@@ -25,10 +28,12 @@ import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWrite
 public class SecurityConfig {
 
     private final CustomUserDetailsService userDetailsService;
+    private final PasswordResetFilter passwordResetFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(csrf -> csrf.ignoringRequestMatchers("/webhook/zoom"))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/", "/home",
@@ -42,7 +47,9 @@ public class SecurityConfig {
                                 "/error/**",
                                 "/sss",
                                 "/kvkk",
-                                "/kullanim", "/gizlilik"
+                                "/kullanim", "/gizlilik",
+                                "/webhook/zoom",
+                        "/hata/**"
                         ).permitAll()
                         .requestMatchers("/admin/kurslar/*/videolar", "/admin/kurslar/*/videolar/**", "/admin/videolar/**")
                         .hasAnyRole("ADMIN", "TEACHER", "FIRM")
@@ -50,6 +57,11 @@ public class SecurityConfig {
                         .hasAnyRole("ADMIN", "FIRM")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/egitmen/**").hasAnyRole("TEACHER", "ADMIN")
+                        .requestMatchers("/sinav/**", "/sepet/**", "/odevlerim/**",
+                                "/zoom/derslerim", "/zoom/toplanti/**",
+                                "/videolar/**", "/profilim/**", "/kayitlarim",
+                                "/panom", "/bildirimler")
+                        .authenticated()
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
@@ -57,14 +69,15 @@ public class SecurityConfig {
                         .loginProcessingUrl("/giris")
                         .usernameParameter("email")
                         .successHandler((req, res, auth) -> {
+                            // Force password change if required
+                            if (auth.getPrincipal() instanceof CustomUserDetails details
+                                    && details.isPasswordResetRequired()) {
+                                res.sendRedirect(req.getContextPath() + "/sifre-degistir");
+                                return;
+                            }
                             String sonra = req.getParameter("sonra");
-                            // Open-Redirect Korumasi
-                            if (org.springframework.util.StringUtils.hasText(sonra)
-                                    && sonra.startsWith("/")
-                                    && !sonra.startsWith("//")
-                                    && !sonra.contains("\\")
-                                    && !sonra.contains("%")
-                                    && !sonra.contains(":")) {
+                            // Open-Redirect Korumasi: URI parse + host must be absent
+                            if (isSafeRedirect(sonra)) {
                                 res.sendRedirect(req.getContextPath() + sonra);
                             } else {
                                 if (hasRole(auth, Role.ADMIN)) {
@@ -95,6 +108,12 @@ public class SecurityConfig {
                 )
                 .exceptionHandling(ex -> ex
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            String path = request.getRequestURI();
+                            // Gizli alanlar — yetkisiz kullanıcı 404 görsün
+                            if (path.startsWith("/admin") || path.startsWith("/egitmen")) {
+                                response.sendRedirect(request.getContextPath() + "/hata/404");
+                                return;
+                            }
                             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
                             String redirect = "/";
                             if (auth != null) {
@@ -114,13 +133,9 @@ public class SecurityConfig {
                                 .maxAgeInSeconds(31536000))
                         .referrerPolicy(referrer -> referrer
                                 .policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
-                        // TODO: 'unsafe-inline' script-src'den kaldırmak için template'lerdeki
-                        //   inline onclick/onchange handler'lar (sss.html, admin/users.html, vb.)
-                        //   addEventListener tabanlı yaklaşıma geçirilmelidir.
-                        //   Inline JS blokları (izle.html, course-videos.html) zaten dış dosyaya taşındı.
                         .contentSecurityPolicy(csp -> csp
                                 .policyDirectives("default-src 'self'; " +
-                                        "script-src 'self' 'unsafe-inline' cdn.jsdelivr.net cdn.plyr.io; " +
+                                        "script-src 'self' cdn.jsdelivr.net cdn.plyr.io; " +
                                         "style-src 'self' 'unsafe-inline' cdn.jsdelivr.net fonts.googleapis.com cdn.plyr.io; " +
                                         "font-src 'self' cdn.jsdelivr.net fonts.gstatic.com; " +
                                         "img-src 'self' data:; " +
@@ -129,6 +144,7 @@ public class SecurityConfig {
                                         "frame-src https://www.google.com/maps/; " +
                                         "frame-ancestors 'none'"))
                 )
+                .addFilterAfter(passwordResetFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider());
 
         return http.build();
@@ -149,6 +165,21 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
+    }
+
+    private static boolean isSafeRedirect(String url) {
+        if (!org.springframework.util.StringUtils.hasText(url)) return false;
+        try {
+            java.net.URI uri = new java.net.URI(url).normalize();
+            // Must be a relative path — no scheme, no host, no authority
+            return uri.getScheme() == null
+                    && uri.getHost() == null
+                    && uri.getAuthority() == null
+                    && uri.getPath().startsWith("/")
+                    && !uri.getPath().startsWith("//");
+        } catch (java.net.URISyntaxException e) {
+            return false;
+        }
     }
 
     private static boolean hasRole(Authentication auth, Role role) {

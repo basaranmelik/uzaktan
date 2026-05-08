@@ -2,65 +2,12 @@
 <html lang="tr" xmlns:th="http://www.thymeleaf.org">
 <head>
   <link rel="icon" type="image/png" th:href="@{/images/gazi-logo.png}">
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title th:text="'Düzenle: ' + ${course.title} + ' — Admin'">Kurs Düzenle</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <style>
-    .form-section {
-      border:1px solid var(--border); border-radius:12px;
-      padding:1.5rem; margin-bottom:1.5rem; background:var(--bg);
-    }
-    .form-section-title {
-      font-size:0.72rem; font-weight:700; text-transform:uppercase;
-      letter-spacing:0.8px; color:var(--text-muted); margin:0 0 1.25rem 0;
-      padding-bottom:0.75rem; border-bottom:1px solid var(--gray-100);
-      display:flex; align-items:center; gap:6px;
-    }
-    .form-section-title i { font-size:0.9rem; }
-    .current-val {
-      font-size:0.78rem; color:var(--text-muted); margin-top:4px;
-      display:flex; align-items:center; gap:4px;
-    }
-    .current-val strong { color:var(--text-alt); }
-
-    .course-meta-bar {
-      display:flex; flex-wrap:wrap; gap:1rem; align-items:center;
-      background:var(--bg-alt); border:1px solid var(--border);
-      border-radius:12px; padding:1rem 1.25rem; margin-bottom:1.5rem;
-      font-size:0.85rem;
-    }
-    .cmb-item { display:flex; align-items:center; gap:6px; color:var(--text-alt); }
-    .cmb-item i { color:var(--text-muted); }
-    .status-badge {
-      display:inline-flex; align-items:center; gap:4px;
-      padding:0.2rem 0.65rem; border-radius:20px;
-      font-size:0.75rem; font-weight:700;
-    }
-    .sb-green  { background:#d3f9d8; color:#2b8a3e; }
-    .sb-orange { background:#fff4e6; color:#e8590c; }
-    .sb-blue   { background:#dbe4ff; color:#364fc7; }
-    .sb-teal   { background:#e6fcf5; color:#099268; }
-    .sb-gray   { background:#f1f3f5; color:#868e96; }
-
-    /* Kurs Türü Seçici */
-    .type-selector { display:flex; gap:0.75rem; flex-wrap:wrap; }
-    .type-option {
-      display:flex; align-items:center; gap:0.5rem;
-      padding:0.6rem 1rem; border:2px solid var(--border);
-      border-radius:10px; cursor:pointer; font-weight:600;
-      font-size:0.9rem; color:var(--text-alt);
-      transition:all 0.15s;
-    }
-    .type-option:has(input:checked) {
-      border-color:var(--primary-500); background:var(--primary-50);
-      color:var(--primary-700);
-    }
-    .type-option input[type=radio] { display:none; }
-    .type-option i { font-size:1.1rem; }
-  </style>
+  
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -77,8 +24,7 @@
         <h1><i class="bi bi-pencil-fill"></i> Kurs Düzenle</h1>
         <p style="margin:0;" th:text="${course.title}">Kurs Adı</p>
       </div>
-      <a th:href="@{/egitimler/{id}(id=${course.id})}"
-         class="btn btn-secondary" target="_blank">
+      <a th:href="@{/egitimler/{id}(id=${course.id})}" class="btn btn-secondary" target="_blank">
         <i class="bi bi-box-arrow-up-right"></i> Kursu Görüntüle
       </a>
     </div>
@@ -90,9 +36,7 @@
 
     <!-- Mevcut durum özeti -->
     <div class="course-meta-bar">
-      <div class="cmb-item">
-        <i class="bi bi-hash"></i> ID: <strong th:text="${course.id}">0</strong>
-      </div>
+      <div class="cmb-item"><i class="bi bi-hash"></i> ID: <strong th:text="${course.id}">0</strong></div>
       <div class="cmb-item">
         <i class="bi bi-tag"></i>
         <span class="status-badge"
@@ -100,54 +44,35 @@
               th:classappend="${course.status.name() == 'PUBLISHED'}    ? ' sb-green'  :
                              (${course.status.name() == 'DRAFT'}        ? ' sb-orange' :
                              (${course.status.name() == 'IN_PROGRESS'}  ? ' sb-teal'   :
-                             (${course.status.name() == 'COMPLETED'}    ? ' sb-blue'   : ' sb-gray')))">
-          Durum
-        </span>
+                             (${course.status.name() == 'COMPLETED'}    ? ' sb-blue'   : ' sb-gray')))">Durum</span>
       </div>
       <div class="cmb-item" th:if="${course.courseType != null}">
-        <i class="bi bi-collection"></i>
-        <span th:text="${course.courseTypeDisplayName}">Tür</span>
+        <i class="bi bi-collection"></i><span th:text="${course.courseTypeDisplayName}">Tür</span>
       </div>
       <div class="cmb-item" th:if="${course.courseType != null and course.courseType.name() != 'ONLINE'}">
         <i class="bi bi-people-fill"></i>
-        <span th:text="${course.enrolledCount}">0</span> kayıtlı
-        / kontenjan <span th:text="${course.quota != null} ? ${course.quota} : '—'">0</span>
+        <span th:text="${course.enrolledCount}">0</span> kayıtlı / kontenjan <span th:text="${course.quota != null} ? ${course.quota} : '—'">0</span>
       </div>
-      <div class="cmb-item">
-        <i class="bi bi-grid"></i>
-        <span th:text="${course.categoryDisplayName}">Kategori</span>
-      </div>
+      <div class="cmb-item"><i class="bi bi-grid"></i><span th:text="${course.categoryDisplayName}">Kategori</span></div>
     </div>
 
     <form id="courseForm" th:action="@{/admin/kurslar/{id}(id=${course.id})}"
           th:object="${courseUpdateRequest}" method="post" enctype="multipart/form-data">
 
-      <!-- Genel Hata Mesajı -->
-      <div th:if="${errorMessage}"
-           style="display:flex;align-items:center;gap:0.65rem;padding:1rem 1.25rem;margin-bottom:1.25rem;
-                  background:#fff5f5;border:1px solid #fca5a5;border-radius:10px;color:#991b1b;font-weight:600;font-size:0.9rem;">
-        <i class="bi bi-exclamation-triangle-fill" style="font-size:1.1rem;flex-shrink:0;"></i>
-        <span th:text="${errorMessage}"></span>
-      </div>
+      <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
 
-      <!-- Kurs Türü -->
-      <div class="form-section">
-        <div class="form-section-title"><i class="bi bi-ui-checks-grid"></i> Kurs Türü</div>
-        <div class="type-selector">
-          <th:block th:each="t : ${courseTypes}">
-            <label class="type-option">
-              <input type="radio" name="courseType" th:value="${t.name()}"
-                     th:checked="${courseUpdateRequest.courseType == t}">
-              <i th:class="${t.name() == 'ONLINE'} ? 'bi bi-play-circle' : (${t.name() == 'FACE_TO_FACE'} ? 'bi bi-people-fill' : 'bi bi-camera-video-fill')"></i>
-              <span th:text="${t.displayName}"></span>
-            </label>
-          </th:block>
-        </div>
-      </div>
+      <!-- Hidden JSON inputs -->
+      <input type="hidden" name="targetAudience"   id="targetAudienceJson">
+      <input type="hidden" name="contentTopics"    id="contentTopicsJson">
+      <input type="hidden" name="learningOutcomes" id="learningOutcomesJson">
+      <input type="hidden" name="prerequisites"    id="prerequisitesJson">
+      <input type="hidden" name="assessmentItems"  id="assessmentItemsJson">
 
-      <!-- Temel Bilgiler -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- 1. EĞİTİM GENEL BİLGİLERİ                                  -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
       <div class="form-section">
-        <div class="form-section-title"><i class="bi bi-card-text"></i> Temel Bilgiler</div>
+        <div class="form-section-title"><i class="bi bi-card-text"></i> 1. Eğitim Genel Bilgileri</div>
 
         <div class="form-group">
           <label>Kurs Fotoğrafı <span style="color:var(--text-muted);font-weight:400;">(maks. 5 MB)</span></label>
@@ -160,12 +85,10 @@
         </div>
 
         <div class="form-group">
-          <label>Kurs Başlığı</label>
+          <label>Eğitim Adı</label>
           <input type="text" th:field="*{title}" class="form-control"
                  th:placeholder="${course.title}" maxlength="150">
-          <div class="current-val">
-            <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.title}">—</strong>
-          </div>
+          <div class="current-val"><i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.title}">—</strong></div>
         </div>
 
         <div class="form-group">
@@ -173,13 +96,13 @@
           <textarea th:field="*{description}" id="desc-input-edit" class="form-control" rows="4"
                     th:placeholder="${course.description}" maxlength="5000"></textarea>
           <small id="desc-hint-edit" style="color:var(--text-muted);display:none;">
-            <i class="bi bi-info-circle"></i> Uzaktan örgün kurslar için opsiyonel.
+            <i class="bi bi-info-circle"></i> Hibrit kurslar için açıklama opsiyonel.
           </small>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label>Kategori</label>
+            <label>Eğitim Kategorisi</label>
             <select th:field="*{category}" class="form-control">
               <option value="">— Değiştirme —</option>
               <option th:each="cat : ${categories}"
@@ -216,52 +139,50 @@
 
         <div class="form-row">
           <div class="form-group">
+            <label>Minimum Süre (Saat)</label>
+            <input type="number" name="minHours" class="form-control" min="1" placeholder="1"
+                   th:value="${course.minHours}">
+            <div class="current-val" th:if="${course.minHours != null}">
+              <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.minHours} + ' saat'"></strong>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Maksimum Süre (Saat)</label>
+            <input type="number" name="maxHours" class="form-control" min="1" placeholder="40"
+                   th:value="${course.maxHours}">
+            <div class="current-val" th:if="${course.maxHours != null}">
+              <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.maxHours} + ' saat'"></strong>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Eğitim Türü</label>
+          <div class="type-selector">
+            <th:block th:each="t : ${courseTypes}">
+              <label class="type-option">
+                <input type="radio" name="courseType" th:value="${t.name()}"
+                       th:checked="${courseUpdateRequest.courseType == t}">
+                <i th:class="${t.name() == 'ONLINE'} ? 'bi bi-play-circle' : (${t.name() == 'FACE_TO_FACE'} ? 'bi bi-people-fill' : 'bi bi-camera-video-fill')"></i>
+                <span th:text="${t.displayName}"></span>
+              </label>
+            </th:block>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
             <label>Fiyat (₺)</label>
-            <input type="number" th:field="*{price}" class="form-control"
-                   step="0.01" min="0" th:placeholder="${course.price}">
+            <input type="text" th:field="*{price}" class="form-control"
+                   inputmode="decimal" th:placeholder="${course.price}" pattern="[0-9.,]*">
             <div class="current-val">
               <i class="bi bi-info-circle"></i> Mevcut:
               <strong th:text="${course.price == null} ? '—' : (${course.price.signum() == 0} ? 'Ücretsiz' : '₺' + ${course.price})">—</strong>
             </div>
           </div>
-          <div class="form-group">
-            <label>Süre (Saat)</label>
-            <input type="number" th:field="*{hours}" class="form-control"
-                   min="1" th:placeholder="${course.hours}">
-            <div class="current-val" th:if="${course.hours != null}">
-              <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.hours}">—</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tarih & Süre (Yüzyüze + Uzaktan Örgün) -->
-      <div class="form-section" data-show-for="FACE_TO_FACE,REMOTE_FORMAL" style="display:none;">
-        <div class="form-section-title"><i class="bi bi-calendar3"></i> Tarih &amp; Süre</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Başlangıç Tarihi</label>
-            <input type="date" th:field="*{startDate}" class="form-control">
-            <div class="current-val" th:if="${course.startDate != null}">
-              <i class="bi bi-info-circle"></i> Mevcut:
-              <strong th:text="${#temporals.format(course.startDate,'dd.MM.yyyy')}">—</strong>
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Bitiş Tarihi</label>
-            <input type="date" th:field="*{endDate}" class="form-control">
-            <div class="current-val" th:if="${course.endDate != null}">
-              <i class="bi bi-info-circle"></i> Mevcut:
-              <strong th:text="${#temporals.format(course.endDate,'dd.MM.yyyy')}">—</strong>
-            </div>
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"></div>
-          <div class="form-group">
+          <div class="form-group" data-show-for="HYBRID,FACE_TO_FACE" style="display:none;">
             <label>Kontenjan</label>
-            <input type="number" th:field="*{quota}" class="form-control"
-                   min="1" th:placeholder="${course.quota}">
+            <input type="number" th:field="*{quota}" class="form-control" min="1" th:placeholder="${course.quota}">
             <div class="current-val" th:if="${course.quota != null}">
               <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.quota}">—</strong>
             </div>
@@ -269,18 +190,36 @@
         </div>
       </div>
 
-      <!-- Ders Programı (Yüzyüze + Uzaktan Örgün) -->
-      <div class="form-section" data-show-for="FACE_TO_FACE,REMOTE_FORMAL" style="display:none;">
-        <div class="form-section-title"><i class="bi bi-clock"></i> Ders Programı</div>
+      <!-- Tarih & Süre (Hibrit + Yüzyüze) -->
+      <div class="form-section" data-show-for="HYBRID,FACE_TO_FACE" style="display:none;">
+        <div class="form-section-title"><i class="bi bi-calendar3"></i> Tarih &amp; Süre</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Başlangıç Tarihi</label>
+            <input type="date" th:field="*{startDate}" class="form-control">
+            <div class="current-val" th:if="${course.startDate != null}">
+              <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${#temporals.format(course.startDate,'dd.MM.yyyy')}">—</strong>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Bitiş Tarihi</label>
+            <input type="date" th:field="*{endDate}" class="form-control">
+            <div class="current-val" th:if="${course.endDate != null}">
+              <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${#temporals.format(course.endDate,'dd.MM.yyyy')}">—</strong>
+            </div>
+          </div>
+        </div>
+      </div>
 
+      <!-- Ders Programı (Hibrit + Yüzyüze) -->
+      <div class="form-section" data-show-for="HYBRID,FACE_TO_FACE" style="display:none;">
+        <div class="form-section-title"><i class="bi bi-clock"></i> Ders Programı</div>
         <div class="form-group">
           <label>Ders Günleri</label>
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:0.75rem;">
             <th:block th:each="day : ${T(java.lang.String).valueOf('MONDAY,TUESDAY,WEDNESDAY,THURSDAY,FRIDAY,SATURDAY,SUNDAY').split(',')}">
-              <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; padding:0.5rem; border:1px solid var(--border); border-radius:8px; transition:all 0.15s; background:var(--bg-alt);"
-                     class="day-label">
-                <input type="checkbox" name="scheduleDaysArray"
-                       th:value="${day}"
+              <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; padding:0.5rem; border:1px solid var(--border); border-radius:8px; transition:all 0.15s; background:var(--bg-alt);" class="day-label">
+                <input type="checkbox" name="scheduleDaysArray" th:value="${day}"
                        th:checked="${course.scheduleDays != null and course.scheduleDays.contains(day)}"
                        style="cursor:pointer;">
                 <span th:text="${day == 'MONDAY' ? 'Pazartesi' :
@@ -293,23 +232,7 @@
               </label>
             </th:block>
           </div>
-          <style>
-            .day-label {
-              border-color: var(--gray-200) !important;
-            }
-            .day-label:hover {
-              background: var(--primary-50) !important;
-              border-color: var(--primary-300) !important;
-            }
-            .day-label input:checked + span {
-              font-weight: 700;
-            }
-            .day-label input:checked {
-              accent-color: var(--primary-600);
-            }
-          </style>
         </div>
-
         <div class="form-row">
           <div class="form-group">
             <label>Ders Başlangıç Saati</label>
@@ -326,136 +249,13 @@
             </div>
           </div>
         </div>
-
-        <!-- Hidden field for scheduleDays -->
+        <div class="form-group">
+          <label>Ders Programı Açıklaması</label>
+          <textarea th:field="*{courseSchedule}" class="form-control" rows="2" maxlength="300"
+                    placeholder="Örn: Her Salı ve Perşembe 14:00-17:00"></textarea>
+        </div>
         <input type="hidden" name="scheduleDays" id="scheduleDays" th:value="${course.scheduleDays}">
       </div>
-
-      <!-- Müfredat Modülleri — Tüm Kurs Tipleri -->
-      <div class="form-section" id="field-manual-curriculum">
-        <div class="form-section-title"><i class="bi bi-list-check"></i> Kurs Müfredatı</div>
-        <p style="font-size:0.82rem;color:var(--text-muted);margin:-0.5rem 0 1.25rem;">
-          <i class="bi bi-info-circle"></i> Her modül bir bölümü temsil eder. Modül başlığı + açıklama + konular ekleyin.
-        </p>
-
-        <!-- Hidden field — JSON olarak gönderilir -->
-        <input type="hidden" name="manualCurriculum" id="manualCurriculumJson">
-
-        <div id="curriculum-builder"></div>
-
-        <button type="button" id="add-module-btn"
-                style="margin-top:0.75rem;display:inline-flex;align-items:center;gap:0.5rem;padding:0.55rem 1.1rem;border:1.5px dashed var(--primary-400);border-radius:8px;background:var(--primary-50);color:var(--primary-700);font-weight:600;font-size:0.88rem;cursor:pointer;transition:all 0.15s;"
-                onmouseover="this.style.background='var(--primary-100)'" onmouseout="this.style.background='var(--primary-50)'">
-          <i class="bi bi-plus-circle"></i> Modül Ekle
-        </button>
-      </div>
-
-      <style>
-        .cm-module { border:1px solid var(--border);border-radius:10px;background:var(--bg-alt);margin-bottom:1rem;overflow:hidden; }
-        .cm-module-head { display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1rem;background:var(--bg);border-bottom:1px solid var(--border); }
-        .cm-module-num { display:flex;align-items:center;justify-content:center;min-width:32px;height:32px;border-radius:50%;background:var(--primary-600);color:#fff;font-size:0.75rem;font-weight:700;flex-shrink:0; }
-        .cm-module-head input { flex:1;border:none;background:transparent;font-size:0.95rem;font-weight:600;color:var(--text);outline:none;padding:0; }
-        .cm-module-head input::placeholder { color:var(--text-muted);font-weight:400; }
-        .cm-module-body { padding:1rem; }
-        .cm-desc { width:100%;border:1px solid var(--border);border-radius:7px;padding:0.6rem 0.85rem;font-size:0.87rem;background:var(--bg);color:var(--text);resize:vertical;font-family:inherit;transition:border-color 0.15s;margin-bottom:0.85rem;box-sizing:border-box; }
-        .cm-desc:focus { outline:none;border-color:var(--primary-400); }
-        .cm-topics { display:flex;flex-direction:column;gap:0.5rem; }
-        .cm-topic-row { display:flex;gap:0.4rem;align-items:center; }
-        .cm-topic-input { flex:1;border:1px solid var(--border);border-radius:7px;padding:0.45rem 0.75rem;font-size:0.85rem;background:var(--bg);color:var(--text);outline:none;transition:border-color 0.15s; }
-        .cm-topic-input:focus { border-color:var(--primary-400); }
-        .cm-topic-remove { background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1rem;padding:0.25rem;transition:color 0.15s; }
-        .cm-topic-remove:hover { color:#dc2626; }
-        .cm-add-topic { font-size:0.8rem;color:var(--primary-600);font-weight:600;background:none;border:none;cursor:pointer;padding:0.35rem 0;display:inline-flex;align-items:center;gap:0.3rem;margin-top:0.25rem; }
-        .cm-add-topic:hover { color:var(--primary-800); }
-        .cm-delete-module { background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.1rem;padding:0.25rem 0.5rem;border-radius:6px;transition:all 0.15s;margin-left:auto; }
-        .cm-delete-module:hover { background:#fee2e2;color:#dc2626; }
-      </style>
-
-      <script th:inline="javascript">
-        (function() {
-          const builder = document.getElementById('curriculum-builder');
-          const jsonField = document.getElementById('manualCurriculumJson');
-
-          function escHtml(str) {
-            return String(str||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-          }
-
-          function addTopic(topicsDiv, val) {
-            const row = document.createElement('div');
-            row.className = 'cm-topic-row';
-            row.innerHTML = '<input class="cm-topic-input" type="text" placeholder="Konu başlığı...">' +
-                            '<button type="button" class="cm-topic-remove" title="Sil"><i class="bi bi-x-lg"></i></button>';
-            if (val) row.querySelector('.cm-topic-input').value = val;
-            row.querySelector('.cm-topic-remove').onclick = function() { row.remove(); };
-            topicsDiv.appendChild(row);
-            return row.querySelector('.cm-topic-input');
-          }
-
-          function renumberModules() {
-            builder.querySelectorAll('.cm-module-num').forEach(function(n, i) {
-              n.textContent = String(i + 1).padStart(2, '0');
-            });
-          }
-
-          function addModule(data) {
-            data = data || {};
-            const idx = builder.querySelectorAll('.cm-module').length + 1;
-            const card = document.createElement('div');
-            card.className = 'cm-module';
-            const safeTitle = escHtml(data.title || '');
-            const safeDesc = escHtml(data.description || '');
-            card.innerHTML =
-              '<div class="cm-module-head">' +
-                '<div class="cm-module-num">' + String(idx).padStart(2,'0') + '</div>' +
-                '<input class="cm-title-input" type="text" placeholder="Modül başlığı..." value="' + safeTitle + '">' +
-                '<button type="button" class="cm-delete-module" title="Modülü Sil"><i class="bi bi-trash3"></i></button>' +
-              '</div>' +
-              '<div class="cm-module-body">' +
-                '<textarea class="cm-desc" rows="2" placeholder="Modül açıklaması (isteğe bağlı)...">' + safeDesc + '</textarea>' +
-                '<div class="cm-topics"></div>' +
-                '<button type="button" class="cm-add-topic"><i class="bi bi-plus-sm"></i> Konu Ekle</button>' +
-              '</div>';
-            card.querySelector('.cm-delete-module').onclick = function() { card.remove(); renumberModules(); };
-            const topicsDiv = card.querySelector('.cm-topics');
-            card.querySelector('.cm-add-topic').onclick = function() { addTopic(topicsDiv, '').focus(); };
-            var topics = data.topics || [];
-            topics.forEach(function(t) { addTopic(topicsDiv, t); });
-            if (!topics.length) addTopic(topicsDiv, '');
-            builder.appendChild(card);
-          }
-
-          document.getElementById('add-module-btn').onclick = function() { addModule({}); };
-
-          // Form gönderiminde JSON oluştur
-          document.getElementById('courseForm').addEventListener('submit', function() {
-            var modules = [];
-            builder.querySelectorAll('.cm-module').forEach(function(card) {
-              var title = card.querySelector('.cm-title-input').value.trim();
-              var description = card.querySelector('.cm-desc').value.trim();
-              var topics = Array.from(card.querySelectorAll('.cm-topic-input'))
-                .map(function(i) { return i.value.trim(); }).filter(function(v) { return v; });
-              if (title) modules.push({ title: title, description: description, topics: topics });
-            });
-            jsonField.value = JSON.stringify(modules);
-          }, true);
-
-          // Mevcut veriyi yükle
-          var existing = /*[[${course.manualCurriculum}]]*/ null;
-          if (existing && typeof existing === 'string' && existing.trim().startsWith('[')) {
-            try {
-              var parsed = JSON.parse(existing);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                parsed.forEach(function(m) { addModule(m); });
-              } else {
-                addModule({});
-              }
-            } catch(e) { addModule({}); }
-          } else {
-            addModule({});
-          }
-        })();
-      </script>
-
 
       <!-- Konum (Sadece Yüzyüze) -->
       <div class="form-section" data-show-for="FACE_TO_FACE" style="display:none;">
@@ -470,135 +270,201 @@
         </div>
       </div>
 
-      <!-- Online Eğitime Özgü Alanlar -->
-      <div class="form-section" data-show-for="ONLINE">
-        <div class="form-section-title"><i class="bi bi-play-circle"></i> Online Eğitim Ayarları</div>
-        <div class="form-row">
-          <div class="form-group">
-            <label>Modül Sayısı *</label>
-            <input type="number" th:field="*{module}" class="form-control"
-                   min="1" th:placeholder="${course.module}">
-            <div class="current-val" th:if="${course.module != null}">
-              <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.module}">—</strong>
-              &nbsp;(Bu kursa en fazla bu kadar video eklenebilir)
-            </div>
-          </div>
-          <div class="form-group">
-            <label>Sertifika Son Talep Tarihi</label>
-            <input type="date" th:field="*{certificateDeadline}" class="form-control">
-            <div class="current-val" th:if="${course.certificateDeadline != null}">
-              <i class="bi bi-info-circle"></i> Mevcut:
-              <strong th:text="${#temporals.format(course.certificateDeadline,'dd.MM.yyyy')}">—</strong>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Uzaktan Örgün: Modül Sayısı -->
-      <div class="form-section" data-show-for="REMOTE_FORMAL" style="display:none;">
-        <div class="form-section-title"><i class="bi bi-collection-play"></i> Video İçerik</div>
-        <div class="form-group">
-          <label>Modül Sayısı</label>
-          <input type="number" th:field="*{module}" class="form-control"
-                 min="1" th:placeholder="${course.module}">
-          <small style="color:var(--text-muted);">Ek kayıt videoları yüklenecekse doldurun (opsiyonel).</small>
-        </div>
-      </div>
-
       <!-- Eğitmen -->
       <div class="form-section">
-        <div class="form-section-title"><i class="bi bi-person-workspace"></i> Eğitmenler</div>
-
+        <div class="form-section-title"><i class="bi bi-person-workspace"></i> Eğitmen</div>
         <div class="form-group">
-          <label>Eğitmenler <span style="color:var(--text-muted);font-weight:400;">(birden fazla seçilebilir)</span></label>
-          <div th:if="${course.instructorName != null}" class="current-val" style="margin-bottom:0.5rem;">
-            <i class="bi bi-info-circle"></i> Mevcut: <strong th:text="${course.instructorName}">—</strong>
-          </div>
-          <div class="ims-wrap" id="imsWrap">
-            <div class="ims-trigger" id="imsTrigger" tabindex="0" role="button">
-              <div class="ims-tags" id="imsTags"><span class="ims-ph">Eğitmen seçin...</span></div>
-              <i class="bi bi-chevron-down ims-arrow" id="imsArrow"></i>
-            </div>
-            <div class="ims-drop" id="imsDrop">
-              <div class="ims-search-wrap">
-                <i class="bi bi-search"></i>
-                <input type="text" class="ims-search-input" id="imsSearch" placeholder="Eğitmen ara..." autocomplete="off">
-              </div>
-              <div class="ims-list" id="imsList">
-                <th:block th:each="ins : ${instructors}">
-                  <div class="ims-item"
-                       th:data-id="${ins.id}"
-                       th:data-name="${ins.name}"
-                       th:classappend="${courseUpdateRequest.instructorIds != null and courseUpdateRequest.instructorIds.contains(ins.id)} ? ' ims-selected'">
-                    <input type="checkbox" name="instructorIds" th:value="${ins.id}" th:id="'chk-' + ${ins.id}"
-                           th:checked="${courseUpdateRequest.instructorIds != null and courseUpdateRequest.instructorIds.contains(ins.id)}">
-                    <label th:for="'chk-' + ${ins.id}" th:text="${ins.name}"></label>
-                  </div>
-                </th:block>
-              </div>
-            </div>
-          </div>
-          <small style="color:var(--text-muted);margin-top:0.4rem;display:block;">
-            <i class="bi bi-info-circle"></i> Seçilen eğitmenler kurs sayfasında görüntülenecektir. İlk seçilen ana eğitmen olarak atanır.
-          </small>
-        </div>
-
-        <div class="form-group" style="margin-top:0.75rem;">
-          <label>Sistem Kullanıcısı (Öğretmen) <span style="color:var(--text-muted);font-weight:400;">(opsiyonel)</span></label>
-          <select th:field="*{instructorId}" class="form-control">
+          <label for="instructorId">Eğitmen</label>
+          <select th:field="*{instructorId}" id="instructorId" class="form-control">
             <option value="">— Değiştirme —</option>
             <option th:each="t : ${teachers}"
                     th:value="${t.id}"
                     th:text="${t.firstName + ' ' + t.lastName + ' (' + t.email + ')'}"
                     th:selected="${course.instructorId != null and course.instructorId == t.id}"></option>
           </select>
+          <small style="color:var(--text-muted);margin-top:0.3rem;display:block;">
+            Seçilen eğitmen kursa atanır ve kurs sayfasında görüntülenir.
+          </small>
         </div>
       </div>
 
-      <style>
-        .ims-wrap { position:relative; }
-        .ims-trigger {
-          min-height:42px; padding:0.45rem 2.5rem 0.45rem 0.75rem;
-          border:1px solid var(--border); border-radius:8px;
-          background:var(--bg); cursor:pointer;
-          display:flex; align-items:center; flex-wrap:wrap; gap:0.4rem;
-          position:relative; transition:border-color 0.15s; user-select:none;
-        }
-        .ims-trigger:focus, .ims-wrap.open .ims-trigger { border-color:var(--primary-400); outline:none; }
-        .ims-arrow { position:absolute; right:0.75rem; top:50%; transform:translateY(-50%); color:var(--text-muted); transition:transform 0.2s; pointer-events:none; }
-        .ims-wrap.open .ims-arrow { transform:translateY(-50%) rotate(180deg); }
-        .ims-ph { color:var(--text-muted); font-size:0.9rem; }
-        .ims-tag {
-          display:inline-flex; align-items:center; gap:0.3rem;
-          background:var(--primary-100); color:var(--primary-700);
-          padding:0.2rem 0.55rem; border-radius:20px; font-size:0.82rem; font-weight:600;
-        }
-        .ims-tag-remove { background:none; border:none; cursor:pointer; color:var(--primary-500); padding:0 0 0 0.15rem; font-size:0.9rem; line-height:1; display:flex; align-items:center; }
-        .ims-tag-remove:hover { color:var(--primary-800); }
-        .ims-drop {
-          position:absolute; top:calc(100% + 4px); left:0; right:0; z-index:200;
-          background:var(--bg); border:1px solid var(--border); border-radius:10px;
-          box-shadow:0 4px 24px rgba(0,0,0,0.08); display:none; overflow:hidden;
-        }
-        .ims-wrap.open .ims-drop { display:block; }
-        .ims-search-wrap {
-          display:flex; align-items:center; gap:0.5rem;
-          padding:0.6rem 0.85rem; border-bottom:1px solid var(--gray-100);
-        }
-        .ims-search-wrap i { color:var(--text-muted); flex-shrink:0; }
-        .ims-search-input { border:none; outline:none; flex:1; font-size:0.9rem; background:transparent; color:var(--text); }
-        .ims-list { max-height:240px; overflow-y:auto; }
-        .ims-item {
-          display:flex; align-items:center; gap:0.65rem;
-          padding:0.6rem 0.85rem; cursor:pointer; transition:background 0.12s;
-        }
-        .ims-item:hover { background:var(--primary-50); }
-        .ims-item.ims-selected { background:var(--primary-50); }
-        .ims-item input[type=checkbox] { accent-color:var(--primary-600); width:16px; height:16px; cursor:pointer; flex-shrink:0; pointer-events:none; }
-        .ims-item label { font-size:0.9rem; color:var(--text); cursor:pointer; margin:0; flex:1; }
-        .ims-item.ims-selected label { font-weight:600; color:var(--primary-700); }
-        .ims-empty { padding:1.25rem; text-align:center; color:var(--text-muted); font-size:0.88rem; }
-      </style>
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- 2. EĞİTİMİN AMACI                                          -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-bullseye"></i> 2. Eğitimin Amacı</div>
+        <div class="form-group">
+          <textarea name="aim" class="form-control" rows="5"
+                    placeholder="Bu eğitimin genel amacı..."
+                    th:text="${course.aim}"></textarea>
+          <div class="current-val" th:if="${course.aim != null}">
+            <i class="bi bi-check2"></i> <strong>Mevcut değer var</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- 3. HEDEF KİTLE                                             -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-people-fill"></i> 3. Hedef Kitle</div>
+        <div id="targetAudience-builder" class="uzem-list-builder"
+             data-placeholder="Hedef kitle grubu..."
+             th:attr="data-existing=${course.targetAudience}"></div>
+        <button type="button" class="uzem-add-btn" data-uzem-field="targetAudience" data-uzem-placeholder="Hedef kitle grubu...">
+          <i class="bi bi-plus-circle"></i> Hedef Kitle Ekle
+        </button>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- 4. EĞİTİM İÇERİĞİ / KONU BAŞLIKLARI                       -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-list-ol"></i> 4. Eğitim İçeriği / Konu Başlıkları</div>
+        <div id="contentTopics-builder" class="uzem-list-builder"
+             data-placeholder="Konu başlığı..."
+             th:attr="data-existing=${course.contentTopics}"></div>
+        <button type="button" class="uzem-add-btn" data-uzem-field="contentTopics" data-uzem-placeholder="Konu başlığı...">
+          <i class="bi bi-plus-circle"></i> Konu Ekle
+        </button>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- 5-6. MODÜL LİSTESİ VE DETAY BİLGİLERİ                     -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="form-section" id="field-manual-curriculum">
+        <div class="form-section-title"><i class="bi bi-list-check"></i> 5-6. Modül Listesi ve Detay Bilgileri</div>
+        <p style="font-size:0.82rem;color:var(--text-muted);margin:-0.5rem 0 1.25rem;">
+          <i class="bi bi-info-circle"></i> Her modül için başlık, açıklama, konu başlıkları, etkinlikler, kazanımlar ve süre girin.
+        </p>
+        <input type="hidden" name="manualCurriculum" id="manualCurriculumJson">
+        <div id="curriculum-builder"></div>
+        <button type="button" id="add-module-btn"
+                style="margin-top:0.75rem;display:inline-flex;align-items:center;gap:0.5rem;padding:0.55rem 1.1rem;border:1.5px dashed var(--primary-400);border-radius:8px;background:var(--primary-50);color:var(--primary-700);font-weight:600;font-size:0.88rem;cursor:pointer;transition:all 0.15s;"
+                class="add-module-btn-hover">
+          <i class="bi bi-plus-circle"></i> Modül Ekle
+        </button>
+      </div><div id="existingCurriculumData" th:text="${course.manualCurriculum}" hidden></div>
+
+
+      
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- 7. EĞİTİM KAZANIMLARI                                      -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-award"></i> 7. Eğitim Kazanımları</div>
+        <p style="font-size:0.82rem;color:var(--text-muted);margin:-0.5rem 0 1rem;">
+          <i class="bi bi-info-circle"></i> Bu programı başarıyla tamamlayan katılımcılar...
+        </p>
+        <div id="learningOutcomes-builder" class="uzem-list-builder"
+             data-placeholder="Kazanım..."
+             th:attr="data-existing=${course.learningOutcomes}"></div>
+        <button type="button" class="uzem-add-btn" data-uzem-field="learningOutcomes" data-uzem-placeholder="Kazanım...">
+          <i class="bi bi-plus-circle"></i> Kazanım Ekle
+        </button>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- 8. ÖN KOŞULLAR                                             -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-check2-square"></i> 8. Ön Koşullar</div>
+        <div id="prerequisites-builder" class="uzem-list-builder"
+             data-placeholder="Ön koşul..."
+             th:attr="data-existing=${course.prerequisites}"></div>
+        <button type="button" class="uzem-add-btn" data-uzem-field="prerequisites" data-uzem-placeholder="Ön koşul...">
+          <i class="bi bi-plus-circle"></i> Ön Koşul Ekle
+        </button>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- 9. EĞİTİM YÖNTEMİ VE KULLANILACAK MATERYALLER             -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-tools"></i> 9. Eğitim Yöntemi ve Kullanılacak Materyaller</div>
+        <div class="form-group">
+          <label>Eğitim Yöntemi</label>
+          <textarea name="trainingMethod" class="form-control" rows="3"
+                    placeholder="Örn: Anlatım / uygulama / vaka analizi / proje çalışması..."
+                    th:text="${course.trainingMethod}"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Kullanılacak Materyaller / Araçlar</label>
+          <textarea name="usedMaterials" class="form-control" rows="3"
+                    placeholder="Örn: Sunum, video, PDF, uygulama platformu, yazılım, donanım..."
+                    th:text="${course.usedMaterials}"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Kullanılacak Platform / Araç</label>
+          <input type="text" name="usedPlatform" class="form-control" maxlength="300"
+                 placeholder="Örn: LMS, video konferans, yazılım aracı..."
+                 th:value="${course.usedPlatform}">
+        </div>
+        <div class="form-group">
+          <label>Eğitmen Notları</label>
+          <textarea name="instructorNotes" class="form-control" rows="3"
+                    placeholder="Varsa özel açıklamalar..."
+                    th:text="${course.instructorNotes}"></textarea>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- 10. ÖLÇME VE DEĞERLENDİRME                                 -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-graph-up"></i> 10. Ölçme ve Değerlendirme</div>
+        <p style="font-size:0.82rem;color:var(--text-muted);margin:-0.5rem 0 1rem;">
+          <i class="bi bi-info-circle"></i> Her satır bir değerlendirme yöntemini temsil eder. Ağırlıklar toplamı 100 olmalıdır.
+        </p>
+        <div class="assess-header">
+          <span>Değerlendirme Unsuru</span><span>Açıklama</span><span>Ağırlık (%)</span><span></span>
+        </div>
+        <div id="assessmentItems-builder"
+             th:attr="data-existing=${course.assessmentItems}"></div>
+        <button type="button" class="uzem-add-btn" data-action="addAssessmentItem">
+          <i class="bi bi-plus-circle"></i> Değerlendirme Ekle
+        </button>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <!-- 11. ONAY BİLGİLERİ                                         -->
+      <!-- ═══════════════════════════════════════════════════════════ -->
+      <div class="form-section">
+        <div class="form-section-title"><i class="bi bi-file-earmark-check"></i> 11. Onay Bilgileri</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Versiyon</label>
+            <input type="text" name="courseVersion" class="form-control" maxlength="20" placeholder="V1"
+                   th:value="${course.courseVersion}">
+          </div>
+          <div class="form-group">
+            <label>Hazırlama Tarihi</label>
+            <input type="date" name="preparedDate" class="form-control"
+                   th:value="${course.preparedDate}">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Hazırlayan</label>
+            <input type="text" name="preparedBy" class="form-control" maxlength="150" placeholder="Ad Soyad / Birim"
+                   th:value="${course.preparedBy}">
+          </div>
+          <div class="form-group">
+            <label>Kontrol Eden</label>
+            <input type="text" name="reviewedBy" class="form-control" maxlength="150" placeholder="Ad Soyad"
+                   th:value="${course.reviewedBy}">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Onaylayan</label>
+            <input type="text" name="approvedBy" class="form-control" maxlength="150" placeholder="Ad Soyad"
+                   th:value="${course.approvedBy}">
+          </div>
+          <div class="form-group"></div>
+        </div>
+      </div>
 
       <!-- Butonlar -->
       <div style="display:flex;gap:1rem;align-items:center;flex-wrap:wrap;">
@@ -607,9 +473,7 @@
         </button>
         <a th:href="@{/admin/kurslar}" class="btn btn-secondary btn-lg">İptal</a>
 
-        <!-- Kursu iptal et -->
-        <form th:action="@{/admin/kurslar/{id}/sil(id=${course.id})}" method="post"
-              style="margin-left:auto;">
+        <form th:action="@{/admin/kurslar/{id}/sil(id=${course.id})}" method="post" style="margin-left:auto;">
           <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
           <button type="submit" class="btn confirm-delete-btn"
                   style="background:#fff5f5;color:#c92a2a;border:1px solid #ffc9c9;"

@@ -6,6 +6,7 @@ import com.guzem.uzaktan.model.course.Course;
 import com.guzem.uzaktan.model.common.User;
 import com.guzem.uzaktan.model.instructor.ZoomMeeting;
 import com.guzem.uzaktan.service.impl.common.EmailServiceImpl;
+import com.guzem.uzaktan.service.common.EmailTemplateBuilder;
 import jakarta.mail.BodyPart;
 import jakarta.mail.Part;
 import jakarta.mail.Session;
@@ -41,7 +42,7 @@ class EmailServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        emailService = new EmailServiceImpl(mailSender);
+        emailService = new EmailServiceImpl(mailSender, new EmailTemplateBuilder());
         ReflectionTestUtils.setField(emailService, "fromAddress", "guzem@gazi.edu.tr");
         ReflectionTestUtils.setField(emailService, "mailEnabled", true);
 

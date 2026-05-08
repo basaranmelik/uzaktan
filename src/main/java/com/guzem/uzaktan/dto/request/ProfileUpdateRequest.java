@@ -48,4 +48,8 @@ public class ProfileUpdateRequest {
 
     @Size(max = 500, message = "Adres en fazla 500 karakter olabilir.")
     private String fullAddress;
+
+    @Email(message = "Geçerli bir Zoom e-posta adresi giriniz.")
+    @Size(max = 254)
+    private String zoomEmail;
 }

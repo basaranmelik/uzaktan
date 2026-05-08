@@ -21,7 +21,7 @@
     <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
       <div>
         <h1><i class="bi bi-people-fill"></i> Kullanıcı Yönetimi</h1>
-        <p style="margin:0;color:var(--text-muted);">
+        <p style="margin:0;">
           Toplam <strong th:text="${#lists.size(users)}">0</strong> kullanıcı
         </p>
       </div>
@@ -32,13 +32,7 @@
 <section class="section">
   <div class="container">
 
-
-
-    <!-- Arama -->
-    <div class="admin-search-bar">
-      <input type="text" id="user-filter" placeholder="Ad, kullanıcı adı veya e-posta ara..." autocomplete="off">
-      <span style="font-size:0.82rem;color:var(--text-muted);" id="filter-count"></span>
-    </div>
+    <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
 
     <div th:if="${#lists.isEmpty(users)}"
          class="text-center" style="padding:4rem;color:var(--text-muted);">
@@ -99,7 +93,7 @@
                 
                 <!-- Detay Butonu -->
                 <button type="button" class="action-btn show-user-modal-btn" style="background:#e7f5ff;color:#1c7ed6;" title="Detay"
-                        th:data-name="${u.fullName}" th:data-email="${u.email}" th:data-phone="${u.phoneNumber}"
+                        th:data-name="${u.fullName}" th:data-email="${u.email}" th:data-zoomemail="${u.zoomEmail}" th:data-phone="${u.phoneNumber}"
                         th:data-birth="${u.birthDate}" th:data-city="${u.city}" th:data-district="${u.district}"
                         th:data-address="${u.fullAddress}" th:data-zip="${u.zipCode}">
                   <i class="bi bi-info-circle-fill"></i>
@@ -148,6 +142,10 @@
         <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05);">
             <strong style="color:var(--text-secondary); font-size:14px;">E-posta:</strong>
             <span id="modalEmail" style="color:var(--text-primary);"></span>
+        </div>
+        <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05);">
+            <strong style="color:var(--text-secondary); font-size:14px;">Zoom E-posta:</strong>
+            <span id="modalZoomEmail" style="color:var(--text-primary);" class="zoom-email-field"></span>
         </div>
         <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid rgba(0,0,0,0.05);">
             <strong style="color:var(--text-secondary); font-size:14px;">Telefon:</strong>

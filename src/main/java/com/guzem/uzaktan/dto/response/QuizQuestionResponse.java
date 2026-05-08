@@ -15,4 +15,6 @@ public class QuizQuestionResponse {
     private String optionC;
     private String optionD;
     private String optionE;
+    private String imagePath;
+    private String videoPath;
 }

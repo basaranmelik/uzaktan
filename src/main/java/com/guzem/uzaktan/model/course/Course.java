@@ -2,8 +2,8 @@ package com.guzem.uzaktan.model.course;
 
 import com.guzem.uzaktan.model.admin.Assignment;
 import com.guzem.uzaktan.model.common.User;
-import com.guzem.uzaktan.model.instructor.Instructor;
 import com.guzem.uzaktan.model.instructor.ZoomMeeting;
+import com.guzem.uzaktan.model.user.CartItem;
 import java.util.ArrayList;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,7 +23,7 @@ import java.util.Set;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = {"videos", "enrollments", "assignments", "certificates", "reviews", "instructor", "instructors", "zoomMeetings", "questions"})
+@ToString(exclude = {"videos", "enrollments", "assignments", "certificates", "reviews", "instructor", "instructors", "zoomMeetings", "questions", "cartItems", "quizAttempts"})
 @Builder
 @Entity
 @Table(name = "course")
@@ -60,11 +60,8 @@ public class Course {
     @Column(name = "hours")
     private Integer hours;
 
-    @Column(name = "module")
-    private Integer module;
-
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
+    @JoinColumn(name = "category_id", nullable = false)
     private CourseCategory category;
 
     @Enumerated(EnumType.STRING)
@@ -94,8 +91,77 @@ public class Course {
     @Column(name = "manual_curriculum", columnDefinition = "NVARCHAR(MAX)")
     private String manualCurriculum;
 
-    @Column(name = "certificate_deadline")
-    private LocalDate certificateDeadline;
+    // ── UZEM Form Alanları ──────────────────────────────────────────────────
+
+    @Nationalized
+    @Column(name = "aim", columnDefinition = "NVARCHAR(MAX)")
+    private String aim;
+
+    @Column(name = "min_hours")
+    private Integer minHours;
+
+    @Column(name = "max_hours")
+    private Integer maxHours;
+
+    @Nationalized
+    @Column(name = "course_version", length = 20)
+    private String courseVersion;
+
+    @Nationalized
+    @Column(name = "prepared_by", length = 150)
+    private String preparedBy;
+
+    @Column(name = "prepared_date")
+    private LocalDate preparedDate;
+
+    @Nationalized
+    @Column(name = "reviewed_by", length = 150)
+    private String reviewedBy;
+
+    @Nationalized
+    @Column(name = "approved_by", length = 150)
+    private String approvedBy;
+
+    @Nationalized
+    @Column(name = "training_method", columnDefinition = "NVARCHAR(MAX)")
+    private String trainingMethod;
+
+    @Nationalized
+    @Column(name = "used_materials", columnDefinition = "NVARCHAR(MAX)")
+    private String usedMaterials;
+
+    @Nationalized
+    @Column(name = "used_platform", length = 300)
+    private String usedPlatform;
+
+    @Nationalized
+    @Column(name = "instructor_notes", columnDefinition = "NVARCHAR(MAX)")
+    private String instructorNotes;
+
+    /** JSON: List&lt;String&gt; — Hedef Kitle */
+    @Nationalized
+    @Column(name = "target_audience", columnDefinition = "NVARCHAR(MAX)")
+    private String targetAudience;
+
+    /** JSON: List&lt;String&gt; — Eğitim İçeriği / Konu Başlıkları */
+    @Nationalized
+    @Column(name = "content_topics", columnDefinition = "NVARCHAR(MAX)")
+    private String contentTopics;
+
+    /** JSON: List&lt;String&gt; — Eğitim Kazanımları */
+    @Nationalized
+    @Column(name = "learning_outcomes", columnDefinition = "NVARCHAR(MAX)")
+    private String learningOutcomes;
+
+    /** JSON: List&lt;String&gt; — Ön Koşullar */
+    @Nationalized
+    @Column(name = "prerequisites", columnDefinition = "NVARCHAR(MAX)")
+    private String prerequisites;
+
+    /** JSON: List&lt;AssessmentItem&gt; — Ölçme ve Değerlendirme */
+    @Nationalized
+    @Column(name = "assessment_items", columnDefinition = "NVARCHAR(MAX)")
+    private String assessmentItems;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default
@@ -129,10 +195,10 @@ public class Course {
     @JoinTable(
         name = "course_instructors",
         joinColumns = @JoinColumn(name = "course_id"),
-        inverseJoinColumns = @JoinColumn(name = "instructor_id")
+        inverseJoinColumns = @JoinColumn(name = "user_id")
     )
     @Builder.Default
-    private List<Instructor> instructors = new ArrayList<>();
+    private List<User> instructors = new ArrayList<>();
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -169,4 +235,12 @@ public class Course {
     @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private Set<Question> questions = new HashSet<>();
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<CartItem> cartItems = new HashSet<>();
+
+    @OneToMany(mappedBy = "course", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<QuizAttempt> quizAttempts = new HashSet<>();
 }

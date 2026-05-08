@@ -43,16 +43,17 @@ public class AdminCourseController {
     public String createCourse(@Valid @ModelAttribute("courseCreateRequest") CourseCreateRequest request,
                                BindingResult bindingResult,
                                @RequestParam(value = "image", required = false) MultipartFile image,
+                               @ModelAttribute("currentUserId") Long currentUserId,
                                Model model,
                                RedirectAttributes redirectAttributes) {
         if (bindingResult.hasErrors()) {
             return "admin/course-form";
         }
         try {
-            courseService.create(request, image);
+            courseService.create(request, image, currentUserId);
             redirectAttributes.addFlashAttribute("successMessage", "Kurs başarıyla oluşturuldu.");
             return "redirect:/admin/kurslar";
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             model.addAttribute("errorMessage", e.getMessage());
             return "admin/course-form";
         }
@@ -70,7 +71,6 @@ public class AdminCourseController {
         dto.setStartDate(course.getStartDate());
         dto.setEndDate(course.getEndDate());
         dto.setHours(course.getHours());
-        dto.setModule(course.getModule());
         dto.setCategory(course.getCategory());
         dto.setStatus(course.getStatus());
         dto.setLevel(course.getLevel());
@@ -83,7 +83,6 @@ public class AdminCourseController {
         dto.setScheduleStartTime(course.getScheduleStartTime());
         dto.setScheduleEndTime(course.getScheduleEndTime());
         dto.setManualCurriculum(course.getManualCurriculum());
-        dto.setCertificateDeadline(course.getCertificateDeadline());
         if (course.getInstructors() != null && !course.getInstructors().isEmpty()) {
             dto.setInstructorIds(course.getInstructors().stream()
                     .map(InstructorResponse::getId)
@@ -108,7 +107,7 @@ public class AdminCourseController {
             courseService.update(id, request, image);
             redirectAttributes.addFlashAttribute("successMessage", "Kurs güncellendi.");
             return "redirect:/admin/kurslar";
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             model.addAttribute("errorMessage", e.getMessage());
             model.addAttribute("course", courseService.findById(id));
             return "admin/course-edit";

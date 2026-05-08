@@ -6,6 +6,7 @@ target/
 .claude*
 .claude/*.local.json
 CLAUDE.md
+AGENTS.md
 HELP.md
 
 ### STS ###
@@ -43,6 +44,7 @@ uploads/
 logs/
 target/
 .dockerignore
+compose-dev.yaml
 
 ### OS ###
 .DS_Store
@@ -51,3 +53,14 @@ target/
 .Spotlight-V100
 .Trashes
 ehthumbs.db
+
+### Media (WhatsApp, screenshots, etc.) ###
+WhatsApp*/
+WhatsApp*.jpeg
+WhatsApp*.jpg
+
+### Graphify ###
+graphify-out/
+
+### Opencode ###
+.opencode/

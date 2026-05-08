@@ -46,8 +46,10 @@ public class QuizController {
         }
 
         var enrollment = enrollmentOpt.get();
+        int moduleCount = course.getCurriculumModules() != null ? course.getCurriculumModules().size() : 0;
         model.addAttribute("course", course);
         model.addAttribute("enrollment", enrollment);
+        model.addAttribute("totalQuizQuestions", moduleCount * 3);
         model.addAttribute("hasPassed", quizService.hasPassedQuiz(currentUserId, courseId));
         model.addAttribute("canTakeQuiz", quizService.canTakeQuiz(currentUserId, courseId));
         model.addAttribute("remainingAttempts", quizService.getRemainingAttempts(currentUserId, courseId));
@@ -57,11 +59,8 @@ public class QuizController {
 
         // Sertifika varsa göster
         if (quizService.hasPassedQuiz(currentUserId, courseId)) {
-            var certs = certificateService.findByUser(currentUserId);
-            certs.stream()
-                    .filter(c -> c.getCourseTitle().equals(course.getTitle()))
-                    .findFirst()
-                    .ifPresent(cert -> model.addAttribute("certificate", cert));
+            var cert = certificateService.findByUserAndCourse(currentUserId, courseId);
+            if (cert != null) model.addAttribute("certificate", cert);
         }
 
         return "quiz/info";
@@ -103,8 +102,12 @@ public class QuizController {
             Map<Long, String> answers = new HashMap<>();
             for (Map.Entry<String, String> entry : allParams.entrySet()) {
                 if (entry.getKey().startsWith("answer_")) {
-                    Long questionId = Long.parseLong(entry.getKey().substring(7));
-                    answers.put(questionId, entry.getValue());
+                    try {
+                        Long questionId = Long.parseLong(entry.getKey().substring(7));
+                        answers.put(questionId, entry.getValue());
+                    } catch (NumberFormatException ignored) {
+                        // Malformed parameter — skip silently
+                    }
                 }
             }
 

@@ -21,6 +21,8 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
 
     Page<Course> findByStatusAndCategory(CourseStatus status, CourseCategory category, Pageable pageable);
 
+    List<Course> findByCategory(CourseCategory category);
+
     @Query("SELECT c FROM Course c WHERE c.status = :status AND " +
            "(LOWER(c.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(c.description) LIKE LOWER(CONCAT('%', :keyword, '%')))")
@@ -47,6 +49,9 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     List<Course> findInProgressCoursesToComplete();
 
     List<Course> findByInstructorIdAndStatusNot(Long instructorId, CourseStatus status);
+
+    @Query("SELECT DISTINCT c FROM Course c JOIN FETCH c.category WHERE c.instructor.id = :instructorId AND c.status != :status")
+    List<Course> findByInstructorIdAndStatusNotWithCategory(@Param("instructorId") Long instructorId, @Param("status") CourseStatus status);
 
     @Query("SELECT c FROM Course c JOIN c.instructors i WHERE i.id = :instructorId AND c.status != :status")
     List<Course> findByInstructorEntityIdAndStatusNot(@Param("instructorId") Long instructorId, @Param("status") CourseStatus status);

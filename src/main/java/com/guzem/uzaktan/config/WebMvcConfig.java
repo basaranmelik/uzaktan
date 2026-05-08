@@ -21,5 +21,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
         // Sadece public olarak sunulmak istenen images klasörünü dışarı açıyoruz
         registry.addResourceHandler("/uploads/images/**")
                 .addResourceLocations("file:" + uploadPath.toString() + "/images/");
+
+        registry.addResourceHandler("/uploads/documents/**")
+                .addResourceLocations("file:" + uploadPath.toString() + "/documents/");
     }
 }
