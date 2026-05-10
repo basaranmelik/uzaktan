@@ -3,11 +3,14 @@ package com.guzem.uzaktan.exception;
 import com.guzem.uzaktan.exception.course.CourseFullException;
 import com.guzem.uzaktan.exception.course.DuplicateEnrollmentException;
 import com.guzem.uzaktan.exception.admin.DuplicateSubmissionException;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.io.IOException;
 import java.util.Map;
@@ -49,15 +53,34 @@ public class GlobalExceptionHandler {
         return "error/403";
     }
 
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    @ExceptionHandler(AccessDeniedException.class)
+    public String handleAccessDenied(AccessDeniedException ex, Model model) {
+        log.warn("Yetkisiz erişim denemesi: {}", ex.getMessage());
+        model.addAttribute("message", "Bu sayfaya erişim yetkiniz bulunmamaktadır.");
+        model.addAttribute("status", 403);
+        return "error/403";
+    }
+
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public String handleValidation(MethodArgumentNotValidException ex, Model model) {
+    public Object handleValidation(MethodArgumentNotValidException ex, Model model, HttpServletRequest request) {
         Map<String, String> fieldErrors = ex.getBindingResult().getFieldErrors().stream()
                 .collect(Collectors.toMap(
                         FieldError::getField,
                         fe -> fe.getDefaultMessage() != null ? fe.getDefaultMessage() : "Geçersiz değer",
                         (existing, replacement) -> existing
                 ));
+
+        boolean isAjax = "XMLHttpRequest".equals(request.getHeader("X-Requested-With"));
+        if (isAjax) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "message", "Doğrulama hatası",
+                    "fieldErrors", fieldErrors
+            ));
+        }
+
         model.addAttribute("fieldErrors", fieldErrors);
         model.addAttribute("status", 400);
         return "error/400";
@@ -98,6 +121,15 @@ public class GlobalExceptionHandler {
         return "error/400";
     }
 
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler(NoResourceFoundException.class)
+    public String handleNoResource(NoResourceFoundException ex, Model model) {
+        log.debug("Kaynak bulunamadı: {}", ex.getMessage());
+        model.addAttribute("message", "Aradığınız sayfa bulunamadı.");
+        model.addAttribute("status", 404);
+        return "error/404";
+    }
+
     @ExceptionHandler(AsyncRequestNotUsableException.class)
     public void handleBrokenPipe(AsyncRequestNotUsableException ex) {
         log.debug("İstemci bağlantısı koptu (Broken pipe): {}", ex.getMessage());
@@ -117,7 +149,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler(Exception.class)
     public String handleGeneral(Exception ex, Model model) {
-        log.warn("İşlenmeyen hata: {}", ex.getMessage());
+        log.warn("İşlenmeyen hata: {}", ex.getMessage(), ex);
         model.addAttribute("message", "Beklenmeyen bir hata oluştu. Lütfen tekrar deneyiniz.");
         model.addAttribute("status", 500);
         return "error/500";

@@ -10,6 +10,8 @@ import com.guzem.uzaktan.dto.response.UserResponse;
 import com.guzem.uzaktan.model.common.Role;
 import com.guzem.uzaktan.model.admin.SubmissionStatus;
 import com.guzem.uzaktan.service.admin.AssignmentService;
+import com.guzem.uzaktan.service.admin.SubmissionZipService;
+import com.guzem.uzaktan.service.common.FileStorageService;
 import com.guzem.uzaktan.service.course.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,6 +41,8 @@ public class TeacherAssignmentController {
 
     private final CourseService courseService;
     private final AssignmentService assignmentService;
+    private final SubmissionZipService submissionZipService;
+    private final FileStorageService fileStorageService;
 
     // ---- Ödev Yönetimi ----
 
@@ -163,9 +167,9 @@ public class TeacherAssignmentController {
     @GetMapping("/odevler/{id}/teslimler-indir")
     public ResponseEntity<byte[]> downloadSubmissionsZip(@PathVariable Long id,
                                                          @ModelAttribute("currentUserId") Long currentUserId) throws java.io.IOException {
-        byte[] zip = assignmentService.downloadSubmissionsZip(id, currentUserId);
+        byte[] zip = submissionZipService.downloadSubmissionsZip(id, currentUserId);
         var assignment = assignmentService.findById(id, currentUserId);
-        String filename = com.guzem.uzaktan.service.impl.common.LocalFileStorageService.sanitizeFileName(assignment.getTitle()) + "_teslimler.zip";
+        String filename = fileStorageService.sanitizeFileName(assignment.getTitle()) + "_teslimler.zip";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType("application/zip"));
         headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());

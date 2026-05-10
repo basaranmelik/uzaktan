@@ -2,6 +2,7 @@ package com.guzem.uzaktan.repository.course;
 
 import com.guzem.uzaktan.model.course.VideoWatch;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -13,6 +14,10 @@ public interface VideoWatchRepository extends JpaRepository<VideoWatch, Long> {
     Optional<VideoWatch> findByUserIdAndVideoId(Long userId, Long videoId);
 
     void deleteByVideoId(Long videoId);
+
+    @Modifying
+    @Query("DELETE FROM VideoWatch vw WHERE vw.video.id IN :videoIds")
+    void deleteByVideoIdIn(@Param("videoIds") java.util.Collection<Long> videoIds);
 
     @Query("SELECT vw.video.id FROM VideoWatch vw WHERE vw.user.id = :userId AND vw.video.course.id = :courseId AND vw.completed = true")
     Set<Long> findWatchedVideoIdsByUserAndCourse(@Param("userId") Long userId, @Param("courseId") Long courseId);

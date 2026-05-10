@@ -6,7 +6,6 @@ import com.guzem.uzaktan.dto.request.GradeSubmissionRequest;
 import com.guzem.uzaktan.dto.response.AssignmentResponse;
 import com.guzem.uzaktan.dto.response.SubmissionResponse;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -28,11 +27,11 @@ public interface AssignmentManagementService {
 
     SubmissionResponse gradeSubmission(Long submissionId, GradeSubmissionRequest request, Long requestingUserId);
 
-    byte[] downloadSubmissionsZip(Long assignmentId, Long requestingUserId) throws IOException;
-
     long countAllAssignments();
 
     long countPendingSubmissions();
 
     List<AssignmentResponse> findAllAssignmentsForAdmin();
+
+    long countByCourseIdIn(List<Long> courseIds);
 }

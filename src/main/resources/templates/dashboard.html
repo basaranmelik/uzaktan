@@ -81,12 +81,12 @@
               <div th:if="${enrollment.imagePath != null}" style="position:absolute; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.3);"></div>
               <i th:if="${enrollment.imagePath == null}" class="bi bi-laptop"></i>
               <!-- Modül Durumu Rozeti -->
-              <div class="status-badge" th:style="${enrollment.status.name() == 'ACTIVE'} ? 'color:#2b8a3e;' :
-                           (${enrollment.status.name() == 'COMPLETED'} ? 'color:#1864ab;' :
-                           (${enrollment.status.name() == 'PENDING_PAYMENT'} ? 'color:#e8590c;' :
-                           'color:#868e96;'))">
-                <i th:class="${enrollment.status.name() == 'COMPLETED'} ? 'bi bi-check-circle-fill' : 
-                            (${enrollment.status.name() == 'ACTIVE'} ? 'bi bi-play-circle-fill' : 'bi bi-hourglass-split')"></i>
+              <div class="status-badge" th:style="${enrollment.status.name() == 'ACTIVE' ? 'color:#2b8a3e;' :
+                           (enrollment.status.name() == 'COMPLETED' ? 'color:#1864ab;' :
+                           (enrollment.status.name() == 'PENDING_PAYMENT' ? 'color:#e8590c;' :
+                           'color:#868e96;'))}">
+                <i th:class="${enrollment.status.name() == 'COMPLETED' ? 'bi bi-check-circle-fill' :
+                            (enrollment.status.name() == 'ACTIVE' ? 'bi bi-play-circle-fill' : 'bi bi-hourglass-split')}"></i>
                 <span th:text="${enrollment.status.displayName}"></span>
               </div>
             </div>
@@ -294,8 +294,46 @@
           </div>
         </div>
 
-        
-        
+        <!-- Kurs Dokümanları -->
+        <div class="ux-widget" style="border-top:4px solid #6741d9;">
+          <div class="widget-title" style="color:#6741d9;">
+            <i class="bi bi-file-earmark-richtext-fill" style="color:#6741d9;"></i> Kurs Dokümanları
+          </div>
+
+          <div th:if="${courseDocuments == null or #lists.isEmpty(courseDocuments)}"
+               style="text-align:center;padding:1.75rem 1rem;color:var(--text-muted);">
+            <div style="font-size:2.2rem;margin-bottom:0.5rem;opacity:0.3;"><i class="bi bi-file-earmark-text"></i></div>
+            <div style="font-size:0.9rem;">Henüz kurs dokümanı bulunmuyor.</div>
+          </div>
+
+          <div th:if="${courseDocuments != null and !#lists.isEmpty(courseDocuments)}" class="task-list">
+            <a th:each="doc, i : ${courseDocuments}" th:if="${i.index < 5}"
+               th:href="@{/uploads/{path}(path=${doc.filePath})}" target="_blank"
+               style="text-decoration:none;color:inherit;display:block;">
+              <div class="task-item" style="border-left:3px solid #6741d9;">
+                <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.5px;font-weight:600;color:#6741d9;margin-bottom:0.3rem;">
+                  <i class="bi bi-file-earmark-richtext"></i> <span th:text="${doc.originalFileName}">dosya.pdf</span>
+                </div>
+                <div class="task-item-title" th:text="${doc.title}" style="font-size:0.9rem;">Doküman</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.5rem;">
+                  <div style="font-size:0.78rem;color:var(--text-muted);">
+                    <i class="bi bi-file-earmark"></i>
+                    <span th:text="${doc.fileSize != null ? #numbers.formatDecimal(doc.fileSize / 1024, 0, 'POINT', 0, 'COMMA') + ' KB' : ''}">Boyut</span>
+                  </div>
+                  <span style="font-size:0.72rem;background:#f3f0ff;color:#6741d9;padding:2px 10px;border-radius:20px;font-weight:700;">
+                    <i class="bi bi-download"></i> İndir
+                  </span>
+                </div>
+              </div>
+            </a>
+            <div th:if="${#lists.size(courseDocuments) > 5}" class="text-center" style="margin-top:0.5rem;">
+              <span style="font-size:0.8rem;font-weight:600;color:#6741d9;">
+                + <span th:text="${#lists.size(courseDocuments) - 5}">0</span> doküman daha
+              </span>
+            </div>
+          </div>
+        </div>
+
         <!-- Bekleyen Ödevler -->
         <div class="ux-widget border-top border-primary border-4" style="border-top-color: var(--primary-600) !important; border-top-style: solid; border-top-width: 4px;">
           <div class="widget-title"><i class="bi bi-pencil-square" style="color:var(--primary-600);"></i> Bekleyen Ödevler</div>

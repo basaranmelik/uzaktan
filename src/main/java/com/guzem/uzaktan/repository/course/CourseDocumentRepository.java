@@ -9,5 +9,5 @@ public interface CourseDocumentRepository extends JpaRepository<CourseDocument, 
 
     List<CourseDocument> findByCourseIdOrderByCreatedAtDesc(Long courseId);
 
-    void deleteByCourseId(Long courseId);
+    void deleteAllByCourseId(Long courseId);
 }

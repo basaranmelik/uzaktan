@@ -69,8 +69,7 @@ public class ZoomWebhookController {
         try {
             JsonNode root = objectMapper.readTree(rawBody);
             String event = root.path("event").asText("");
-            log.info("Zoom webhook received: event={}, bodyPreview={}",
-                    event, rawBody.length() > 300 ? rawBody.substring(0, 300) + "..." : rawBody);
+            log.info("Zoom webhook received: event={}", event);
 
             if ("recording.completed".equals(event)) {
                 String zoomMeetingId = root.path("payload").path("object").path("id").asText("");

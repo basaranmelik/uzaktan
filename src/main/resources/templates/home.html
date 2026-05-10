@@ -117,11 +117,13 @@
               <span th:if="${course.startDate != null and course.endDate == null}"
                     th:text="'Başlangıç: ' + ${#temporals.format(course.startDate, 'dd.MM.yyyy')}">Tarih</span>
             </div>
-            <div class="home-featured-price-row">
+            <div class="home-featured-price-row" style="flex-direction:column;align-items:flex-start;gap:0.1rem;">
               <span class="home-featured-price"
-                    th:text="${course.price == null or course.price.signum() == 0} ? 'Ücretsiz' : '₺' + ${#numbers.formatDecimal(course.price, 0, 'COMMA', 0, 'POINT')}">
+                    th:text="${course.price == null or course.price.signum() == 0} ? 'Ücretsiz' : |₺${#numbers.formatDecimal(course.price, 0, 'COMMA', 0, 'POINT')}|">
                 ₺0
               </span>
+              <small th:if="${course.price != null and course.price.signum() > 0}"
+                     style="font-size:0.6rem;color:rgba(255,255,255,0.5);">(KDV dahil)</small>
             </div>
           </div>
         </div>

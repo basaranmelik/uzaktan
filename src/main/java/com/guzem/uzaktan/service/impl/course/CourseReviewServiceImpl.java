@@ -13,10 +13,13 @@ import com.guzem.uzaktan.repository.course.CourseRepository;
 import com.guzem.uzaktan.repository.course.CourseReviewRepository;
 import com.guzem.uzaktan.repository.user.UserRepository;
 import com.guzem.uzaktan.service.course.CourseReviewService;
-import com.guzem.uzaktan.service.course.CourseService;
 import com.guzem.uzaktan.service.user.NotificationService;
+import com.guzem.uzaktan.event.ReviewApprovedEvent;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Lazy;
+import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +27,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class CourseReviewServiceImpl implements CourseReviewService {
 
@@ -31,25 +35,13 @@ public class CourseReviewServiceImpl implements CourseReviewService {
     private final CourseRepository courseRepository;
     private final UserRepository userRepository;
     private final CourseReviewMapper courseReviewMapper;
-    private final CourseService courseService;
+    private final ApplicationEventPublisher eventPublisher;
     private final NotificationService notificationService;
-
-    public CourseReviewServiceImpl(CourseReviewRepository courseReviewRepository,
-                                   CourseRepository courseRepository,
-                                   UserRepository userRepository,
-                                   CourseReviewMapper courseReviewMapper,
-                                   @Lazy CourseService courseService,
-                                   NotificationService notificationService) {
-        this.courseReviewRepository = courseReviewRepository;
-        this.courseRepository = courseRepository;
-        this.userRepository = userRepository;
-        this.courseReviewMapper = courseReviewMapper;
-        this.courseService = courseService;
-        this.notificationService = notificationService;
-    }
+    private final CacheManager cacheManager;
 
     @Override
     @Transactional
+    @CacheEvict(value = "courseReviews", key = "#courseId")
     public CourseReviewResponse addReview(Long courseId, Long userId, CourseReviewRequest request) {
         if (hasUserReviewed(courseId, userId)) {
             throw new IllegalStateException("Bu kurs için zaten bir yorum yaptınız.");
@@ -83,6 +75,7 @@ public class CourseReviewServiceImpl implements CourseReviewService {
     }
 
     @Override
+    @Cacheable(value = "courseReviews", key = "#courseId")
     public List<CourseReviewResponse> getApprovedReviewsByCourse(Long courseId) {
         return courseReviewRepository.findByCourseIdAndIsApprovedTrueOrderByCreatedAtDesc(courseId)
                 .stream()
@@ -107,12 +100,14 @@ public class CourseReviewServiceImpl implements CourseReviewService {
         if (!review.isApproved()) {
             review.setApproved(true);
             courseReviewRepository.save(review);
-            courseService.updateCourseRating(review.getCourse().getId());
+            eventPublisher.publishEvent(new ReviewApprovedEvent(review.getCourse().getId()));
             notificationService.create(review.getUser(), com.guzem.uzaktan.model.user.NotificationType.REVIEW_APPROVED,
                     "Yorumunuz Yayınlandı",
                     "\"" + review.getCourse().getTitle() + "\" kursuna yazdığınız yorum onaylanarak yayına alındı.",
                     "/egitimler/" + review.getCourse().getId());
         }
+        var cache = cacheManager.getCache("courseReviews");
+        if (cache != null) cache.evict(review.getCourse().getId());
     }
 
     @Override
@@ -127,8 +122,10 @@ public class CourseReviewServiceImpl implements CourseReviewService {
         courseReviewRepository.delete(review);
 
         if (wasApproved) {
-            courseService.updateCourseRating(courseId);
+            eventPublisher.publishEvent(new ReviewApprovedEvent(courseId));
         }
+        var cache = cacheManager.getCache("courseReviews");
+        if (cache != null) cache.evict(courseId);
     }
 
     @Override

@@ -3,12 +3,18 @@ package com.guzem.uzaktan.service.impl.course;
 import com.guzem.uzaktan.dto.response.CourseDocumentResponse;
 import com.guzem.uzaktan.exception.ResourceNotFoundException;
 import com.guzem.uzaktan.exception.UnauthorizedActionException;
+import com.guzem.uzaktan.model.common.User;
 import com.guzem.uzaktan.model.course.Course;
 import com.guzem.uzaktan.model.course.CourseDocument;
+import com.guzem.uzaktan.model.course.Enrollment;
+import com.guzem.uzaktan.model.course.EnrollmentStatus;
+import com.guzem.uzaktan.model.user.NotificationType;
 import com.guzem.uzaktan.repository.course.CourseDocumentRepository;
 import com.guzem.uzaktan.repository.course.CourseRepository;
+import com.guzem.uzaktan.repository.course.EnrollmentRepository;
 import com.guzem.uzaktan.service.common.FileStorageService;
 import com.guzem.uzaktan.service.course.CourseDocumentService;
+import com.guzem.uzaktan.service.user.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +31,9 @@ public class CourseDocumentServiceImpl implements CourseDocumentService {
 
     private final CourseRepository courseRepository;
     private final CourseDocumentRepository documentRepository;
+    private final EnrollmentRepository enrollmentRepository;
     private final FileStorageService fileStorageService;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional
@@ -61,7 +69,20 @@ public class CourseDocumentServiceImpl implements CourseDocumentService {
                 .fileType(file.getContentType())
                 .build();
 
-        return toResponse(documentRepository.save(doc));
+        doc = documentRepository.save(doc);
+
+        List<User> enrolledUsers = enrollmentRepository
+                .findActiveEnrollmentsForCourse(course.getId()).stream()
+                .map(Enrollment::getUser)
+                .toList();
+        for (User student : enrolledUsers) {
+            notificationService.create(student, NotificationType.DOCUMENT_UPLOADED,
+                    "Yeni Doküman Yüklendi",
+                    course.getTitle() + " kursuna \"" + doc.getTitle() + "\" dokümanı eklendi.",
+                    "/egitimler/izle/" + courseId);
+        }
+
+        return toResponse(doc);
     }
 
     @Override

@@ -1,6 +1,6 @@
 package com.guzem.uzaktan.security;
 
-import com.guzem.uzaktan.service.user.UserService;
+import com.guzem.uzaktan.service.user.LoginAttemptService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.event.AbstractAuthenticationFailureEvent;
@@ -11,18 +11,18 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public class LoginEventListener {
 
-    private final UserService userService;
+    private final LoginAttemptService loginAttemptService;
 
     @EventListener
     public void onAuthFailure(AbstractAuthenticationFailureEvent event) {
         Object principal = event.getAuthentication().getPrincipal();
         if (principal instanceof String email) {
-            userService.recordLoginFailure(email);
+            loginAttemptService.recordFailure(email);
         }
     }
 
     @EventListener
     public void onAuthSuccess(AuthenticationSuccessEvent event) {
-        userService.recordLoginSuccess(event.getAuthentication().getName());
+        loginAttemptService.recordSuccess(event.getAuthentication().getName());
     }
 }

@@ -27,4 +27,6 @@ public interface FileStorageService {
     Path resolve(String relativePath);
 
     void delete(String relativePath);
+
+    String sanitizeFileName(String input);
 }

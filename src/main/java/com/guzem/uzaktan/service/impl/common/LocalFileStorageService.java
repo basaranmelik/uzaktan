@@ -167,7 +167,12 @@ public class LocalFileStorageService implements FileStorageService {
         return prefix + "_" + UUID.randomUUID().toString().replace("-", "") + extension;
     }
 
-    public static String sanitizeFileName(String input) {
+    @Override
+    public String sanitizeFileName(String input) {
+        return sanitize(input);
+    }
+
+    public static String sanitize(String input) {
         if (input == null) return "dosya";
         String s = input.toLowerCase(java.util.Locale.forLanguageTag("tr"))
                 .replace('ç', 'c').replace('ğ', 'g').replace('ı', 'i')

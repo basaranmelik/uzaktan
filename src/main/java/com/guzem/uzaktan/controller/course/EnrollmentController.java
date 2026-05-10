@@ -8,22 +8,18 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
-@RequestMapping("/kayitlarim")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('USER')")
 public class EnrollmentController {
 
     private final EnrollmentService enrollmentService;
 
-    @PostMapping
-    public String enroll(@RequestParam Long courseId,
+    @PostMapping("/egitimler/{id}/kaydol")
+    public String enroll(@PathVariable Long id,
                          @ModelAttribute("currentUserId") Long currentUserId,
                          RedirectAttributes redirectAttributes) {
-        enrollmentService.enroll(currentUserId, courseId);
+        enrollmentService.enroll(currentUserId, id);
         redirectAttributes.addFlashAttribute("successMessage", "Kursa başarıyla kaydoldunuz!");
-        return "redirect:/egitimler/" + courseId;
+        return "redirect:/egitimler/" + id;
     }
-
-
-    
 }

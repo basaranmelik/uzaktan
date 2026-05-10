@@ -7,6 +7,8 @@ import com.guzem.uzaktan.repository.course.CourseCategoryRepository;
 import com.guzem.uzaktan.repository.course.CourseRepository;
 import com.guzem.uzaktan.service.course.CourseCategoryService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +23,7 @@ public class CourseCategoryServiceImpl implements CourseCategoryService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "courseCategories")
     public List<CourseCategory> findAll() {
         return categoryRepository.findAllByOrderByDisplayNameAsc();
     }
@@ -41,6 +44,7 @@ public class CourseCategoryServiceImpl implements CourseCategoryService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "courseCategories", allEntries = true)
     public CourseCategory create(String displayName) {
         if (categoryRepository.existsByDisplayNameIgnoreCase(displayName.trim())) {
             throw new IllegalArgumentException("Bu isimde bir kategori zaten mevcut.");
@@ -52,6 +56,7 @@ public class CourseCategoryServiceImpl implements CourseCategoryService {
 
     @Override
     @Transactional
+    @CacheEvict(value = "courseCategories", allEntries = true)
     public void delete(Long id) {
         CourseCategory category = findById(id);
 

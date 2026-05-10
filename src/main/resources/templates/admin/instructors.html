@@ -97,7 +97,8 @@
                 <a th:href="@{/admin/egitmenler/{id}/duzenle(id=${ins.id})}" class="action-btn ab-edit">
                   <i class="bi bi-pencil"></i> Düzenle
                 </a>
-                <form th:action="@{/admin/egitmenler/{id}/sil(id=${ins.id})}" method="post">
+                <form th:action="@{/admin/egitmenler/{id}/sil(id=${ins.id})}" method="post" class="ajax-action">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                   <button type="submit" class="action-btn ab-del confirm-delete-btn">
                     <i class="bi bi-trash3"></i>
                   </button>
@@ -109,11 +110,27 @@
       </table>
     </div>
 
+    <!-- Sayfalama -->
+    <div th:if="${totalPages > 1}"
+         style="display:flex;gap:0.5rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap;">
+      <a th:if="${currentPage > 0}"
+         th:href="@{/admin/egitmenler(page=${currentPage - 1})}"
+         class="btn btn-secondary">← Önceki</a>
+      <span style="display:flex;align-items:center;padding:0 0.5rem;font-size:0.875rem;color:var(--text-muted);">
+        Sayfa <strong style="margin:0 4px;" th:text="${currentPage + 1}">1</strong>
+        / <span style="margin-left:4px;" th:text="${totalPages}">1</span>
+        (<span th:text="${totalElements}">0</span> eğitmen)
+      </span>
+      <a th:if="${currentPage < totalPages - 1}"
+         th:href="@{/admin/egitmenler(page=${currentPage + 1})}"
+         class="btn btn-secondary">Sonraki →</a>
+    </div>
+
   </div>
 </section>
 
 <!-- Yeni eğitmen bilgi modalı -->
-<div th:if="${newTeacherPassword}" id="credentials-modal-backdrop"
+<div th:if="${newTeacherEmail}" id="credentials-modal-backdrop"
      style="display:flex;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;
             background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);">
   <div style="background:#fff;border-radius:16px;padding:36px 40px;max-width:480px;width:90%;
@@ -123,39 +140,17 @@
                   display:flex;align-items:center;justify-content:center;font-size:22px;">✅</div>
       <div>
         <div style="font-size:18px;font-weight:700;color:#0b2a5b;">Eğitmen Oluşturuldu</div>
-        <div style="font-size:13px;color:#6b7280;">Giriş bilgileri aşağıdadır</div>
+        <div style="font-size:13px;color:#6b7280;">Giriş bilgileri e-posta ile gönderildi</div>
       </div>
-    </div>
-
-    <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:10px;padding:12px 16px;
-                margin-bottom:16px;font-size:13px;color:#92400e;line-height:1.5;">
-      <i class="bi bi-exclamation-triangle-fill"></i>
-      Bu şifre yalnızca <strong>bir kez</strong> gösterilmektedir. Lütfen not alın veya kopyalayın.
-      Eğitmene ayrıca e-posta ile de iletilmiştir.
     </div>
 
     <table style="width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;
                   border:1px solid #e5e7eb;margin-bottom:20px;">
       <tr style="background:#f9fafb;">
         <td style="padding:10px 14px;font-size:13px;font-weight:600;color:#374151;
-                   white-space:nowrap;border-bottom:1px solid #e5e7eb;width:35%;">E-posta</td>
-        <td style="padding:10px 14px;font-size:13px;color:#111827;border-bottom:1px solid #e5e7eb;">
+                   white-space:nowrap;border-bottom:1px solid #e5e7eb;">E-posta</td>
+        <td style="padding:10px 14px;font-size:13px;color:#111827;">
           <span th:text="${newTeacherEmail}"></span>
-        </td>
-      </tr>
-      <tr>
-        <td style="padding:10px 14px;font-size:13px;font-weight:600;color:#374151;white-space:nowrap;">Geçici Şifre</td>
-        <td style="padding:10px 14px;">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <code id="teacher-pwd" style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:6px;
-                                          padding:4px 10px;font-size:14px;letter-spacing:0.05em;color:#0f172a;"
-                  th:text="${newTeacherPassword}"></code>
-            <button id="copyPasswordBtn" title="Kopyala"
-                    style="background:none;border:1px solid #d1d5db;border-radius:6px;padding:4px 8px;
-                           cursor:pointer;font-size:13px;color:#374151;">
-              <i class="bi bi-clipboard"></i>
-            </button>
-          </div>
         </td>
       </tr>
     </table>

@@ -2,7 +2,6 @@ package com.guzem.uzaktan.dto.response;
 
 import com.guzem.uzaktan.dto.AssessmentItem;
 import com.guzem.uzaktan.dto.CurriculumModule;
-import com.guzem.uzaktan.model.course.CourseCategory;
 import com.guzem.uzaktan.model.course.CourseLevel;
 import com.guzem.uzaktan.model.course.CourseStatus;
 import com.guzem.uzaktan.model.course.CourseType;
@@ -28,7 +27,6 @@ public class CourseResponse {
     private LocalDate startDate;
     private LocalDate endDate;
     private Integer hours;
-    private CourseCategory category;
     private String categoryDisplayName;
     private CourseStatus status;
     private CourseLevel level;
@@ -51,6 +49,7 @@ public class CourseResponse {
     @lombok.Setter
     private String instructorImage;
     private List<InstructorResponse> instructors;
+    private boolean featured;
     private Double averageRating;
     private Integer reviewCount;
     private LocalDateTime createdAt;

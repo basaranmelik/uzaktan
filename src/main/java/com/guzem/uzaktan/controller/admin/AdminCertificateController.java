@@ -1,15 +1,17 @@
 package com.guzem.uzaktan.controller.admin;
 
+import com.guzem.uzaktan.dto.response.ActionResult;
 import com.guzem.uzaktan.service.course.CertificateService;
 import com.guzem.uzaktan.service.course.CourseService;
 import com.guzem.uzaktan.service.user.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@Slf4j
 @Controller
 @RequestMapping("/admin/sertifikalar")
 @RequiredArgsConstructor
@@ -29,18 +31,24 @@ public class AdminCertificateController {
     }
 
     @PostMapping("/ver")
-    public String issueCertificate(@RequestParam("userId") Long userId,
-                                   @RequestParam("courseId") Long courseId,
-                                   RedirectAttributes redirectAttributes) {
-        certificateService.issueCertificate(userId, courseId);
-        redirectAttributes.addFlashAttribute("successMessage", "Sertifika düzenlendi.");
-        return "redirect:/admin/sertifikalar";
+    public ActionResult issueCertificate(@RequestParam Long userId, @RequestParam Long courseId) {
+        try {
+            certificateService.issueCertificate(userId, courseId);
+            return ActionResult.success("Sertifika başarıyla oluşturuldu.", "/admin/sertifikalar");
+        } catch (Exception e) {
+            log.error("Sertifika oluşturma hatası: {}", e.getMessage(), e);
+            return ActionResult.error(e.getMessage());
+        }
     }
 
     @PostMapping("/{id}/iptal")
-    public String revokeCertificate(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        certificateService.revoke(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Sertifika iptal edildi.");
-        return "redirect:/admin/sertifikalar";
+    public ActionResult revokeCertificate(@PathVariable Long id) {
+        try {
+            certificateService.revoke(id);
+            return ActionResult.success("Sertifika iptal edildi.", "/admin/sertifikalar");
+        } catch (Exception e) {
+            log.error("Sertifika iptal hatası: {}", e.getMessage(), e);
+            return ActionResult.error(e.getMessage());
+        }
     }
 }

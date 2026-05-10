@@ -7,6 +7,7 @@ import com.guzem.uzaktan.dto.response.EnrollmentResponse;
 import com.guzem.uzaktan.dto.response.UserResponse;
 import com.guzem.uzaktan.model.course.CourseCategory;
 import com.guzem.uzaktan.model.course.EnrollmentStatus;
+import com.guzem.uzaktan.model.common.Role;
 import com.guzem.uzaktan.service.course.CourseAccessService;
 import com.guzem.uzaktan.service.course.CourseCategoryService;
 import com.guzem.uzaktan.service.course.CourseDocumentService;
@@ -14,7 +15,9 @@ import com.guzem.uzaktan.service.course.CourseReviewService;
 import com.guzem.uzaktan.service.course.CourseService;
 import com.guzem.uzaktan.service.course.CourseVideoService;
 import com.guzem.uzaktan.service.course.EnrollmentService;
+import com.guzem.uzaktan.service.user.CartService;
 import com.guzem.uzaktan.service.user.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -42,16 +45,17 @@ public class CourseController {
     private final CourseDocumentService courseDocumentService;
     private final CourseReviewService courseReviewService;
     private final CourseAccessService courseAccessService;
-    private final com.guzem.uzaktan.service.user.CartService cartService;
+    private final CartService cartService;
 
     @GetMapping
     public String listCourses(@RequestParam(value = "keyword", required = false) String keyword,
                               @RequestParam(value = "category", required = false) String categoryName,
                               @RequestParam(value = "sort", required = false, defaultValue = "default") String sort,
                               @RequestParam(value = "page", defaultValue = "0") int page,
-                              @RequestParam(value = "size", defaultValue = "12") int size,
-                              @AuthenticationPrincipal UserDetails principal,
-                              Model model) {
+                               @RequestParam(value = "size", defaultValue = "12") int size,
+                               @AuthenticationPrincipal UserDetails principal,
+                               Model model,
+                               HttpServletRequest request) {
 
         Page<CourseSummaryResponse> courses;
         CourseCategory selectedCategory = null;
@@ -82,6 +86,10 @@ public class CourseController {
         model.addAttribute("currentPage", page);
         model.addAttribute("sort", sort);
         model.addAttribute("totalPages", courses.getTotalPages());
+
+        if ("true".equals(request.getHeader("X-Fragment"))) {
+            return "course/list :: coursesGrid";
+        }
         return "course/list";
     }
 
@@ -118,7 +126,7 @@ public class CourseController {
             model.addAttribute("isInCart", cartService.isInCart(user.getId(), id));
             model.addAttribute("isTeacherOrAdmin", isTeacherOrAdmin);
             model.addAttribute("isAdmin", principal.getAuthorities().stream()
-                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN")));
+                    .anyMatch(a -> a.getAuthority().equals(Role.ADMIN.getAuthority())));
         } else {
             model.addAttribute("hasReviewed", false);
             model.addAttribute("isActiveEnrolled", false);

@@ -9,275 +9,243 @@
   <title th:text="${course.title} + ' — GUZEM'">Eğitim Detay | Gazi Üniversitesi</title>
   <link rel="stylesheet" th:href="@{/css/style.css}">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  
 </head>
 <body>
 
-<div th:replace="~{fragments/navbar :: navbar}" th:with="activeMenu='courses'"></div>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
 
-<!-- HERO -->
-<section class="cd-hero">
+<!-- ══════════════════════════════════════════════════════
+     HERO — koyu mavi gradient
+     ══════════════════════════════════════════════════════ -->
+<section class="cd-hero-v2">
   <div class="container">
-    <div class="cd-hero-inner">
 
-      <!-- Sol: Bilgiler -->
-      <div style="align-self: stretch; display: flex; flex-direction: column;">
-        <nav class="cd-breadcrumb">
-          <a href="#" id="goBackBtn" style="margin-right:1rem; font-weight:600; color:var(--primary-200); border-right:1px solid rgba(255,255,255,0.2); padding-right:1rem; text-decoration:none;"><i class="bi bi-arrow-left"></i> Geri Dön</a>
-          <a th:href="@{/}"><i class="bi bi-house-fill"></i> Ana Sayfa</a>
-          <span class="sep">/</span>
-          <a th:href="@{/egitimler}">Eğitimler</a>
-          <span class="sep">/</span>
-          <span class="cur" th:text="${course.title}">Kurs</span>
-        </nav>
+    <nav class="cd-breadcrumb">
+      <a th:href="@{/}"><i class="bi bi-house-fill"></i> Ana Sayfa</a>
+      <span class="sep">/</span>
+      <a th:href="@{/egitimler}">Eğitimler</a>
+      <span class="sep">/</span>
+      <span class="cur" th:text="${course.title}">Kurs</span>
+    </nav>
 
-        <div class="cd-category">
-          <i class="bi bi-bookmark-fill"></i>
-          <span th:text="${course.categoryDisplayName}">Kategori</span>
+    <div class="cd-hero-grid">
+
+      <!-- Sol: Başlık + Açıklama + Meta + Eğitmen -->
+      <div class="cd-hero-content">
+
+        <div style="display:flex;align-items:center;gap:0.6rem;flex-wrap:wrap;">
+          <span class="cd-cat-badge" th:text="${course.categoryDisplayName}">Kategori</span>
+          <span th:if="${course.courseType != null}"
+                th:text="${course.courseTypeDisplayName}"
+                class="cd-cat-badge"
+                th:style="${course.courseType.name() == 'ONLINE' ?
+                            'background:rgba(208,235,255,0.2);color:#93c5fd;' :
+                            (course.courseType.name() == 'HYBRID' ?
+                            'background:rgba(211,249,216,0.2);color:#86efac;' :
+                            'background:rgba(243,217,250,0.2);color:#d8b4fe;')}">
+          </span>
         </div>
 
-        <h1 class="cd-title" th:text="${course.title}">Kurs Başlığı</h1>
+        <h1 class="cd-title-v2" th:text="${course.title}">Kurs Başlığı</h1>
 
-        <p class="cd-desc"
+        <p class="cd-desc-v2"
            th:if="${course.description != null and !#strings.isEmpty(course.description)}"
-           th:text="${course.description}">Kurs açıklaması</p>
+           th:text="${course.description}"></p>
 
-        <!-- Yıldız -->
-        <div class="cd-stars">
-          <span th:if="${course.reviewCount > 0}">
-            <span style="color: var(--warm-500);">
-              <i th:class="'bi ' + (${course.averageRating >= 1 ? 'bi-star-fill' : (course.averageRating >= 0.5 ? 'bi-star-half' : 'bi-star')})"></i>
-              <i th:class="'bi ' + (${course.averageRating >= 2 ? 'bi-star-fill' : (course.averageRating >= 1.5 ? 'bi-star-half' : 'bi-star')})"></i>
-              <i th:class="'bi ' + (${course.averageRating >= 3 ? 'bi-star-fill' : (course.averageRating >= 2.5 ? 'bi-star-half' : 'bi-star')})"></i>
-              <i th:class="'bi ' + (${course.averageRating >= 4 ? 'bi-star-fill' : (course.averageRating >= 3.5 ? 'bi-star-half' : 'bi-star')})"></i>
-              <i th:class="'bi ' + (${course.averageRating == 5 ? 'bi-star-fill' : (course.averageRating >= 4.5 ? 'bi-star-half' : 'bi-star')})"></i>
-            </span>
-            <strong style="color:#fff; margin-left:0.5rem;" th:text="${course.averageRating}">0.0</strong>
-            <span style="color:rgba(255,255,255,0.5); font-size:0.82rem; margin-left:0.25rem;" th:text="'(' + ${course.reviewCount} + ' Yorum)'"></span>
-          </span>
-          <span th:if="${course.reviewCount == 0}" style="color:rgba(255,255,255,0.5); font-size:0.85rem;">
-            <i class="bi bi-star"></i> Henüz değerlendirme yok
-          </span>
-        </div>
+        <!-- Alt: Yıldız + Eğitmen — margin-top:auto ile hero tabanına yapışır -->
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:1rem;">
 
-        <!-- Eğitmenler -->
-        <!-- Çoklu eğitmen varsa hepsini eşit göster -->
-        <div th:if="${course.instructors != null and !course.instructors.isEmpty()}" style="margin-top:1.25rem;">
-          <div class="cd-instructor-label" style="margin-bottom:0.75rem; font-size:0.75rem;">EĞİTMENLER</div>
-          <div style="display:flex; flex-direction:column; gap:0.75rem;">
-            <div th:each="instructor : ${course.instructors}" class="cd-instructor-card" style="margin:0;">
-              <div th:if="${instructor.photoUrl != null}" class="cd-instructor-avatar" style="padding:0; overflow:hidden; background:#fff;">
-                <img th:src="@{${instructor.photoUrl}}" alt="" style="width:100%;height:100%;object-fit:cover;">
-              </div>
-              <div th:if="${instructor.photoUrl == null}" class="cd-instructor-avatar" th:text="${#strings.substring(instructor.name, 0, 1)}">E</div>
-              <div class="cd-instructor-info">
-                <div class="cd-instructor-name" th:text="${instructor.name}">Eğitmen Adı</div>
-                <div th:if="${instructor.expertise != null}" style="font-size:0.8rem; color:rgba(255,255,255,0.7);" th:text="${instructor.expertise}">Uzmanlık</div>
-                <div class="cd-instructor-stats" th:if="${instructor.courseCount != null or instructor.studentCount != null}">
-                  <span th:if="${instructor.courseCount != null and instructor.courseCount > 0}">
-                    <i class="bi bi-journal-bookmark-fill"></i>
-                    <span th:text="${instructor.courseCount}">0</span> Aktif Kurs
-                  </span>
-                  <span th:if="${instructor.studentCount != null and instructor.studentCount > 0}">
-                    <i class="bi bi-people-fill"></i>
-                    <span th:text="${instructor.studentCount}">0</span> Öğrenci
-                  </span>
+          <!-- Yıldız + Kayıtlı + Dil + Süre -->
+          <div class="cd-meta-row">
+            <div class="cd-meta-stars" th:if="${course.reviewCount != null and course.reviewCount > 0}">
+              <span class="cd-stars-v2">
+                <i th:each="i : ${#numbers.sequence(1,5)}"
+                   th:class="${'bi ' + (course.averageRating >= i ? 'bi-star-fill' : (course.averageRating >= i - 0.5 ? 'bi-star-half' : 'bi-star'))}"></i>
+              </span>
+              <strong th:text="${#numbers.formatDecimal(course.averageRating, 1, 1)}">0.0</strong>
+              <span th:text="'(' + ${course.reviewCount} + ' Yorum)'"></span>
+            </div>
+            <div class="cd-meta-stars" th:if="${course.reviewCount == null or course.reviewCount == 0}">
+              <i class="bi bi-star"></i> Henüz değerlendirme yok
+            </div>
+            <div class="cd-meta-item"><i class="bi bi-people-fill"></i> <span th:text="${course.enrolledCount}">0</span> Kayıtlı</div>
+            <div class="cd-meta-item"><i class="bi bi-translate"></i> Türkçe</div>
+            <div class="cd-meta-item" th:if="${course.minHours != null}">
+              <i class="bi bi-clock-fill"></i>
+              <span th:if="${course.maxHours != null}" th:text="${course.minHours + ' – ' + course.maxHours + ' Saat'}"></span>
+              <span th:if="${course.maxHours == null}" th:text="${course.minHours + ' Saat'}"></span>
+            </div>
+          </div>
+
+          <!-- Eğitmen chip'leri -->
+          <div class="cd-instructor-strip"
+               th:if="${(course.instructors != null and !course.instructors.isEmpty()) or (course.instructorName != null and !#strings.isEmpty(course.instructorName))}">
+            <div style="font-size:0.72rem;font-weight:700;color:rgba(255,255,255,0.5);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.5rem;">
+              Eğitmen<span th:if="${course.instructors != null and course.instructors.size() > 1}">ler</span>
+            </div>
+            <div class="cd-instructor-avatars">
+              <th:block th:if="${course.instructors != null and !course.instructors.isEmpty()}">
+                <a th:each="instructor : ${course.instructors}"
+                   th:href="@{/egitmenler/{id}(id=${instructor.id})}"
+                   class="cd-instructor-chip" style="text-decoration:none;">
+                  <div th:if="${instructor.photoUrl != null}" class="cd-instructor-chip-avatar" style="padding:0;overflow:hidden;">
+                    <img th:src="@{${instructor.photoUrl}}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                  </div>
+                  <div th:if="${instructor.photoUrl == null}" class="cd-instructor-chip-avatar"
+                       th:text="${#strings.substring(instructor.name, 0, 1)}">E</div>
+                  <div>
+                    <div class="chip-name" th:text="${instructor.name}">Eğitmen</div>
+                    <div th:if="${instructor.expertise != null}" class="chip-role" th:text="${instructor.expertise}"></div>
+                    <div th:if="${instructor.expertise == null}" class="chip-role">Eğitmen</div>
+                  </div>
+                </a>
+              </th:block>
+              <th:block th:if="${(course.instructors == null or course.instructors.isEmpty()) and course.instructorName != null and !#strings.isEmpty(course.instructorName)}">
+                <div class="cd-instructor-chip">
+                  <div th:if="${course.instructorImage != null}" class="cd-instructor-chip-avatar" style="padding:0;overflow:hidden;">
+                    <img th:src="@{${course.instructorImage}}" alt="" style="width:100%;height:100%;object-fit:cover;">
+                  </div>
+                  <div th:if="${course.instructorImage == null}" class="cd-instructor-chip-avatar"
+                       th:text="${#strings.substring(course.instructorName, 0, 1)}">E</div>
+                  <div>
+                    <div class="chip-name" th:text="${course.instructorName}">Eğitmen</div>
+                    <div class="chip-role">Eğitmen</div>
+                  </div>
                 </div>
-              </div>
+              </th:block>
             </div>
           </div>
-        </div>
-        <!-- Geriye dönük uyumluluk: sadece instructorName varsa tek kart -->
-        <div th:if="${(course.instructors == null or course.instructors.isEmpty()) and course.instructorName != null and !#strings.isEmpty(course.instructorName)}"
-             style="margin-top:1.25rem;">
-          <div class="cd-instructor-label" style="margin-bottom:0.75rem; font-size:0.75rem;">EĞİTMEN</div>
-          <div class="cd-instructor-card">
-            <div th:if="${course.instructorImage != null}" class="cd-instructor-avatar" style="padding:0; overflow:hidden; background:#fff;">
-              <img th:src="@{${course.instructorImage}}" alt="" style="width:100%;height:100%;object-fit:cover;">
-            </div>
-            <div th:if="${course.instructorImage == null}" class="cd-instructor-avatar" th:text="${#strings.substring(course.instructorName, 0, 1)}">E</div>
-            <div class="cd-instructor-info">
-              <div class="cd-instructor-name" th:text="${course.instructorName}">Ad Soyad</div>
-              <div class="cd-instructor-stats">
-                <span th:if="${instructorCourseCount != null}">
-                  <i class="bi bi-journal-bookmark-fill"></i>
-                  <span th:text="${instructorCourseCount}">0</span> Aktif Kurs
-                </span>
-                <span th:if="${instructorStudentCount != null}">
-                  <i class="bi bi-people-fill"></i>
-                  <span th:text="${instructorStudentCount}">0</span> Öğrenci
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+
+        </div><!-- /hero-bottom -->
 
       </div>
 
-      <!-- Sag: Sidebar -->
-      <div class="cd-sidebar">
-        <div style="height:4px;background:var(--gradient-primary);"></div>
-        <div style="aspect-ratio:16/9;overflow:hidden;position:relative;">
-          <img th:if="${course.imagePath != null}"
-               th:src="@{'/uploads/' + ${course.imagePath}}"
-               alt="" style="width:100%;height:100%;object-fit:cover;">
-          <img th:if="${course.imagePath == null}"
-               th:src="@{/images/gazi-logo.png}"
-               alt="" style="width:100%;height:100%;object-fit:contain;background:#f8f9fa;padding:1.5rem;">
-          <div style="position:absolute;bottom:0;left:0;right:0;padding:0.75rem 1rem;background:linear-gradient(transparent,rgba(0,0,0,0.72));color:#fff;font-weight:700;font-size:0.92rem;line-height:1.3;"
-               th:text="${course.title}"></div>
-        </div>
-
-        <div class="cd-sidebar-body">
-
-          <!-- Kurs türü badge -->
-          <div style="margin-bottom:1rem;">
-            <span th:text="${course.courseTypeDisplayName}"
-                  th:style="${course.courseType != null and course.courseType.name() == 'ONLINE'} ?
-                              'background:#d0ebff;color:#1864ab;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:700;' :
-                              (${course.courseType != null and course.courseType.name() == 'HYBRID'} ?
-                              'background:#d3f9d8;color:#2b8a3e;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:700;' :
-                              'background:#f3d9fa;color:#862e9c;padding:0.25rem 0.75rem;border-radius:20px;font-size:0.78rem;font-weight:700;')">
-              Online Eğitim
-            </span>
+      <!-- Sağ: Sidebar kart -->
+      <div class="cd-hero-sidebar">
+        <div class="cd-sidebar-card">
+          <div class="cd-sidebar-img-wrap">
+            <img th:if="${course.imagePath != null}"
+                 th:src="@{'/uploads/' + ${course.imagePath}}" alt=""
+                 style="width:100%;height:100%;object-fit:cover;">
+            <img th:if="${course.imagePath == null}"
+                 th:src="@{/images/gazi-logo.png}" alt=""
+                 style="width:100%;height:100%;object-fit:contain;background:#f8f9fa;padding:1.5rem;">
           </div>
 
-          <!-- Tarih + Kontenjan: Sadece Yüzyüze + Uzaktan Örgün -->
-          <ul class="cd-feature-list" th:if="${course.courseType == null or course.courseType.name() != 'ONLINE'}">
-            <li th:if="${course.startDate != null}">
-              <span class="fl-label"><i class="bi bi-calendar-event"></i> Başlangıç</span>
-              <span class="fl-value" th:text="${#temporals.format(course.startDate,'dd.MM.yyyy')}">Tarih</span>
-            </li>
-            <li th:if="${course.endDate != null}">
-              <span class="fl-label"><i class="bi bi-calendar-check"></i> Bitiş</span>
-              <span class="fl-value" th:text="${#temporals.format(course.endDate,'dd.MM.yyyy')}">Tarih</span>
-            </li>
-            <li th:if="${course.quota != null}">
-              <span class="fl-label"><i class="bi bi-people"></i> Kontenjan</span>
-              <span class="fl-value"
-                    th:text="${course.quota - course.enrolledCount} + ' Kalan / ' + ${course.quota}">Kalan</span>
-            </li>
-            <li th:if="${course.scheduleDays != null and course.scheduleStartTime != null and course.scheduleEndTime != null}">
-              <span class="fl-label"><i class="bi bi-clock"></i> Ders Programı</span>
-              <span class="fl-value">
-                <span th:each="day,stat : ${#strings.listSplit(course.scheduleDays, ',')}" style="display:inline-block;">
-                  <span th:text="${day == 'MONDAY' ? 'Pazartesi' :
-                                  day == 'TUESDAY' ? 'Salı' :
-                                  day == 'WEDNESDAY' ? 'Çarşamba' :
-                                  day == 'THURSDAY' ? 'Perşembe' :
-                                  day == 'FRIDAY' ? 'Cuma' :
-                                  day == 'SATURDAY' ? 'Cumartesi' :
-                                  day == 'SUNDAY' ? 'Pazar' : day}"></span><span th:if="${!stat.last}">, </span>
-                </span>
-                <span style="display:block; margin-top:0.3rem; font-size:0.9rem;">
-                  <i class="bi bi-hourglass-split"></i>
-                  <span th:text="${course.scheduleStartTime} + ' - ' + ${course.scheduleEndTime}"></span>
-                </span>
-              </span>
-            </li>
-            <li th:if="${course.courseType != null and course.courseType.name() == 'FACE_TO_FACE' and course.location != null}">
-              <span class="fl-label"><i class="bi bi-geo-alt-fill"></i> Konum</span>
-              <span class="fl-value" th:text="${course.location}">—</span>
-            </li>
-          </ul>
+          <div class="cd-sidebar-card-body">
 
-          <!-- Özellikler Alanı -->
-          <div style="margin-top: 1.5rem;">
-            <h4 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: #1f2937;">Özellikler</h4>
-            <ul style="list-style: none; padding: 0; margin: 0; border-top: 1px solid #f3f4f6;">
-              <li style="padding: 1rem 0; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 0.75rem; color: #6b7280; font-size: 0.95rem;">
-                <i class="bi bi-bar-chart-fill" style="color: #9ca3af; font-size: 1.1rem;"></i>
-                <span>Seviye : <strong style="color: #111827; font-weight: 600;"
-                      th:text="${course.levelDisplayName != null ? course.levelDisplayName : 'Belirtilmedi'}">Orta Seviye</strong></span>
+            <!-- Fiyat -->
+            <div class="cd-price-row">
+              <span class="cd-price-v2" th:if="${course.price == null or course.price.signum() == 0}">Ücretsiz</span>
+              <span class="cd-price-v2" th:if="${course.price != null and course.price.signum() > 0}"
+                    th:text="|₺${#numbers.formatDecimal(course.price, 0, 'COMMA', 0, 'POINT')}|">₺0</span>
+              <small th:if="${course.price != null and course.price.signum() > 0}" class="cd-kdv">(KDV dahil)</small>
+            </div>
+
+            <!-- Kurs Bilgileri -->
+            <ul class="cd-feature-list-v2">
+              <li th:if="${course.courseType != null}">
+                <i class="bi bi-mortarboard-fill"></i>
+                <span>Tür: <strong th:text="${course.courseTypeDisplayName}"></strong></span>
               </li>
-              <li style="padding: 1rem 0; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 0.75rem; color: #6b7280; font-size: 0.95rem;">
-                <i class="bi bi-person-plus" style="color: #3b82f6; font-size: 1.1rem;"></i>
-                <span><strong style="color: #111827; font-weight: 700;" th:text="${course.enrolledCount}">69</strong> Kayıtlı Kişi</span>
+              <li th:if="${course.levelDisplayName != null}">
+                <i class="bi bi-signal"></i>
+                <span>Seviye: <strong th:text="${course.levelDisplayName}"></strong></span>
               </li>
-              <li style="padding: 1rem 0; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 0.75rem; color: #6b7280; font-size: 0.95rem;">
-                <i class="bi bi-award" style="color: #3b82f6; font-size: 1.1rem;"></i>
-                <span>Belge Türü: <strong style="color: #111827; font-weight: 600;">Sertifika</strong></span>
+              <li>
+                <i class="bi bi-translate"></i>
+                <span>Dil: <strong>Türkçe</strong></span>
               </li>
-              <li style="padding: 1rem 0; border-bottom: 1px solid #f3f4f6; display: flex; align-items: center; gap: 0.75rem; color: #6b7280; font-size: 0.95rem;">
-                <i class="bi bi-play-circle" style="color: #3b82f6; font-size: 1.1rem;"></i>
-                <span>Cihaz Desteği : <strong style="color: #111827; font-weight: 600;">Mobil & Masaüstü</strong></span>
+              <li th:if="${course.minHours != null}">
+                <i class="bi bi-clock-fill"></i>
+                <span>Süre:
+                  <strong th:if="${course.maxHours != null}" th:text="${course.minHours + ' – ' + course.maxHours + ' saat'}"></strong>
+                  <strong th:if="${course.maxHours == null}" th:text="${course.minHours + ' saat'}"></strong>
+                </span>
               </li>
-              <li style="padding: 1rem 0; display: flex; align-items: center; gap: 0.75rem; color: #6b7280; font-size: 0.95rem;">
-                <i class="bi bi-play-circle" style="color: #3b82f6; font-size: 1.1rem;"></i>
-                <span>Eğitim Dili : <strong style="color: #111827; font-weight: 600;">Türkçe</strong></span>
+              <li>
+                <i class="bi bi-people-fill"></i>
+                <span>Kayıtlı: <strong th:text="${course.enrolledCount}">0</strong> öğrenci</span>
+              </li>
+              <li th:if="${course.quota != null}">
+                <i class="bi bi-person-plus"></i>
+                <span>Kontenjan: <strong th:text="${(course.quota - course.enrolledCount) + ' / ' + course.quota}"></strong></span>
+              </li>
+              <li th:if="${course.startDate != null}">
+                <i class="bi bi-calendar-event"></i>
+                <span>Başlangıç: <strong th:text="${#temporals.format(course.startDate, 'dd.MM.yyyy')}"></strong></span>
+              </li>
+              <li th:if="${course.endDate != null}">
+                <i class="bi bi-calendar-check"></i>
+                <span>Bitiş: <strong th:text="${#temporals.format(course.endDate, 'dd.MM.yyyy')}"></strong></span>
+              </li>
+              <li th:if="${course.scheduleDays != null and course.scheduleStartTime != null}">
+                <i class="bi bi-calendar-week"></i>
+                <span>Saat: <strong th:text="${course.scheduleStartTime + ' – ' + course.scheduleEndTime}"></strong></span>
+              </li>
+              <li>
+                <i class="bi bi-patch-check-fill"></i>
+                <span>Belge: <strong>Sertifika</strong></span>
+              </li>
+              <li>
+                <i class="bi bi-laptop"></i>
+                <span>Platform: <strong>Mobil &amp; Masaüstü</strong></span>
               </li>
             </ul>
-          </div>
-        </div>
 
-        <!-- Fiyat ve CTA -->
-        <div class="cd-price-section">
-          <div class="cd-price"
-               th:text="${course.price == null or course.price.signum() == 0} ? 'Ücretsiz' : '&#8378;' + ${#numbers.formatDecimal(course.price, 1, 'POINT', 0, 'COMMA')}">
-            0
-          </div>
-          <div class="cd-price-label" style="margin-bottom: 1.5rem;">Tek seferlik ödeme &middot; Ömür boyu erişim</div>
+            <!-- CTA — en altta yapışık -->
+            <div class="cd-sidebar-cta">
 
-          <!-- DURUM: Aktif kayitli -->
-          <div th:if="${isEnrolled != null and isEnrolled and isActiveEnrolled != null and isActiveEnrolled}">
-            <div class="cd-enrolled-badge" th:style="${isAdmin != null and isAdmin} ? 'background:#f8f9fa; color:#495057; border-color:#dee2e6;' : ''">
-              <i th:class="${isAdmin != null and isAdmin} ? 'bi bi-shield-lock-fill' : 'bi bi-check-circle-fill'"></i>
-              <span th:text="${isAdmin != null and isAdmin} ? 'Yönetici Erişimi — İzleme Yetkisi' : 
-                            (${isTeacherOrAdmin != null and isTeacherOrAdmin} ? 'Eğitmen Erişimi — İzleme Yetkisi' : 'Bu kursa kayıtlısınız — Aktif')"></span>
-            </div>
-            <!-- Video İzle / Eğitime Başla (Sadece Online veya Video İçeren Örgün Eğitimler İçin) -->
-            <a th:if="${course.courseType == null or course.courseType.name() == 'ONLINE' or (course.courseType.name() == 'HYBRID' and not #lists.isEmpty(videos))}"
-               th:href="@{/egitimler/izle/{id}(id=${course.id})}" class="cd-cta-btn primary">
-              <i class="bi bi-play-fill"></i> Eğitime Başla
-            </a>
-            <a th:if="${enrollment != null and enrollment.progressPercentage != null and enrollment.progressPercentage >= 100}"
-               th:href="@{/sinav/{id}(id=${course.id})}" class="cd-cta-btn primary" style="background:linear-gradient(135deg,#059669,#10b981);">
-              <i class="bi bi-mortarboard-fill"></i> Sertifika Sınavı
-            </a>
-            <a th:href="@{/panom}" class="cd-cta-btn outline">Panoma Git</a>
-          </div>
-
-          <!-- DURUM: Odeme bekleniyor -->
-          <div th:if="${isEnrolled != null and isEnrolled and (isActiveEnrolled == null or !isActiveEnrolled)}">
-            <div class="cd-enrolled-badge pending">
-              <i class="bi bi-hourglass-split"></i> Ödeme / Onay Bekleniyor
-            </div>
-            <a th:href="@{/panom}" class="cd-cta-btn outline">Panoma Git</a>
-          </div>
-
-          <!-- DURUM: Kayitli degil -->
-          <div th:if="${isEnrolled == null or !isEnrolled}">
-            <div sec:authorize="hasRole('USER')">
-              <!-- Sepette değil -->
-              <div th:if="${!isInCart}">
-                <div th:if="${course.courseType != null and course.courseType.name() != 'ONLINE' and course.quota != null and course.quota <= course.enrolledCount}">
-                   <div class="cd-enrolled-badge" style="background:#fff5f5; color:#e03131; border-color:#fca5a5; justify-content:center;">
-                     <i class="bi bi-x-circle-fill"></i> Kontenjan Dolu
-                   </div>
+              <!-- Aktif Kayıtlı -->
+              <div th:if="${isEnrolled != null and isEnrolled and isActiveEnrolled != null and isActiveEnrolled}">
+                <div class="cd-status-badge" style="background:#f0fdf4;color:#15803d;border-color:#bbf7d0;margin-bottom:0.75rem;">
+                  <i th:class="${isAdmin != null and isAdmin ? 'bi bi-shield-lock-fill' : 'bi bi-check-circle-fill'}"></i>
+                  <span th:text="${isAdmin != null and isAdmin ? 'Yönetici Erişimi' : (isTeacherOrAdmin != null and isTeacherOrAdmin ? 'Eğitmen Erişimi' : 'Kayıtlısınız')}"></span>
                 </div>
-                <div th:if="${course.courseType == null or course.courseType.name() == 'ONLINE' or course.quota == null or course.quota > course.enrolledCount}">
-                  <form th:action="@{/sepet/ekle}" method="post">
-                    <input type="hidden" name="courseId" th:value="${course.id}"/>
-                    <button type="submit" class="cd-cta-btn primary">
-                      <i class="bi bi-cart-plus"></i> Sepete Ekle
-                    </button>
-                  </form>
-                </div>
-              </div>
-              <!-- Sepette -->
-              <div th:if="${isInCart}">
-                <a th:href="@{/sepet}" class="cd-cta-btn primary" style="background:#15803d;color:#fff;">
-                  <i class="bi bi-cart-check-fill"></i> Sepete Git
+                <a th:if="${course.courseType == null or course.courseType.name() == 'ONLINE' or (course.courseType.name() == 'HYBRID' and not #lists.isEmpty(videos))}"
+                   th:href="@{/egitimler/izle/{id}(id=${course.id})}" class="cd-cta-btn-v2 primary">
+                  <i class="bi bi-play-fill"></i> Eğitime Başla
                 </a>
+                <a th:if="${enrollment != null and enrollment.progressPercentage != null and enrollment.progressPercentage >= 100}"
+                   th:href="@{/sinav/{id}(id=${course.id})}" class="cd-cta-btn-v2 success">
+                  <i class="bi bi-mortarboard-fill"></i> Sertifika Sınavı
+                </a>
+                <a th:href="@{/panom}" class="cd-cta-btn-v2 secondary">Panoma Git</a>
               </div>
-            </div>
-            <!-- Eğitmen/Admin için alan gizlendi -->
-            <div sec:authorize="isAnonymous()">
-              <a th:href="@{/giris(sonra=|/egitimler/| + ${course.id})}"
-                 class="cd-cta-btn primary">
-                <i class="bi bi-person-fill-lock"></i> Satın Almak İçin Giriş Yap
-              </a>
-            </div>
+
+              <!-- Ödeme Bekleniyor -->
+              <div th:if="${isEnrolled != null and isEnrolled and (isActiveEnrolled == null or !isActiveEnrolled)}">
+                <div class="cd-status-badge pending"><i class="bi bi-hourglass-split"></i> Ödeme / Onay Bekleniyor</div>
+                <a th:href="@{/panom}" class="cd-cta-btn-v2 secondary" style="margin-top:0.75rem;">Panoma Git</a>
+              </div>
+
+              <!-- Kayıtsız -->
+              <div th:if="${isEnrolled == null or !isEnrolled}">
+                <div sec:authorize="hasRole('USER')">
+                  <div th:if="${!isInCart}">
+                    <div th:if="${course.courseType != null and course.courseType.name() != 'ONLINE' and course.quota != null and course.quota <= course.enrolledCount}"
+                         class="cd-status-badge danger"><i class="bi bi-x-circle-fill"></i> Kontenjan Dolu</div>
+                    <form th:if="${course.courseType == null or course.courseType.name() == 'ONLINE' or course.quota == null or course.quota > course.enrolledCount}"
+                          th:action="@{/sepet/ekle}" method="post" class="add-to-cart-form">
+                      <input type="hidden" name="courseId" th:value="${course.id}"/>
+                      <button type="submit" class="cd-cta-btn-v2 primary">
+                        <i class="bi bi-cart-plus"></i> Sepete Ekle
+                      </button>
+                    </form>
+                  </div>
+                  <a th:if="${isInCart}" th:href="@{/sepet}" class="cd-cta-btn-v2 secondary">
+                    <i class="bi bi-cart-check-fill"></i> Sepete Git
+                  </a>
+                </div>
+                <div sec:authorize="isAnonymous()">
+                  <a th:href="@{/giris(sonra=|/egitimler/| + ${course.id})}" class="cd-cta-btn-v2 primary">
+                    <i class="bi bi-person-fill-lock"></i> Giriş Yap
+                  </a>
+                </div>
+              </div>
+
+            </div><!-- /cd-sidebar-cta -->
+
           </div>
         </div>
       </div>
@@ -286,362 +254,187 @@
   </div>
 </section>
 
-<!-- BODY -->
-<div class="cd-body">
-  <div class="container" style="padding-top:3rem;">
+<!-- ══════════════════════════════════════════════════════
+     SAYFA İÇİ NAVİGASYON
+     ══════════════════════════════════════════════════════ -->
+<nav class="cd-onepage-nav" id="cd-onepage-nav">
+  <div class="container">
+    <ul>
+      <li th:if="${course.aim != null and !#strings.isEmpty(course.aim)}">
+        <a href="#sec-amac">Amaç</a>
+      </li>
+      <li th:if="${course.targetAudienceList != null and !course.targetAudienceList.isEmpty()}">
+        <a href="#sec-hedef">Hedef Kitle</a>
+      </li>
+      <li th:if="${course.contentTopicsList != null and !course.contentTopicsList.isEmpty()}">
+        <a href="#sec-konular">Konu Başlıkları</a>
+      </li>
+      <li th:if="${course.curriculumModules != null and !course.curriculumModules.isEmpty()}">
+        <a href="#sec-mufredat">Müfredat</a>
+      </li>
+      <li th:if="${course.learningOutcomesList != null and !course.learningOutcomesList.isEmpty()}">
+        <a href="#sec-kazanim">Kazanımlar</a>
+      </li>
+      <li th:if="${course.prerequisitesList != null and !course.prerequisitesList.isEmpty()}">
+        <a href="#sec-onkosul">Ön Koşullar</a>
+      </li>
+      <li th:if="${course.trainingMethod != null or course.usedMaterials != null}">
+        <a href="#sec-yontem">Yöntem</a>
+      </li>
+      <li th:if="${course.assessmentItemsList != null and !course.assessmentItemsList.isEmpty()}">
+        <a href="#sec-degerlendirme">Değerlendirme</a>
+      </li>
+      <li th:if="${documents != null and !#lists.isEmpty(documents)}">
+        <a href="#sec-dokuman">Dokümanlar</a>
+      </li>
+      <li th:if="${(course.instructors != null and !course.instructors.isEmpty()) or (course.instructorName != null and !#strings.isEmpty(course.instructorName))}">
+        <a href="#sec-egitmen">Eğitmen</a>
+      </li>
+      <li>
+        <a href="#sec-yorum">Yorumlar</a>
+      </li>
+    </ul>
+  </div>
+</nav>
 
-    <!-- Flash -->
+<!-- ══════════════════════════════════════════════════════
+     ANA İÇERİK — form sırası ile eşleşen
+     ══════════════════════════════════════════════════════ -->
+<div class="cd-body-v2">
+  <div class="container">
 
-    <!-- ============================================================
-         KURS GENEL BİLGİLERİ — Açılır Panel
-         ============================================================ -->
-    <div class="cd-course-info-panel" style="margin-bottom:2rem;">
-      <div class="cd-info-header toggle-course-info" data-course-info-toggle style="cursor:pointer; display:flex; align-items:center; justify-content:space-between; padding:1.2rem 1.5rem; background:linear-gradient(135deg, var(--primary-600), var(--primary-700)); border-radius:12px; color:#fff;">
-        <div style="display:flex; align-items:center; gap:0.75rem;">
-          <i class="bi bi-info-circle-fill" style="font-size:1.2rem;"></i>
-          <span style="font-weight:700; font-size:1.05rem;">Kurs Genel Bilgileri</span>
-        </div>
-        <div style="display:flex; align-items:center; gap:0.5rem;">
-          <span style="font-size:0.8rem; opacity:0.9;">Detayları Gör</span>
-          <i class="bi bi-chevron-down" data-course-info-chevron style="transition:transform 0.3s;"></i>
-        </div>
-      </div>
+    <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
 
-      <div class="cd-info-body" data-course-info-body style="display:none; background:var(--bg); border:1px solid var(--border); border-top:none; border-radius:0 0 12px 12px; padding:1.5rem; box-shadow:var(--shadow-sm);">
-        <div class="cd-info-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:1.25rem;">
-
-          <!-- Eğitim Adı -->
-          <div class="cd-info-item">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-book-fill" style="color:var(--primary-500);"></i>
-              <span>Eğitim Adı</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.title}">Kurs Adı</div>
-          </div>
-
-          <!-- Eğitim Kategorisi -->
-          <div class="cd-info-item">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-folder-fill" style="color:var(--primary-500);"></i>
-              <span>Kategori</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.categoryDisplayName != null ? course.categoryDisplayName : 'Belirtilmedi'}">Kategori</div>
-          </div>
-
-          <!-- Seviye -->
-          <div class="cd-info-item">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-bar-chart-fill" style="color:var(--primary-500);"></i>
-              <span>Seviye</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.levelDisplayName != null ? course.levelDisplayName : 'Belirtilmedi'}">Seviye</div>
-          </div>
-
-          <!-- Eğitim Türü -->
-          <div class="cd-info-item">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-broadcast-pin" style="color:var(--primary-500);"></i>
-              <span>Eğitim Türü</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.courseTypeDisplayName != null ? course.courseTypeDisplayName : 'Belirtilmedi'}">Online Eğitim</div>
-          </div>
-
-          <!-- Eğitmen -->
-          <div class="cd-info-item">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-person-fill" style="color:var(--primary-500);"></i>
-              <span>Eğitmen</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;">
-              <span th:if="${course.instructors != null and !course.instructors.isEmpty()}" th:text="${#strings.listJoin(course.instructors.![name], ', ')}">Eğitmen Adı</span>
-              <span th:if="${(course.instructors == null or course.instructors.isEmpty()) and course.instructorName != null}" th:text="${course.instructorName}">Eğitmen Adı</span>
-              <span th:if="${(course.instructors == null or course.instructors.isEmpty()) and course.instructorName == null}">Belirtilmedi</span>
-            </div>
-          </div>
-
-          <!-- Hazırlama Tarihi -->
-          <div class="cd-info-item" th:if="${course.createdAt != null}">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-calendar3" style="color:var(--primary-500);"></i>
-              <span>Hazırlama Tarihi</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${#temporals.format(course.createdAt, 'dd.MM.yyyy')}">01.01.2024</div>
-          </div>
-
-          <!-- Versiyon (kullanıcı tanımlı) -->
-          <div class="cd-info-item" th:if="${course.courseVersion != null}">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-git" style="color:var(--primary-500);"></i>
-              <span>Versiyon</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.courseVersion}">V1</div>
-          </div>
-
-          <!-- Min/Maks Süre -->
-          <div class="cd-info-item" th:if="${course.minHours != null or course.maxHours != null}">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-clock" style="color:var(--primary-500);"></i>
-              <span>Eğitim Süresi</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;">
-              <span th:if="${course.minHours != null and course.maxHours != null}"
-                    th:text="${course.minHours} + ' – ' + ${course.maxHours} + ' Saat'"></span>
-              <span th:if="${course.minHours != null and course.maxHours == null}"
-                    th:text="'Min. ' + ${course.minHours} + ' Saat'"></span>
-              <span th:if="${course.minHours == null and course.maxHours != null}"
-                    th:text="'Maks. ' + ${course.maxHours} + ' Saat'"></span>
-            </div>
-          </div>
-
-          <!-- Hazırlayan / Kontrol Eden / Onaylayan -->
-          <div class="cd-info-item" th:if="${course.preparedBy != null}">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-person-check" style="color:var(--primary-500);"></i>
-              <span>Hazırlayan</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.preparedBy}"></div>
-          </div>
-
-          <div class="cd-info-item" th:if="${course.reviewedBy != null}">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-eye" style="color:var(--primary-500);"></i>
-              <span>Kontrol Eden</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.reviewedBy}"></div>
-          </div>
-
-          <div class="cd-info-item" th:if="${course.approvedBy != null}">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-patch-check" style="color:var(--primary-500);"></i>
-              <span>Onaylayan</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.approvedBy}"></div>
-          </div>
-
-          <div class="cd-info-item" th:if="${course.preparedDate != null}">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-calendar-check" style="color:var(--primary-500);"></i>
-              <span>Hazırlama Tarihi</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;"
-                 th:text="${#temporals.format(course.preparedDate, 'dd.MM.yyyy')}"></div>
-          </div>
-
-          <div class="cd-info-item" th:if="${course.usedPlatform != null}">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-display" style="color:var(--primary-500);"></i>
-              <span>Platform / Araç</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${course.usedPlatform}"></div>
-          </div>
-
-          <!-- Güncelleme Tarihi -->
-          <div class="cd-info-item" th:if="${course.updatedAt != null}">
-            <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; color:var(--text-muted); font-size:0.78rem; text-transform:uppercase; letter-spacing:0.03em;">
-              <i class="bi bi-arrow-repeat" style="color:var(--primary-500);"></i>
-              <span>Son Güncelleme</span>
-            </div>
-            <div style="font-weight:600; color:var(--text); font-size:0.95rem;" th:text="${#temporals.format(course.updatedAt, 'dd.MM.yyyy')}">01.01.2024</div>
-          </div>
-
-        </div>
+    <!-- 2. Eğitimin Amacı -->
+    <div th:if="${course.aim != null and !#strings.isEmpty(course.aim)}" class="cd-section-v2" id="sec-amac">
+      <h2 class="cd-section-title-v2"><i class="bi bi-bullseye"></i> Eğitimin Amacı</h2>
+      <div class="cd-card-v2">
+        <p class="cd-text-content" th:text="${course.aim}"></p>
       </div>
     </div>
 
-    <!-- ============================================================
-         KURS MÜFREDATı — Tüm Kurs Tipleri (JSON modüller)
-         ============================================================ -->
-    <div th:if="${course != null and course.curriculumModules != null and course.curriculumModules.size() > 0}">
-
-      <!-- Başlık -->
-      <div class="cd-section-header">
-        <h2 class="cd-section-title">
-          <i class="bi bi-journal-bookmark-fill"></i> Kurs Müfredatı
-        </h2>
-        <span style="font-size:0.82rem;color:var(--text-muted);">
-          <i class="bi bi-grid-3x2-gap"></i>
-          <span th:text="${course.curriculumModules.size()}">0</span> Modül
-        </span>
-      </div>
-
-      <!-- Accordion modüller -->
-        <div id="curriculum-accordion" style="display:flex;flex-direction:column;gap:0.85rem;margin-bottom:2.5rem;">
-
-            <div th:each="cm, modSt : ${course.curriculumModules}" class="cm-accord-card" th:id="'module-' + ${modSt.index}">
-
-                <div class="cm-accord-head"
-                     th:data-module-index="${modSt.index}"
-                     th:id="'mhead-' + ${modSt.index}">
-                    <div style="display:flex;align-items:center;gap:0.9rem;flex:1;min-width:0;">
-                        <div class="cm-accord-num"
-                             th:text="'MODÜL ' + ${#strings.toString(modSt.count).length() == 1 ? '0' + modSt.count : modSt.count}">
-                            MODÜL 01
-                        </div>
-                        <div class="cm-accord-title" th:text="${cm.title}">Modül Başlığı</div>
-                    </div>
-                    <div class="cm-accord-chevron" th:id="'chevron-' + ${modSt.index}">
-                        <i class="bi bi-chevron-down"></i>
-                    </div>
-                </div>
-
-                <div class="cm-accord-body"
-                     th:id="'mbody-' + ${modSt.index}"
-                     style="display:none;">
-
-                    <p th:if="${cm.description != null and !#strings.isEmpty(cm.description)}"
-                       class="cm-accord-desc" th:text="${cm.description}"></p>
-
-                    <!-- Modül Amacı -->
-                    <div th:if="${cm.purpose != null and !#strings.isEmpty(cm.purpose)}"
-                         style="margin-bottom:1rem;">
-                      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.35rem;">
-                        <i class="bi bi-bullseye" style="color:var(--primary-400);"></i> Modül Amacı
-                      </div>
-                      <p style="font-size:0.9rem;color:var(--text-alt);line-height:1.7;margin:0;" th:text="${cm.purpose}"></p>
-                    </div>
-
-                    <!-- Konu Başlıkları -->
-                    <div th:if="${cm.topics != null and !cm.topics.isEmpty()}"
-                         class="cm-accord-topics" style="margin-bottom:1rem;">
-                        <div th:each="topic, tSt : ${cm.topics}" class="cm-accord-topic">
-                            <i class="bi bi-check2" th:style="${tSt.index % 2 == 0} ? 'color:#2b8a3e;' : 'color:#e67700;'"></i>
-                            <span th:text="${topic}">Konu</span>
-                        </div>
-                    </div>
-
-                    <!-- Uygulama / Etkinlikler -->
-                    <div th:if="${cm.activities != null and !cm.activities.isEmpty()}"
-                         style="margin-bottom:1rem;">
-                      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.4rem;">
-                        <i class="bi bi-lightning-fill" style="color:#e67700;"></i> Uygulama / Etkinlikler
-                      </div>
-                      <ul style="margin:0;padding-left:1.25rem;color:var(--text-alt);font-size:0.88rem;line-height:1.8;">
-                        <li th:each="act : ${cm.activities}" th:text="${act}"></li>
-                      </ul>
-                    </div>
-
-                    <!-- Modül Kazanımları -->
-                    <div th:if="${cm.outcomes != null and !cm.outcomes.isEmpty()}"
-                         style="margin-bottom:1rem;">
-                      <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.4rem;">
-                        <i class="bi bi-check2-circle" style="color:#2b8a3e;"></i> Modül Kazanımları
-                      </div>
-                      <ul style="margin:0;padding-left:1.25rem;color:var(--text-alt);font-size:0.88rem;line-height:1.8;">
-                        <li th:each="out : ${cm.outcomes}" th:text="${out}"></li>
-                      </ul>
-                    </div>
-
-                    <!-- Süre -->
-                    <div th:if="${cm.durationHours != null}"
-                         style="font-size:0.85rem;color:var(--text-muted);margin-top:0.5rem;">
-                      <i class="bi bi-clock" style="color:var(--primary-400);"></i>
-                      Süre: <strong th:text="${cm.durationHours} + ' saat'"></strong>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-      <!-- Accordion CSS -->
-      
-
-    </div>
-
-    <!-- Müfredat yoksa boş durum -->
-    <div th:if="${course != null and course.curriculumModules != null and course.curriculumModules.size() == 0}"
-         class="cd-curriculum" style="margin-bottom:2.5rem;">
-      <div class="cd-empty">
-        <i class="bi bi-journal-x"></i>
-        <p style="margin:0;">Bu kurs için henüz müfredat eklenmemiş.</p>
-      </div>
-    </div>
-
-    <!-- ══════════════════════════════════════════════════════════
-         UZEM FORM BÖLÜMLERİ
-         ══════════════════════════════════════════════════════════ -->
-
-    <!-- Eğitim Amacı -->
-    <div th:if="${course.aim != null and !#strings.isEmpty(course.aim)}" style="margin-bottom:2.5rem;">
-      <div class="cd-section-header">
-        <h2 class="cd-section-title"><i class="bi bi-bullseye"></i> Eğitimin Amacı</h2>
-      </div>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:var(--shadow-sm);">
-        <p style="font-size:0.95rem;color:var(--text-alt);line-height:1.8;margin:0;" th:text="${course.aim}"></p>
-      </div>
-    </div>
-
-    <!-- Hedef Kitle -->
-    <div th:if="${course.targetAudienceList != null and !course.targetAudienceList.isEmpty()}" style="margin-bottom:2.5rem;">
-      <div class="cd-section-header">
-        <h2 class="cd-section-title"><i class="bi bi-people-fill"></i> Hedef Kitle</h2>
-      </div>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:var(--shadow-sm);">
-        <ul style="margin:0;padding-left:1.4rem;color:var(--text-alt);font-size:0.93rem;line-height:1.9;">
+    <!-- 3. Hedef Kitle -->
+    <div th:if="${course.targetAudienceList != null and !course.targetAudienceList.isEmpty()}" class="cd-section-v2" id="sec-hedef">
+      <h2 class="cd-section-title-v2"><i class="bi bi-people-fill"></i> Hedef Kitle</h2>
+      <div class="cd-card-v2">
+        <ul class="cd-bullet-list">
           <li th:each="item : ${course.targetAudienceList}" th:text="${item}"></li>
         </ul>
       </div>
     </div>
 
-    <!-- Eğitim Kazanımları -->
-    <div th:if="${course.learningOutcomesList != null and !course.learningOutcomesList.isEmpty()}" style="margin-bottom:2.5rem;">
-      <div class="cd-section-header">
-        <h2 class="cd-section-title"><i class="bi bi-award"></i> Eğitim Kazanımları</h2>
-      </div>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:var(--shadow-sm);">
-        <p style="font-size:0.82rem;color:var(--text-muted);margin:0 0 1rem;">
-          Bu programı başarıyla tamamlayan katılımcılar:
-        </p>
-        <ul style="margin:0;padding-left:1.4rem;color:var(--text-alt);font-size:0.93rem;line-height:1.9;">
-          <li th:each="outcome : ${course.learningOutcomesList}" th:text="${outcome}"></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Ön Koşullar -->
-    <div th:if="${course.prerequisitesList != null and !course.prerequisitesList.isEmpty()}" style="margin-bottom:2.5rem;">
-      <div class="cd-section-header">
-        <h2 class="cd-section-title"><i class="bi bi-check2-square"></i> Ön Koşullar</h2>
-      </div>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:var(--shadow-sm);">
-        <ul style="margin:0;padding-left:1.4rem;color:var(--text-alt);font-size:0.93rem;line-height:1.9;">
-          <li th:each="item : ${course.prerequisitesList}" th:text="${item}"></li>
-        </ul>
-      </div>
-    </div>
-
-    <!-- Eğitim Konu Başlıkları -->
-    <div th:if="${course.contentTopicsList != null and !course.contentTopicsList.isEmpty()}" style="margin-bottom:2.5rem;">
-      <div class="cd-section-header">
-        <h2 class="cd-section-title"><i class="bi bi-list-ol"></i> Eğitim Konu Başlıkları</h2>
-      </div>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:var(--shadow-sm);">
-        <ul style="margin:0;padding-left:1.4rem;color:var(--text-alt);font-size:0.93rem;line-height:1.9;">
+    <!-- 4. Eğitim Konu Başlıkları -->
+    <div th:if="${course.contentTopicsList != null and !course.contentTopicsList.isEmpty()}" class="cd-section-v2" id="sec-konular">
+      <h2 class="cd-section-title-v2"><i class="bi bi-list-ol"></i> Eğitim Konu Başlıkları</h2>
+      <div class="cd-card-v2">
+        <ul class="cd-bullet-list">
           <li th:each="t : ${course.contentTopicsList}" th:text="${t}"></li>
         </ul>
       </div>
     </div>
 
-    <!-- Ölçme ve Değerlendirme -->
-    <div th:if="${course.assessmentItemsList != null and !course.assessmentItemsList.isEmpty()}" style="margin-bottom:2.5rem;">
-      <div class="cd-section-header">
-        <h2 class="cd-section-title"><i class="bi bi-graph-up"></i> Ölçme ve Değerlendirme</h2>
+    <!-- 5–6. Kurs Müfredatı -->
+    <div th:if="${course.curriculumModules != null and !course.curriculumModules.isEmpty()}" class="cd-section-v2" id="sec-mufredat">
+      <h2 class="cd-section-title-v2">
+        <i class="bi bi-journal-bookmark-fill"></i> Modül Listesi ve Detay Bilgileri
+        <span class="cd-section-badge" th:text="${course.curriculumModules.size() + ' Modül'}">0 Modül</span>
+      </h2>
+      <div class="cd-curriculum-list">
+        <div th:each="cm, modSt : ${course.curriculumModules}" class="cd-curriculum-card">
+          <div class="cd-curriculum-head">
+            <div class="cd-curriculum-num"
+                 th:text="${modSt.count < 10 ? 'MODÜL 0' + modSt.count : 'MODÜL ' + modSt.count}">MODÜL 01</div>
+            <div class="cd-curriculum-title" th:text="${cm.title}">Modül Başlığı</div>
+            <i class="bi bi-chevron-down cd-curriculum-chevron"></i>
+          </div>
+          <div class="cd-curriculum-body">
+            <p th:if="${cm.description != null and !#strings.isEmpty(cm.description)}"
+               class="cd-curriculum-desc" th:text="${cm.description}"></p>
+            <div th:if="${cm.purpose != null and !#strings.isEmpty(cm.purpose)}" style="margin-bottom:1rem;">
+              <div class="cd-curriculum-subtitle"><i class="bi bi-bullseye" style="color:var(--primary-400);"></i> Modül Amacı</div>
+              <p style="font-size:0.9rem;color:var(--text-alt);line-height:1.7;margin:0;" th:text="${cm.purpose}"></p>
+            </div>
+            <div th:if="${cm.topics != null and !cm.topics.isEmpty()}" class="cd-curriculum-topics" style="margin-bottom:1rem;">
+              <div th:each="topic : ${cm.topics}" class="cd-curriculum-topic">
+                <i class="bi bi-check2"></i>
+                <span th:text="${topic}">Konu</span>
+              </div>
+            </div>
+            <div th:if="${cm.activities != null and !cm.activities.isEmpty()}" style="margin-bottom:1rem;">
+              <div class="cd-curriculum-subtitle"><i class="bi bi-pencil-square" style="color:#e67700;"></i> Uygulama / Etkinlikler</div>
+              <ul style="margin:0;padding-left:1.25rem;color:var(--text-alt);font-size:0.88rem;line-height:1.8;">
+                <li th:each="act : ${cm.activities}" th:text="${act}"></li>
+              </ul>
+            </div>
+            <div th:if="${cm.outcomes != null and !cm.outcomes.isEmpty()}" style="margin-bottom:1rem;">
+              <div class="cd-curriculum-subtitle"><i class="bi bi-check2-circle" style="color:#2b8a3e;"></i> Modül Kazanımları</div>
+              <ul style="margin:0;padding-left:1.25rem;color:var(--text-alt);font-size:0.88rem;line-height:1.8;">
+                <li th:each="out : ${cm.outcomes}" th:text="${out}"></li>
+              </ul>
+            </div>
+            <div th:if="${cm.durationHours != null}" style="font-size:0.85rem;color:var(--text-muted);">
+              <i class="bi bi-clock" style="color:var(--primary-400);"></i>
+              Süre: <strong th:text="${cm.durationHours + ' saat'}"></strong>
+            </div>
+          </div>
+        </div>
       </div>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:var(--shadow-sm);">
-        <table style="width:100%;border-collapse:collapse;font-size:0.9rem;">
+    </div>
+
+    <!-- 7. Eğitim Kazanımları -->
+    <div th:if="${course.learningOutcomesList != null and !course.learningOutcomesList.isEmpty()}" class="cd-section-v2" id="sec-kazanim">
+      <h2 class="cd-section-title-v2"><i class="bi bi-trophy-fill"></i> Eğitim Kazanımları</h2>
+      <div class="cd-card-v2">
+        <p class="cd-section-intro">Bu programı başarıyla tamamlayan katılımcılar:</p>
+        <ul class="cd-bullet-list cd-bullet-check">
+          <li th:each="outcome : ${course.learningOutcomesList}" th:text="${outcome}"></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 8. Ön Koşullar -->
+    <div th:if="${course.prerequisitesList != null and !course.prerequisitesList.isEmpty()}" class="cd-section-v2" id="sec-onkosul">
+      <h2 class="cd-section-title-v2"><i class="bi bi-check2-square"></i> Ön Koşullar</h2>
+      <div class="cd-card-v2">
+        <ul class="cd-bullet-list">
+          <li th:each="item : ${course.prerequisitesList}" th:text="${item}"></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- 9. Eğitim Yöntemi ve Materyaller -->
+    <div th:if="${course.trainingMethod != null or course.usedMaterials != null}" class="cd-section-v2" id="sec-yontem">
+      <h2 class="cd-section-title-v2"><i class="bi bi-easel2-fill"></i> Eğitim Yöntemi ve Materyaller</h2>
+      <div class="cd-card-v2">
+        <div th:if="${course.trainingMethod != null}" style="margin-bottom:1.25rem;">
+          <div class="cd-section-subtitle"><i class="bi bi-easel2" style="color:var(--primary-400);"></i> Eğitim Yöntemi</div>
+          <p class="cd-text-content" th:text="${course.trainingMethod}"></p>
+        </div>
+        <div th:if="${course.usedMaterials != null}">
+          <div class="cd-section-subtitle"><i class="bi bi-file-earmark-richtext" style="color:var(--primary-400);"></i> Kullanılacak Materyaller</div>
+          <p class="cd-text-content" th:text="${course.usedMaterials}"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. Ölçme ve Değerlendirme -->
+    <div th:if="${course.assessmentItemsList != null and !course.assessmentItemsList.isEmpty()}" class="cd-section-v2" id="sec-degerlendirme">
+      <h2 class="cd-section-title-v2"><i class="bi bi-clipboard2-check-fill"></i> Ölçme ve Değerlendirme</h2>
+      <div class="cd-card-v2" style="padding:0;overflow:hidden;">
+        <table class="cd-assess-table">
           <thead>
-            <tr style="background:var(--bg-alt);border-bottom:2px solid var(--border);">
-              <th style="padding:0.85rem 1.25rem;text-align:left;font-weight:700;color:var(--text-muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;">Değerlendirme Unsuru</th>
-              <th style="padding:0.85rem 1.25rem;text-align:left;font-weight:700;color:var(--text-muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;">Açıklama</th>
-              <th style="padding:0.85rem 1.25rem;text-align:center;font-weight:700;color:var(--text-muted);font-size:0.78rem;text-transform:uppercase;letter-spacing:0.04em;">Ağırlık</th>
+            <tr>
+              <th>Değerlendirme Unsuru</th>
+              <th>Açıklama</th>
+              <th style="text-align:center;">Ağırlık</th>
             </tr>
           </thead>
           <tbody>
             <tr th:each="ai, stat : ${course.assessmentItemsList}"
-                th:style="${stat.odd} ? 'background:var(--bg-alt);' : 'background:var(--bg);'"
-                style="border-bottom:1px solid var(--gray-100);">
-              <td style="padding:0.85rem 1.25rem;font-weight:600;color:var(--text);" th:text="${ai.type}"></td>
-              <td style="padding:0.85rem 1.25rem;color:var(--text-alt);" th:text="${ai.description}"></td>
-              <td style="padding:0.85rem 1.25rem;text-align:center;font-weight:700;color:var(--primary-600);"
+                th:style="${stat.odd ? 'background:var(--bg-alt);' : ''}">
+              <td th:text="${ai.type}"></td>
+              <td th:text="${ai.description}"></td>
+              <td style="text-align:center;font-weight:700;color:var(--primary-600);"
                   th:text="${ai.weight != null ? ai.weight + '%' : '—'}"></td>
             </tr>
           </tbody>
@@ -649,156 +442,142 @@
       </div>
     </div>
 
-    <!-- Eğitim Yöntemi ve Materyaller -->
-    <div th:if="${course.trainingMethod != null or course.usedMaterials != null}" style="margin-bottom:2.5rem;">
-      <div class="cd-section-header">
-        <h2 class="cd-section-title"><i class="bi bi-tools"></i> Eğitim Yöntemi ve Materyaller</h2>
-      </div>
-      <div style="background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:1.5rem;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;gap:1.25rem;">
-        <div th:if="${course.trainingMethod != null}">
-          <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.4rem;">
-            <i class="bi bi-easel" style="color:var(--primary-400);"></i> Eğitim Yöntemi
-          </div>
-          <p style="font-size:0.93rem;color:var(--text-alt);line-height:1.7;margin:0;" th:text="${course.trainingMethod}"></p>
-        </div>
-        <div th:if="${course.usedMaterials != null}">
-          <div style="font-size:0.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:0.4rem;">
-            <i class="bi bi-file-earmark-richtext" style="color:var(--primary-400);"></i> Kullanılacak Materyaller
-          </div>
-          <p style="font-size:0.93rem;color:var(--text-alt);line-height:1.7;margin:0;" th:text="${course.usedMaterials}"></p>
-        </div>
-      </div>
-    </div>
-
     <!-- Ders Dokümanları -->
-    <div th:if="${documents != null and !#lists.isEmpty(documents)}" style="margin-bottom:2.5rem;">
-      <div class="cd-section-header">
-        <h2 class="cd-section-title"><i class="bi bi-file-earmark-richtext"></i> Ders Dokümanları</h2>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+    <div th:if="${documents != null and !#lists.isEmpty(documents)}" class="cd-section-v2" id="sec-dokuman">
+      <h2 class="cd-section-title-v2"><i class="bi bi-file-earmark-richtext"></i> Ders Dokümanları</h2>
+      <div class="cd-doc-list">
         <a th:each="doc : ${documents}"
            th:href="@{'/uploads/' + ${doc.filePath}}"
-           target="_blank"
-           style="display:flex;align-items:center;gap:0.75rem;padding:0.85rem 1.25rem;background:var(--bg);border:1px solid var(--border);border-radius:10px;text-decoration:none;transition:all 0.15s;">
-          <div style="width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;flex-shrink:0;">
-            <i th:switch="${#strings.toLowerCase(doc.fileType)}"
-               th:case="'application/pdf'" class="bi bi-file-pdf-fill" style="color:#dc2626;"></i>
-            <i th:case="'application/msword','application/vnd.openxmlformats-officedocument.wordprocessingml.document'"
-               class="bi bi-file-word-fill" style="color:#2563eb;"></i>
-            <i th:case="'application/vnd.ms-powerpoint','application/vnd.openxmlformats-officedocument.presentationml.presentation'"
-               class="bi bi-file-ppt-fill" style="color:#ea580c;"></i>
-            <i th:case="'application/vnd.ms-excel','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'"
-               class="bi bi-file-excel-fill" style="color:#16a34a;"></i>
-            <i th:case="'image/jpeg','image/png','image/webp','image/gif'"
-               class="bi bi-file-image-fill" style="color:#8b5cf6;"></i>
-            <i th:case="*" class="bi bi-file-earmark-fill" style="color:var(--text-muted);"></i>
+           target="_blank" class="cd-doc-item">
+          <div class="cd-doc-icon">
+            <i class="bi bi-file-pdf-fill" style="color:#dc2626;"
+               th:if="${doc.fileType != null and #strings.contains(#strings.toLowerCase(doc.fileType), 'pdf')}"></i>
+            <i class="bi bi-file-word-fill" style="color:#2563eb;"
+               th:if="${doc.fileType != null and (#strings.contains(#strings.toLowerCase(doc.fileType), 'word') or #strings.contains(#strings.toLowerCase(doc.fileType), 'document'))}"></i>
+            <i class="bi bi-file-ppt-fill" style="color:#ea580c;"
+               th:if="${doc.fileType != null and #strings.contains(#strings.toLowerCase(doc.fileType), 'presentation')}"></i>
+            <i class="bi bi-file-excel-fill" style="color:#16a34a;"
+               th:if="${doc.fileType != null and (#strings.contains(#strings.toLowerCase(doc.fileType), 'excel') or #strings.contains(#strings.toLowerCase(doc.fileType), 'spreadsheet'))}"></i>
+            <i class="bi bi-file-earmark-fill" style="color:var(--text-muted);"
+               th:if="${doc.fileType == null}"></i>
           </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-weight:600;font-size:0.92rem;color:var(--text-alt);" th:text="${doc.title}">Doküman</div>
-            <div style="font-size:0.75rem;color:var(--text-muted);display:flex;gap:0.75rem;margin-top:0.2rem;">
-              <span th:text="${doc.originalFileName}">dosya.pdf</span>
-              <span th:text="${#numbers.formatDecimal(doc.fileSize / 1024.0, 1, 1) + ' KB'}">KB</span>
+          <div class="cd-doc-info">
+            <div class="cd-doc-title" th:text="${doc.title}">Doküman</div>
+            <div class="cd-doc-meta"
+                 th:text="${doc.originalFileName + ' · ' + #numbers.formatDecimal(doc.fileSize / 1024.0, 1, 1) + ' KB'}"></div>
+          </div>
+          <i class="bi bi-download cd-doc-dl"></i>
+        </a>
+      </div>
+    </div>
+
+    <!-- Eğitmen Hakkında -->
+    <div th:if="${(course.instructors != null and !course.instructors.isEmpty()) or (course.instructorName != null and !#strings.isEmpty(course.instructorName))}"
+         class="cd-section-v2" id="sec-egitmen">
+      <h2 class="cd-section-title-v2"><i class="bi bi-person-badge-fill"></i> Eğitmen Hakkında</h2>
+      <div class="cd-card-v2 cd-instructor-detail-card">
+        <th:block th:if="${course.instructors != null and !course.instructors.isEmpty()}">
+          <div th:each="instructor : ${course.instructors}" class="cd-instructor-detail">
+            <a th:href="@{/egitmenler/{id}(id=${instructor.id})}" style="display:contents;text-decoration:none;">
+            <div th:if="${instructor.photoUrl != null}" class="cd-instructor-detail-avatar" style="padding:0;overflow:hidden;">
+              <img th:src="@{${instructor.photoUrl}}" alt="" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+            <div th:if="${instructor.photoUrl == null}" class="cd-instructor-detail-avatar"
+                 th:text="${#strings.substring(instructor.name, 0, 1)}">E</div>
+            <div class="cd-instructor-detail-info">
+              <div class="cd-instructor-detail-name" th:text="${instructor.name}">Ad</div>
+              <div th:if="${instructor.expertise != null}" class="cd-instructor-detail-expertise" th:text="${instructor.expertise}"></div>
+              <div class="cd-instructor-detail-stats" th:if="${instructor.courseCount != null or instructor.studentCount != null}">
+                <span th:if="${instructor.courseCount != null and instructor.courseCount > 0}">
+                  <i class="bi bi-journal-bookmark-fill"></i> <span th:text="${instructor.courseCount}">0</span> Kurs
+                </span>
+                <span th:if="${instructor.studentCount != null and instructor.studentCount > 0}">
+                  <i class="bi bi-people-fill"></i> <span th:text="${instructor.studentCount}">0</span> Öğrenci
+                </span>
+              </div>
+            </div>
+            </a>
+          </div>
+        </th:block>
+        <th:block th:if="${course.instructors == null or course.instructors.isEmpty()}">
+          <div class="cd-instructor-detail">
+            <div th:if="${course.instructorImage != null}" class="cd-instructor-detail-avatar" style="padding:0;overflow:hidden;">
+              <img th:src="@{${course.instructorImage}}" alt="" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+            <div th:if="${course.instructorImage == null}" class="cd-instructor-detail-avatar"
+                 th:text="${#strings.substring(course.instructorName, 0, 1)}">E</div>
+            <div class="cd-instructor-detail-info">
+              <div class="cd-instructor-detail-name" th:text="${course.instructorName}"></div>
             </div>
           </div>
-          <i class="bi bi-download" style="color:var(--primary-600);font-size:1.1rem;flex-shrink:0;"></i>
-        </a>
+        </th:block>
       </div>
     </div>
 
-    <!-- Online Kurs: Eğitime Başla Banneri (video varsa) -->
-    <div th:if="${(course.courseType == null or course.courseType.name() == 'ONLINE') and videos != null and !#lists.isEmpty(videos)}">
 
-      <!-- Aktif kayıtlı öğrenci banneri -->
-      <div th:if="${isActiveEnrolled != null and isActiveEnrolled}" class="cd-start-banner">
-        <div style="display:flex;align-items:center;gap:1rem;">
-          <div class="cd-start-banner-icon">
-            <i class="bi bi-play-fill"></i>
-          </div>
-          <div class="cd-start-banner-text">
-            <h4>Kursunuz Aktif!</h4>
-            <p>Eğitim videolarına erişmek için aşağıdaki butonu kullanın.</p>
-          </div>
-        </div>
-        <a th:href="@{/egitimler/izle/{id}(id=${course.id})}" class="cd-start-btn">
-          <i class="bi bi-play-circle-fill"></i> Kursa Başla
-        </a>
-      </div>
 
-      <!-- Ödeme bekleniyor -->
-      <div th:if="${isEnrolled != null and isEnrolled and (isActiveEnrolled == null or !isActiveEnrolled)}"
-           class="cd-pending-warn">
-        <i class="bi bi-hourglass-split"></i>
-        Kaydınız yönetici onayı bekliyor. Onaylandığında tüm videolara erişebileceksiniz.
-      </div>
+    <!-- Yorumlar -->
+    <div class="cd-section-v2" id="sec-yorum">
+      <h2 class="cd-section-title-v2">
+        <i class="bi bi-star-fill" style="color:var(--warm-500);"></i> Öğrenci Yorumları
+        <span th:if="${course.reviewCount != null and course.reviewCount > 0}"
+              class="cd-section-badge" th:text="${course.reviewCount + ' Yorum'}"></span>
+      </h2>
 
-      <!-- Satın alma çağrısı -->
-      <div th:if="${isEnrolled == null or !isEnrolled}" class="cd-enroll-call">
-        <i class="bi bi-info-circle"></i>
-        Video derslerine erişmek için eğitimi satın almanız gerekmektedir.
-        <span sec:authorize="isAnonymous()">
-          — <a th:href="@{/giris(sonra=|/egitimler/| + ${course.id})}"
-               style="color:var(--primary-600);font-weight:600;">Giriş Yap</a>
-        </span>
-      </div>
-    </div>
-
-    <!-- YORUMLAR -->
-    <div class="cd-reviews">
-      <div class="cd-section-header">
-        <h2 class="cd-section-title">
-          <i class="bi bi-star-fill" style="color: var(--warm-500);"></i> Öğrenci Yorumları
-        </h2>
-      </div>
-
-      <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
-
-      <!-- Form (sadece aktif kayitli ve yorum yapmamissa) -->
-      <div th:if="${isActiveEnrolled != null and isActiveEnrolled and hasReviewed != null and !hasReviewed}" class="cd-rating-form">
-        <h4 style="margin-top:0; color:var(--text); font-size:1.05rem; font-weight:700; margin-bottom:1rem;">Bu kursu değerlendirin</h4>
-        <form th:action="@{/egitimler/{id}/yorum(id=${course.id})}" method="post" th:object="${reviewRequest}">
+      <div th:if="${isActiveEnrolled != null and isActiveEnrolled and hasReviewed != null and !hasReviewed}"
+           class="cd-review-form-v2">
+        <h4>Bu kursu değerlendirin</h4>
+        <form id="review-form" th:action="@{/egitimler/{id}/yorum(id=${course.id})}" method="post" th:object="${reviewRequest}">
           <div class="star-rating">
-            <input type="radio" id="star5" name="rating" value="5" required/><label for="star5" title="5 Yıldız"><i class="bi bi-star-fill"></i></label>
-            <input type="radio" id="star4" name="rating" value="4"/><label for="star4" title="4 Yıldız"><i class="bi bi-star-fill"></i></label>
-            <input type="radio" id="star3" name="rating" value="3"/><label for="star3" title="3 Yıldız"><i class="bi bi-star-fill"></i></label>
-            <input type="radio" id="star2" name="rating" value="2"/><label for="star2" title="2 Yıldız"><i class="bi bi-star-fill"></i></label>
-            <input type="radio" id="star1" name="rating" value="1"/><label for="star1" title="1 Yıldız"><i class="bi bi-star-fill"></i></label>
+            <input type="radio" id="star5" name="rating" value="5"/>
+            <label for="star5" title="5 Yıldız"><i class="bi bi-star-fill"></i></label>
+            <input type="radio" id="star4" name="rating" value="4"/>
+            <label for="star4" title="4 Yıldız"><i class="bi bi-star-fill"></i></label>
+            <input type="radio" id="star3" name="rating" value="3"/>
+            <label for="star3" title="3 Yıldız"><i class="bi bi-star-fill"></i></label>
+            <input type="radio" id="star2" name="rating" value="2"/>
+            <label for="star2" title="2 Yıldız"><i class="bi bi-star-fill"></i></label>
+            <input type="radio" id="star1" name="rating" value="1"/>
+            <label for="star1" title="1 Yıldız"><i class="bi bi-star-fill"></i></label>
           </div>
-          <textarea name="comment" rows="3" placeholder="Eğitim hakkındaki düşüncelerinizi paylaşın..." required
-                    class="review-textarea"
-                    style="width:100%; border:1px solid var(--border); border-radius:var(--radius-sm); padding:0.85rem; margin-bottom:1rem; font-family:inherit; font-size:0.9rem; resize:vertical; transition: border-color var(--transition-fast); background: var(--bg-alt);"></textarea>
-          <button type="submit" class="cd-start-btn" style="cursor:pointer;">
+          <textarea name="comment" rows="3"
+                    placeholder="Eğitim hakkındaki düşüncelerinizi paylaşın..."
+                    class="cd-review-textarea-v2"></textarea>
+          <button type="submit" class="cd-cta-btn-v2 primary" style="width:auto;padding:0.65rem 1.5rem;">
             <i class="bi bi-send-fill"></i> Yorumu Gönder
           </button>
         </form>
       </div>
 
-      <div th:if="${hasReviewed != null and hasReviewed}" class="flash-info" style="padding:12px 20px;border-radius:10px;font-size:0.9rem;font-weight:500;display:flex;align-items:center;gap:10px;margin-bottom:1rem;">
+      <div th:if="${hasReviewed != null and hasReviewed}"
+           style="padding:12px 20px;border-radius:10px;font-size:0.9rem;font-weight:500;display:flex;align-items:center;gap:10px;margin-bottom:1rem;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;">
         <i class="bi bi-info-circle"></i> Bu kurs için değerlendirmenizi aldık. Katkınız için teşekkürler!
       </div>
 
-      <!-- Yorum Listesi -->
-      <div th:if="${reviews != null and !#lists.isEmpty(reviews)}">
-        <div th:each="rev : ${reviews}" class="cd-rev-card">
-          <div class="cd-rev-top">
-            <div class="cd-rev-user">
-              <div class="cd-rev-avatar" th:text="${#strings.substring(rev.userFullName,0,1)}"></div>
-              <div>
-                <div class="cd-rev-name" th:text="${rev.userFullName}">Kullanıcı</div>
-                <div class="cd-rev-date" th:text="${#temporals.format(rev.createdAt, 'dd MMMM yyyy, HH:mm')}">Tarih</div>
-              </div>
+      <div class="cd-review-list-v2" th:if="${reviews != null and !#lists.isEmpty(reviews)}">
+        <div th:each="rev : ${reviews}" class="cd-review-card-v2">
+          <div class="cd-review-card-top">
+            <div class="cd-review-card-avatar" th:text="${#strings.substring(rev.userFullName,0,1)}"></div>
+            <div>
+              <div class="cd-review-card-name" th:text="${rev.userFullName}"></div>
+              <div class="cd-review-card-date" th:text="${#temporals.format(rev.createdAt, 'dd MMMM yyyy, HH:mm')}"></div>
             </div>
-            <div class="cd-rev-stars">
-              <span th:each="i : ${#numbers.sequence(1, rev.rating)}"><i class="bi bi-star-fill"></i></span><span style="color:var(--gray-300);" th:if="${rev.rating < 5}" th:each="i : ${#numbers.sequence(1, 5 - rev.rating)}"><i class="bi bi-star-fill"></i></span>
+            <div class="cd-review-card-stars">
+              <i th:each="i : ${#numbers.sequence(1, rev.rating)}" class="bi bi-star-fill"></i>
+              <i th:if="${rev.rating < 5}"
+                 th:each="i : ${#numbers.sequence(1, 5 - rev.rating)}"
+                 class="bi bi-star" style="color:var(--gray-300);"></i>
             </div>
           </div>
-          <p class="cd-rev-comment" th:text="${rev.comment}">Yorum içeriği...</p>
+          <p class="cd-review-card-text" th:text="${rev.comment}"></p>
         </div>
       </div>
 
-      <div th:if="${reviews == null or #lists.isEmpty(reviews)}" class="cd-empty" style="padding:2rem;">
+      <div th:if="${reviews == null or #lists.isEmpty(reviews)}" class="cd-empty-v2">
         <i class="bi bi-chat-square-text"></i>
-        <p style="margin:0;">Henüz onaylanmış bir değerlendirme bulunmuyor.</p>
+        <p>Henüz onaylanmış bir değerlendirme bulunmuyor.</p>
       </div>
+
     </div>
 
   </div>
@@ -806,5 +585,46 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
+<script>
+  (function () {
+    var nav = document.getElementById('cd-onepage-nav');
+    if (!nav) return;
+    var links = nav.querySelectorAll('a[href^="#"]');
+    var sections = Array.from(links).map(function (a) {
+      return document.querySelector(a.getAttribute('href'));
+    }).filter(Boolean);
+
+    function onScroll() {
+      var offset = nav.getBoundingClientRect().bottom + 16;
+      var active = sections[0];
+      sections.forEach(function (s) {
+        if (s.getBoundingClientRect().top <= offset) active = s;
+      });
+      links.forEach(function (a) {
+        a.classList.toggle('active', active && a.getAttribute('href') === '#' + active.id);
+      });
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    document.querySelectorAll('.cd-curriculum-head').forEach(function (head) {
+      head.addEventListener('click', function () {
+        head.closest('.cd-curriculum-card').classList.toggle('open');
+      });
+    });
+
+
+
+    links.forEach(function (link) {
+      link.addEventListener('click', function (e) {
+        var target = document.querySelector(link.getAttribute('href'));
+        if (target) {
+          e.preventDefault();
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  })();
+</script>
 </body>
 </html>

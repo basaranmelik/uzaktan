@@ -128,8 +128,113 @@ function initMobileDropdown() {
     if (window.innerWidth <= 768) {
       e.preventDefault();
       dropdown.classList.toggle('mobile-open');
-    }
-  });
+        }
+    });
+}
+
+// ============================================
+// Admin Table AJAX Actions — intercept forms, send AJAX, remove row
+// ============================================
+function initAdminAjaxActions() {
+    document.querySelectorAll('.admin-table .ajax-action').forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const row = this.closest('tr');
+            const url = this.action;
+            const csrfToken = this.querySelector('input[name="_csrf"]')?.value
+                || document.querySelector('meta[name="_csrf"]')?.content
+                || '';
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+
+            try {
+                const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+                if (csrfToken) headers[csrfHeader] = csrfToken;
+                const formData = new FormData(this);
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: headers,
+                    body: new URLSearchParams(formData)
+                });
+                const data = await res.json();
+                if (data.success) {
+                    if (row) {
+                        row.style.transition = 'opacity 0.3s';
+                        row.style.opacity = '0';
+                        setTimeout(() => row.remove(), 300);
+                    }
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (err) {
+                showToast('Bağlantı hatası!', 'error');
+            }
+        });
+    });
+}
+
+// ============================================
+// Admin — Featured Course Toggle (star button)
+// ============================================
+function initFeaturedToggles() {
+    document.querySelectorAll('.featured-star').forEach(btn => {
+        btn.addEventListener('click', async function() {
+            const courseId = this.dataset.courseId;
+            const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+            const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+            try {
+                const res = await fetch('/admin/kurslar/' + courseId + '/onecikar', {
+                    method: 'POST',
+                    headers: { [csrfHeader]: csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    this.classList.toggle('active');
+                    const icon = this.querySelector('i');
+                    if (icon) {
+                        const isActive = this.classList.contains('active');
+                        icon.className = isActive ? 'bi bi-star-fill' : 'bi bi-star';
+                    }
+                    showToast(data.message, 'success');
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (err) {
+                showToast('Bağlantı hatası!', 'error');
+            }
+        });
+    });
+}
+
+// ============================================
+// Cart AJAX — add to cart + remove from cart
+// ============================================
+function initCartAjax() {
+    const csrfToken = document.querySelector('meta[name="_csrf"]')?.content || '';
+    const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+
+    document.querySelectorAll('.add-to-cart-form').forEach(form => {
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const courseId = this.querySelector('input[name="courseId"]')?.value;
+            try {
+                const res = await fetch('/sepet/ekle-ajax?courseId=' + courseId, {
+                    method: 'POST',
+                    headers: { [csrfHeader]: csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    if (data.data && data.data.count != null) {
+                        const badge = document.getElementById('cartBadge');
+                        if (badge) { badge.textContent = data.data.count; badge.style.display = data.data.count > 0 ? '' : 'none'; }
+                    }
+                } else {
+                    showToast(data.message, 'error');
+                }
+            } catch (err) { showToast('Bağlantı hatası!', 'error'); }
+        });
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -463,6 +568,25 @@ function initVideoLocking() {
     }, true);
 }
 
+// ---------- Review Form Validation ----------
+function initReviewForm() {
+    const form = document.getElementById('review-form');
+    if (!form) return;
+    form.addEventListener('submit', (e) => {
+        const rating = form.querySelector('input[name="rating"]:checked');
+        const comment = (form.querySelector('textarea[name="comment"]')?.value || '').trim();
+        if (!rating) {
+            e.preventDefault();
+            showToast('Lütfen bir yıldız puanı seçin.', 'warning');
+            return;
+        }
+        if (comment.length < 10) {
+            e.preventDefault();
+            showToast('Yorumunuz en az 10 karakter olmalıdır.', 'warning');
+        }
+    });
+}
+
 // ---------- Global Toast Bridge ----------
 // ============================================
 // COURSE LIST PAGE — Filtering & Sorting
@@ -553,9 +677,9 @@ function initAdminCourseVideos() {
                 }).finally(() => {
                     this.disabled = false;
                     this.innerHTML = '<i class="bi bi-check-lg"></i> Sırayı Kaydet';
-                });
-            });
-        }
+        });
+    });
+}
 
         const cancelOrderBtn = document.getElementById('cancelOrderBtn');
         if (cancelOrderBtn) {
@@ -612,6 +736,55 @@ function initAdminCourseVideos() {
 
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') closeModal();
+    });
+}
+
+// ============================================
+// Course List Filter AJAX — intercept sidebar links & pagination
+// ============================================
+function initCourseFilterAjax() {
+    const grid = document.getElementById('courses-grid');
+    if (!grid) return;
+
+    const sidebar = document.querySelector('.sidebar-wrapper');
+    if (!sidebar) return;
+
+    function loadFragment(url) {
+        history.pushState(null, '', url);
+        const countEl = document.getElementById('result-count');
+        fetch(url, { headers: { 'X-Fragment': 'true', 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(res => res.text())
+            .then(html => {
+                const temp = document.createElement('div');
+                temp.innerHTML = html;
+                const newGrid = temp.querySelector('#courses-grid');
+                if (newGrid) {
+                    grid.innerHTML = newGrid.innerHTML;
+                    // Update result count from either the URL or by searching in the parent
+                    const fragCount = temp.querySelector('[id="result-count"]');
+                    if (fragCount && countEl) countEl.innerHTML = fragCount.innerHTML;
+                }
+                window.scrollTo({ top: grid.offsetTop - 120, behavior: 'smooth' });
+            }).catch(() => {
+                showToast('Eğitimler yüklenirken bağlantı hatası oluştu.', 'error');
+            });
+    }
+
+    sidebar.addEventListener('click', function(e) {
+        const link = e.target.closest('a');
+        if (!link) return;
+        const href = link.getAttribute('href');
+        if (!href || !href.startsWith('/egitimler')) return;
+        e.preventDefault();
+        loadFragment(href);
+    });
+
+    // Also intercept pagination links outside sidebar
+    document.querySelector('.courses-main')?.addEventListener('click', function(e) {
+        const link = e.target.closest('a[href*="/egitimler"]');
+        if (!link || link.closest('.sidebar-wrapper')) return;
+        e.preventDefault();
+        loadFragment(link.getAttribute('href'));
     });
 }
 
@@ -924,6 +1097,11 @@ function initAdminUsers() {
             btn.addEventListener('click', () => {
                 document.getElementById('modalFullName').textContent = btn.dataset.name || '-';
                 document.getElementById('modalEmail').textContent = btn.dataset.email || '-';
+                const zoomRow = document.getElementById('zoomEmailRow');
+                const teacherRoles = ['TEACHER', 'ADMIN'];
+                if (zoomRow) {
+                    zoomRow.style.display = teacherRoles.includes(btn.dataset.role) ? '' : 'none';
+                }
                 document.getElementById('modalZoomEmail').textContent = btn.dataset.zoomemail || 'Tanımlanmamış';
                 if (!btn.dataset.zoomemail) {
                     document.getElementById('modalZoomEmail').style.color = '#f08c00';
@@ -1044,7 +1222,7 @@ function initCourseForms() {
             const end = endDateInput.value;
             if (start && end && start > end) {
                 e.preventDefault();
-                alert('Başlangıç tarihi, bitiş tarihinden sonra olamaz.');
+                showToast('Başlangıç tarihi, bitiş tarihinden sonra olamaz.', 'warning');
                 endDateInput.focus();
                 return;
             }
@@ -1439,7 +1617,7 @@ function initZoomCopyLink() {
 function initDemoAlerts() {
     document.querySelectorAll('.data-demo-alert').forEach(btn => {
         btn.addEventListener('click', function() {
-            alert(btn.dataset.demoAlertMessage || 'Bu bir demo sayfasıdır.');
+            showToast(btn.dataset.demoAlertMessage || 'Bu bir demo sayfasıdır.', 'info');
         });
     });
 }
@@ -1484,16 +1662,14 @@ function initCourseModuleToggle() {
             if (index === undefined) return;
             const body = document.getElementById('mbody-' + index);
             const chevron = document.getElementById('chevron-' + index);
-            if (body) {
-                const isOpen = body.style.display !== 'none';
-                body.style.display = isOpen ? 'none' : '';
-            }
-            if (chevron) {
-                const isOpen = body.style.display !== 'none';
-                chevron.innerHTML = isOpen
-                    ? '<i class="bi bi-chevron-down"></i>'
-                    : '<i class="bi bi-chevron-up"></i>';
-            }
+            if (body) body.style.display = body.style.display !== 'none' ? 'none' : '';
+            if (chevron) chevron.innerHTML = body.style.display !== 'none' ? '<i class="bi bi-chevron-up"></i>' : '<i class="bi bi-chevron-down"></i>';
+        });
+    });
+    document.querySelectorAll('.cd-curriculum-head').forEach(head => {
+        head.addEventListener('click', function() {
+            const card = this.closest('.cd-curriculum-card');
+            if (card) card.classList.toggle('open');
         });
     });
 }
@@ -2122,6 +2298,11 @@ document.addEventListener('DOMContentLoaded', () => {
     initProfilePicturePreview();
     initPasswordChangeForm();
     initFlashBanners();
+    initAdminAjaxActions();
+    initFeaturedToggles();
+    initCartAjax();
+    initCourseFilterAjax();
+    initReviewForm();
 });
 
 // ============================================

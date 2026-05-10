@@ -203,5 +203,10 @@ public class EnrollmentServiceImpl implements EnrollmentService {
         return enrollmentRepository.countByStatus(status);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<Enrollment> findEnrollmentEntitiesByCourse(Long courseId) {
+        return enrollmentRepository.findActiveEnrollmentsForCourse(courseId);
+    }
 
 }

@@ -7,7 +7,6 @@ import com.guzem.uzaktan.model.common.Role;
 import com.guzem.uzaktan.service.admin.AssignmentService;
 import com.guzem.uzaktan.service.common.FileStorageService;
 import com.guzem.uzaktan.service.user.UserService;
-import com.guzem.uzaktan.service.impl.common.LocalFileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
@@ -69,7 +68,7 @@ public class FileDownloadController {
                 throw new ResourceNotFoundException("Dosya", "path", submission.getFilePath());
             }
             String fileName = submission.getOriginalFileName() != null
-                    ? LocalFileStorageService.sanitizeFileName(submission.getOriginalFileName())
+                    ? fileStorageService.sanitizeFileName(submission.getOriginalFileName())
                     : filePath.getFileName().toString();
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)

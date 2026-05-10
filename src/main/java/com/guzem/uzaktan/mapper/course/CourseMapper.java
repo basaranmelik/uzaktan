@@ -41,7 +41,11 @@ public class CourseMapper {
                 .startDate(course.getStartDate())
                 .endDate(course.getEndDate())
                 .hours(course.getHours())
-                .category(course.getCategory())
+                .categoryDisplayName(course.getCategory() != null ? course.getCategory().getDisplayName() : null)
+                .status(course.getStatus())
+
+                // 2. toResponse
+                .hours(course.getHours())
                 .categoryDisplayName(course.getCategory() != null ? course.getCategory().getDisplayName() : null)
                 .status(course.getStatus())
                 .level(course.getLevel())
@@ -79,6 +83,7 @@ public class CourseMapper {
                 .learningOutcomes(course.getLearningOutcomes())
                 .prerequisites(course.getPrerequisites())
                 .assessmentItems(course.getAssessmentItems())
+                .featured(course.isFeatured())
                 .build();
 
         response.setCurriculumModules(parseCurriculumModules(course.getManualCurriculum()));
@@ -132,7 +137,6 @@ public class CourseMapper {
                 .id(course.getId())
                 .title(course.getTitle())
                 .price(course.getPrice())
-                .category(course.getCategory())
                 .categoryDisplayName(course.getCategory() != null ? course.getCategory().getDisplayName() : null)
                 .status(course.getStatus())
                 .courseType(course.getCourseType())
@@ -145,6 +149,7 @@ public class CourseMapper {
                 .enrolled(enrolled)
                 .quota(course.getQuota())
                 .enrolledCount(enrolledCount)
+                .featured(course.isFeatured())
                 .build();
     }
 

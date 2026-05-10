@@ -94,6 +94,7 @@
         </div>
 
         <div class="courses-grid" id="courses-grid"
+             th:fragment="coursesGrid"
              th:if="${courses.totalElements > 0}">
           <a th:each="course : ${courses.content}"
              th:href="@{/egitimler/{id}(id=${course.id})}"
@@ -111,11 +112,11 @@
                 <span class="card-category" th:text="${course.categoryDisplayName}">Kategori</span>
                 <span th:if="${course.courseType != null}"
                       th:text="${course.courseTypeDisplayName}"
-                      th:style="${course.courseType.name() == 'ONLINE'} ?
+                      th:style="${course.courseType.name() == 'ONLINE' ?
                                   'background:#d0ebff;color:#1864ab;padding:0.15rem 0.55rem;border-radius:20px;font-size:0.72rem;font-weight:700;' :
-                                  (${course.courseType.name() == 'HYBRID'} ?
+                                  (course.courseType.name() == 'HYBRID' ?
                                   'background:#d3f9d8;color:#2b8a3e;padding:0.15rem 0.55rem;border-radius:20px;font-size:0.72rem;font-weight:700;' :
-                                  'background:#f3d9fa;color:#862e9c;padding:0.15rem 0.55rem;border-radius:20px;font-size:0.72rem;font-weight:700;')">
+                                  'background:#f3d9fa;color:#862e9c;padding:0.15rem 0.55rem;border-radius:20px;font-size:0.72rem;font-weight:700;')}">
                   Tür
                 </span>
               </div>
@@ -135,11 +136,13 @@
                   <span th:text="${course.quota - course.enrolledCount} + ' / ' + ${course.quota} + ' Kontenjan'">Kontenjan</span>
                 </div>
               </div>
-              <div class="card-price-row">
+              <div class="card-price-row" style="flex-direction:column;align-items:flex-start;gap:0.15rem;">
                 <span class="card-price"
-                      th:text="${course.price == null or course.price.signum() == 0} ? 'Ücretsiz' : '₺' + ${#numbers.formatDecimal(course.price, 1, 'POINT', 0, 'COMMA')}">
+                      th:text="${course.price == null or course.price.signum() == 0} ? 'Ücretsiz' : |₺${#numbers.formatDecimal(course.price, 1, 'POINT', 0, 'COMMA')}|">
                   ₺0
                 </span>
+                <small th:if="${course.price != null and course.price.signum() > 0}"
+                       style="font-size:0.65rem;color:var(--text-muted);">(KDV dahil)</small>
               </div>
               <div th:if="${course.enrolled}"
                    style="margin-top:0.5rem;font-size:0.8rem;color:var(--accent-600);font-weight:600;">

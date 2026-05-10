@@ -2,6 +2,8 @@ package com.guzem.uzaktan.repository.user;
 
 import com.guzem.uzaktan.model.common.Role;
 import com.guzem.uzaktan.model.common.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
@@ -16,4 +18,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
     boolean existsByPhoneNumber(String phoneNumber);
 
     List<User> findByRole(Role role);
+
+    Page<User> findByRole(Role role, Pageable pageable);
 }

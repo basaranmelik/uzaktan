@@ -2,20 +2,24 @@ package com.guzem.uzaktan.controller.user;
 
 import com.guzem.uzaktan.dto.response.AssignmentResponse;
 import com.guzem.uzaktan.dto.response.CertificateResponse;
+import com.guzem.uzaktan.dto.response.CourseDocumentResponse;
 import com.guzem.uzaktan.dto.response.EnrollmentResponse;
+import com.guzem.uzaktan.dto.response.CourseSummaryResponse;
 import com.guzem.uzaktan.dto.response.SubmissionResponse;
 import com.guzem.uzaktan.dto.response.UserResponse;
 import com.guzem.uzaktan.service.course.CertificateService;
+import com.guzem.uzaktan.service.course.CourseDocumentService;
 
 import com.guzem.uzaktan.dto.request.ContactRequest;
 import com.guzem.uzaktan.service.admin.AssignmentService;
 import com.guzem.uzaktan.service.course.CourseService;
 import com.guzem.uzaktan.service.course.EnrollmentService;
-import com.guzem.uzaktan.service.common.EmailService;
+import com.guzem.uzaktan.service.common.GeneralEmailService;
 import com.guzem.uzaktan.service.user.UserService;
 import com.guzem.uzaktan.service.instructor.ZoomService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,6 +39,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 public class HomeController {
@@ -44,12 +49,14 @@ public class HomeController {
     private final EnrollmentService enrollmentService;
     private final AssignmentService assignmentService;
     private final ZoomService zoomService;
-    private final EmailService emailService;
+    private final GeneralEmailService emailService;
     private final CertificateService certificateService;
+    private final CourseDocumentService courseDocumentService;
 
     @GetMapping({"/", "/home"})
     public String home(Model model) {
-        model.addAttribute("featuredCourses", courseService.findPublishedCourses("default", 0, 6).getContent());
+        List<CourseSummaryResponse> featured = courseService.findFeaturedCourses();
+        model.addAttribute("featuredCourses", featured.stream().limit(6).toList());
         return "home";
     }
 
@@ -81,6 +88,16 @@ public class HomeController {
                 .map(CertificateResponse::getCourseId)
                 .collect(Collectors.toSet());
         model.addAttribute("certifiedCourseIds", certifiedCourseIds);
+
+        List<CourseDocumentResponse> documents = new java.util.ArrayList<>();
+        for (EnrollmentResponse enrollment : enrollments) {
+            try {
+                documents.addAll(courseDocumentService.findByCourse(enrollment.getCourseId()));
+            } catch (Exception e) {
+                log.warn("Doküman listesi alınamadı (kursId={}): {}", enrollment.getCourseId(), e.getMessage());
+            }
+        }
+        model.addAttribute("courseDocuments", documents);
 
         return "dashboard";
     }

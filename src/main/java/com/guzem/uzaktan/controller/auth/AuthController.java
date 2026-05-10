@@ -1,6 +1,7 @@
 package com.guzem.uzaktan.controller.auth;
 
 import com.guzem.uzaktan.dto.request.RegisterRequest;
+import com.guzem.uzaktan.model.common.Role;
 import com.guzem.uzaktan.service.user.UserService;
 import com.guzem.uzaktan.util.PhoneUtils;
 import jakarta.validation.Valid;
@@ -40,9 +41,9 @@ public class AuthController {
         return principal.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .map(auth -> {
-                    if (auth.equals("ROLE_ADMIN")) return "/admin";
-                    if (auth.equals("ROLE_TEACHER")) return "/egitmen/panel";
-                    if (auth.equals("ROLE_FIRM")) return "/admin/kurslar";
+                    if (auth.equals(Role.ADMIN.getAuthority())) return "/admin";
+                    if (auth.equals(Role.TEACHER.getAuthority())) return "/egitmen/panel";
+                    if (auth.equals(Role.FIRM.getAuthority())) return "/admin/kurslar";
                     return "/panom";
                 })
                 .findFirst()

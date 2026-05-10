@@ -2,7 +2,6 @@ package com.guzem.uzaktan.controller.course;
 
 import com.guzem.uzaktan.dto.response.QuizQuestionResponse;
 import com.guzem.uzaktan.dto.response.QuizResultResponse;
-import com.guzem.uzaktan.model.course.QuizAttempt;
 import com.guzem.uzaktan.service.course.CertificateService;
 import com.guzem.uzaktan.service.course.CourseService;
 import com.guzem.uzaktan.service.course.EnrollmentService;
@@ -54,7 +53,7 @@ public class QuizController {
         model.addAttribute("canTakeQuiz", quizService.canTakeQuiz(currentUserId, courseId));
         model.addAttribute("remainingAttempts", quizService.getRemainingAttempts(currentUserId, courseId));
 
-        List<QuizAttempt> history = quizService.getAttemptHistory(currentUserId, courseId);
+        var history = quizService.getAttemptHistory(currentUserId, courseId);
         model.addAttribute("attemptHistory", history);
 
         // Sertifika varsa göster

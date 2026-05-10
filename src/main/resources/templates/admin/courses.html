@@ -60,6 +60,7 @@
             <th>Kayıt / Kontenjan</th>
             <th>Durum</th>
             <th>Durum Değiştir</th>
+            <th>Öne Çıkar</th>
             <th>İşlem</th>
           </tr>
         </thead>
@@ -87,11 +88,11 @@
             <td style="white-space:nowrap;">
               <span th:if="${course.courseType != null}"
                     th:text="${course.courseTypeDisplayName}"
-                    th:style="${course.courseType.name() == 'ONLINE'} ?
+                    th:style="${course.courseType.name() == 'ONLINE' ?
                                 'background:#d0ebff;color:#1864ab;padding:0.15rem 0.5rem;border-radius:12px;font-size:0.72rem;font-weight:700;' :
-                                (${course.courseType.name() == 'HYBRID'} ?
+                                (course.courseType.name() == 'HYBRID' ?
                                 'background:#d3f9d8;color:#2b8a3e;padding:0.15rem 0.5rem;border-radius:12px;font-size:0.72rem;font-weight:700;' :
-                                'background:#f3d9fa;color:#862e9c;padding:0.15rem 0.5rem;border-radius:12px;font-size:0.72rem;font-weight:700;')">Tür</span>
+                                'background:#f3d9fa;color:#862e9c;padding:0.15rem 0.5rem;border-radius:12px;font-size:0.72rem;font-weight:700;')}">Tür</span>
               <span th:if="${course.courseType == null}" style="color:var(--text-muted);">—</span>
             </td>
 
@@ -109,8 +110,14 @@
             <td style="white-space:nowrap;font-weight:600;">
               <span th:if="${course.price != null and course.price.signum() == 0}"
                     style="color:#2b8a3e;">Ücretsiz</span>
-              <span th:if="${course.price == null or course.price.signum() != 0}"
-                    th:text="${course.price != null ? '₺' + #numbers.formatDecimal(course.price, 0, 'COMMA', 0, 'POINT') : '—'}">₺0</span>
+              <span th:if="${course.price == null or course.price.signum() != 0}">
+                <span th:if="${course.price != null}"
+                      th:text="|₺${#numbers.formatDecimal(course.price, 0, 'COMMA', 0, 'POINT')}|">₺0</span>
+                <span th:if="${course.price == null}">—</span>
+                <br th:if="${course.price != null and course.price.signum() > 0}">
+                <small th:if="${course.price != null and course.price.signum() > 0}"
+                       style="font-size:0.65rem;color:var(--text-muted);">(KDV dahil)</small>
+              </span>
             </td>
 
             <td style="white-space:nowrap;">
@@ -120,19 +127,19 @@
               <div th:if="${course.quota != null and course.quota > 0}"
                    style="margin-top:3px;height:4px;background:var(--gray-100);border-radius:99px;width:70px;">
                 <div th:with="pct=${course.enrolledCount >= course.quota ? 100 : (course.enrolledCount * 100 / course.quota)}"
-                     th:style="'height:100%;border-radius:99px;width:' + ${pct} + '%;background:' +
-                               (${course.enrolledCount >= course.quota} ? '#f03e3e' :
-                               (${pct >= 80} ? '#fd7e14' : '#40c057'))"></div>
+                     th:style="${'height:100%;border-radius:99px;width:' + pct + '%;background:' +
+                               (course.enrolledCount >= course.quota ? '#f03e3e' :
+                               (pct >= 80 ? '#fd7e14' : '#40c057'))}"></div>
               </div>
             </td>
 
             <td>
               <span class="status-badge"
                     th:text="${course.status.displayName}"
-                    th:classappend="${course.status.name() == 'PUBLISHED'}    ? ' sb-green'  :
-                                   (${course.status.name() == 'DRAFT'}        ? ' sb-orange' :
-                                   (${course.status.name() == 'IN_PROGRESS'}  ? ' sb-teal'   :
-                                   (${course.status.name() == 'COMPLETED'}    ? ' sb-blue'   : ' sb-gray')))">
+                    th:classappend="${course.status.name() == 'PUBLISHED' ? ' sb-green' :
+                                   (course.status.name() == 'DRAFT' ? ' sb-orange' :
+                                   (course.status.name() == 'IN_PROGRESS' ? ' sb-teal' :
+                                   (course.status.name() == 'COMPLETED' ? ' sb-blue' : ' sb-gray')))}">
                 Durum
               </span>
             </td>
@@ -150,6 +157,16 @@
               </form>
             </td>
 
+            <td class="featured-toggle-cell" style="text-align:center;">
+              <button type="button"
+                      th:data-course-id="${course.id}"
+                      th:classappend="${course.featured} ? 'featured-star active' : 'featured-star'"
+                      class="featured-star"
+                      th:title="${course.featured} ? 'Anasayfadan kaldır' : 'Anasayfada göster'">
+                <i class="bi" th:classappend="${course.featured} ? 'bi-star-fill' : 'bi-star'"></i>
+              </button>
+            </td>
+
             <td>
               <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
                 <a th:href="@{/admin/kurslar/{id}/videolar(id=${course.id})}" class="action-btn ab-view">
@@ -161,7 +178,7 @@
                 <a th:href="@{/admin/kurslar/{id}/duzenle(id=${course.id})}" class="action-btn ab-edit">
                   <i class="bi bi-pencil"></i> Düzenle
                 </a>
-                <form th:action="@{/admin/kurslar/{id}/sil(id=${course.id})}" method="post">
+                <form th:action="@{/admin/kurslar/{id}/sil(id=${course.id})}" method="post" class="ajax-action">
                   <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                   <button type="submit" class="action-btn ab-del"
                           data-confirm-message="Bu kursu iptal etmek istediğinize emin misiniz?">

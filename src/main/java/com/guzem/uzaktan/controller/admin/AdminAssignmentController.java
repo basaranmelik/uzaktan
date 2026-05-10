@@ -3,6 +3,7 @@ package com.guzem.uzaktan.controller.admin;
 import com.guzem.uzaktan.dto.response.AssignmentResponse;
 import com.guzem.uzaktan.dto.response.SubmissionResponse;
 import com.guzem.uzaktan.service.admin.AssignmentService;
+import com.guzem.uzaktan.service.admin.SubmissionZipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -23,6 +24,7 @@ import java.util.List;
 public class AdminAssignmentController {
 
     private final AssignmentService assignmentService;
+    private final SubmissionZipService submissionZipService;
 
     @GetMapping
     public String assignments(Model model) {
@@ -44,7 +46,7 @@ public class AdminAssignmentController {
     @GetMapping("/{id}/indir-zip")
     public ResponseEntity<byte[]> downloadSubmissions(@PathVariable Long id,
             @org.springframework.web.bind.annotation.ModelAttribute("currentUserId") Long currentUserId) throws IOException {
-        byte[] zipBytes = assignmentService.downloadSubmissionsZip(id, currentUserId);
+        byte[] zipBytes = submissionZipService.downloadSubmissionsZip(id, currentUserId);
         AssignmentResponse assignment = assignmentService.findById(id, currentUserId);
         String filename = "Odev_" + assignment.getId() + "_Teslimler.zip";
         return ResponseEntity.ok()

@@ -14,7 +14,8 @@ public enum NotificationType {
     MEETING_STARTED("Ders Başladı"),
     RECORDING_READY("Ders Kaydı Hazır"),
     COURSE_ANNOUNCEMENT("Eğitmen Duyurusu"),
-    NEW_ASSIGNMENT("Yeni Ödev Yayınlandı");
+    NEW_ASSIGNMENT("Yeni Ödev Yayınlandı"),
+    DOCUMENT_UPLOADED("Yeni Doküman Yüklendi");
 
     private final String displayName;
 

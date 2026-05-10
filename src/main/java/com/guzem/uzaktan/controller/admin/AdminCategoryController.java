@@ -1,13 +1,15 @@
 package com.guzem.uzaktan.controller.admin;
 
+import com.guzem.uzaktan.dto.response.ActionResult;
 import com.guzem.uzaktan.service.course.CourseCategoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@Slf4j
 @Controller
 @RequestMapping("/admin/kategoriler")
 @PreAuthorize("hasRole('ADMIN')")
@@ -28,25 +30,23 @@ public class AdminCategoryController {
     }
 
     @PostMapping
-    public String create(@RequestParam String displayName,
-                         RedirectAttributes redirectAttributes) {
+    public ActionResult create(@RequestParam String displayName) {
         try {
             categoryService.create(displayName);
-            redirectAttributes.addFlashAttribute("successMessage", "Kategori oluşturuldu.");
+            return ActionResult.success("Kategori oluşturuldu.", "/admin/kategoriler");
         } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return ActionResult.error(e.getMessage());
         }
-        return "redirect:/admin/kategoriler";
     }
 
     @PostMapping("/{id}/sil")
-    public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+    public ActionResult delete(@PathVariable Long id) {
         try {
             categoryService.delete(id);
-            redirectAttributes.addFlashAttribute("successMessage", "Kategori silindi.");
+            return ActionResult.success("Kategori silindi.", "/admin/kategoriler");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Kategori silinirken hata oluştu: " + e.getMessage());
+            log.error("Kategori silinirken hata: {}", e.getMessage(), e);
+            return ActionResult.error(e.getMessage());
         }
-        return "redirect:/admin/kategoriler";
     }
 }

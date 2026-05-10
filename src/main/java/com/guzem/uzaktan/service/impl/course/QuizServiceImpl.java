@@ -2,6 +2,7 @@ package com.guzem.uzaktan.service.impl.course;
 
 import com.guzem.uzaktan.dto.CurriculumModule;
 import com.guzem.uzaktan.dto.response.CertificateResponse;
+import com.guzem.uzaktan.dto.response.QuizAttemptResponse;
 import com.guzem.uzaktan.dto.response.QuizQuestionResponse;
 import com.guzem.uzaktan.dto.response.QuizResultResponse;
 import com.guzem.uzaktan.exception.ResourceNotFoundException;
@@ -181,8 +182,20 @@ public class QuizServiceImpl implements QuizService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<QuizAttempt> getAttemptHistory(Long userId, Long courseId) {
-        return quizAttemptRepository.findByUserIdAndCourseIdOrderByAttemptDateDesc(userId, courseId);
+    public List<QuizAttemptResponse> getAttemptHistory(Long userId, Long courseId) {
+        return quizAttemptRepository.findByUserIdAndCourseIdOrderByAttemptDateDesc(userId, courseId).stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    private QuizAttemptResponse toResponse(QuizAttempt a) {
+        return QuizAttemptResponse.builder()
+                .id(a.getId())
+                .score(a.getScore())
+                .totalQuestions(a.getTotalQuestions())
+                .passed(a.getPassed())
+                .attemptDate(a.getAttemptDate())
+                .build();
     }
 
     private void validateEligibility(Long userId, Long courseId) {

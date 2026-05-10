@@ -7,7 +7,8 @@ import com.guzem.uzaktan.model.instructor.ZoomMeeting;
 import com.guzem.uzaktan.repository.admin.AssignmentRepository;
 import com.guzem.uzaktan.repository.course.EnrollmentRepository;
 import com.guzem.uzaktan.repository.instructor.ZoomMeetingRepository;
-import com.guzem.uzaktan.service.common.EmailService;
+import com.guzem.uzaktan.service.common.AssignmentEmailService;
+import com.guzem.uzaktan.service.common.MeetingEmailService;
 import com.guzem.uzaktan.service.user.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,7 +28,8 @@ public class NotificationScheduler {
     private final EnrollmentRepository enrollmentRepository;
     private final ZoomMeetingRepository zoomMeetingRepository;
     private final NotificationService notificationService;
-    private final EmailService emailService;
+    private final AssignmentEmailService assignmentEmailService;
+    private final MeetingEmailService meetingEmailService;
 
     /**
      * Her gün 08:00'de çalışır.
@@ -53,7 +55,7 @@ public class NotificationScheduler {
                         "\"" + assignment.getTitle() + "\" ödevinin son teslim tarihi yarın. Henüz teslim yapmadınız!",
                         "/panom"
                 );
-                emailService.sendAssignmentDueReminder(
+                assignmentEmailService.sendAssignmentDueReminder(
                         user,
                         assignment.getTitle(),
                         assignment.getCourse().getTitle(),
@@ -106,7 +108,7 @@ public class NotificationScheduler {
                         "Canlı Ders 30 Dakika Sonra Başlıyor",
                         "\"" + meeting.getTopic() + "\" dersi 30 dakika sonra başlıyor!",
                         "/zoom/toplanti/" + meeting.getId() + "/katil");
-                emailService.sendMeetingReminder(user, meeting);
+                meetingEmailService.sendMeetingReminder(user, meeting);
             }
         }
     }

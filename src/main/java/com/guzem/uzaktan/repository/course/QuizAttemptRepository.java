@@ -3,6 +3,7 @@ package com.guzem.uzaktan.repository.course;
 import com.guzem.uzaktan.model.course.QuizAttempt;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDateTime;
@@ -19,4 +20,8 @@ public interface QuizAttemptRepository extends JpaRepository<QuizAttempt, Long> 
     Optional<QuizAttempt> findTopByUserIdAndCourseIdAndPassedTrueOrderByAttemptDateDesc(Long userId, Long courseId);
 
     List<QuizAttempt> findByUserIdAndCourseIdOrderByAttemptDateDesc(Long userId, Long courseId);
+
+    @Modifying
+    @Query("DELETE FROM QuizAttempt q WHERE q.course.id = :courseId")
+    void deleteAllByCourseId(@Param("courseId") Long courseId);
 }

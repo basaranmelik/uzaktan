@@ -34,7 +34,7 @@
         Zoom hesabı: <strong th:text="${instructorZoomEmail}"></strong>
       </div>
 
-      <form th:action="@{/egitmen/zoom/toplanti/{id}/duzenle(id=${meeting.id})}"
+      <form th:action="@{/egitmen/zoom/toplanti/{id}(id=${meeting.id})}"
             th:object="${zoomMeetingUpdateRequest}" method="post">
         <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
 

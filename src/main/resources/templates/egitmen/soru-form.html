@@ -86,7 +86,9 @@
                     th:classappend="${#fields.hasErrors('moduleIndex')} ? 'is-invalid' : ''"
                     required>
               <option value="">-- Modül Seçiniz --</option>
-              <th:block th:utext="${#strings.isEmpty(moduleOptions) ? '' : moduleOptions}"></th:block>
+              <option th:each="mod, modStat : ${curriculumModules}"
+                      th:value="${modStat.index}"
+                      th:text="${mod.title}">Modül</option>
             </select>
             <div class="invalid-feedback" th:if="${#fields.hasErrors('moduleIndex')}" th:errors="*{moduleIndex}"></div>
           </div>

@@ -20,7 +20,11 @@ public class ZoomApiClient {
     private final RestClient zoomRestClient;
     private final ZoomConfig zoomConfig;
 
-    // Token cache
+    // Token cache — uses in-memory instance fields with synchronized access.
+    // Suitable for single-instance deployments. In a horizontally scaled (cluster)
+    // environment, each instance independently fetches tokens, which is safe but
+    // may cause additional OAuth round-trips. Consider a shared cache (e.g. Redis)
+    // if cluster-wide token reuse becomes necessary.
     private String cachedToken;
     private Instant tokenExpiry = Instant.EPOCH;
 

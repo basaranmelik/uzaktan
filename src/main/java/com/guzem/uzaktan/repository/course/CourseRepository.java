@@ -48,6 +48,8 @@ public interface CourseRepository extends JpaRepository<Course, Long> {
     @Query("SELECT c FROM Course c WHERE c.status = 'IN_PROGRESS' AND c.endDate < CURRENT_DATE")
     List<Course> findInProgressCoursesToComplete();
 
+    List<Course> findByFeaturedTrueAndStatusOrderByCreatedAtDesc(CourseStatus status);
+
     List<Course> findByInstructorIdAndStatusNot(Long instructorId, CourseStatus status);
 
     @Query("SELECT DISTINCT c FROM Course c JOIN FETCH c.category WHERE c.instructor.id = :instructorId AND c.status != :status")

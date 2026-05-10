@@ -30,8 +30,9 @@
         <p style="margin:0;">
           <span th:text="${course.title}">Kurs</span>
           <span class="status-badge sb-blue" style="margin-left:0.5rem;"
-                th:text="${videos.size()} + ' / ' + (${course.module} != null ? ${course.module} : '?') + ' Video'">0 / 0 Video</span>
-          <span th:if="${course.module != null and videos.size() >= course.module}"
+                th:with="modCount=${course.curriculumModules != null ? course.curriculumModules.size() : 0}"
+                th:text="${videos.size()} + ' / ' + (${modCount > 0 ? modCount : '?'}) + ' Video'">0 / 0 Video</span>
+          <span th:if="${course.curriculumModules != null and !course.curriculumModules.isEmpty() and videos.size() >= course.curriculumModules.size()}"
                 class="status-badge" style="background:#d3f9d8;color:#2b8a3e;margin-left:0.25rem;">Tamamlandi</span>
         </p>
       </div>
@@ -45,24 +46,26 @@
     <div th:replace="~{fragments/flash-messages :: flashMessages}"></div>
 
     <!-- Upload Form — modül sayısı dolduğunda gizle -->
-    <div th:if="${course.module != null and videos.size() >= course.module}"
+    <div th:if="${course.curriculumModules != null and !course.curriculumModules.isEmpty() and videos.size() >= course.curriculumModules.size()}"
          style="background:#fff4e6;border:1px solid #ffd8a8;border-radius:12px;padding:1.25rem;margin-bottom:2rem;color:#e8590c;font-weight:600;">
       <i class="bi bi-info-circle-fill"></i>
-      Bu kursun modül sayısı (<span th:text="${course.module}">0</span>) kadar video zaten yüklenmiş.
+      Bu kursun modül sayısı (<span th:text="${course.curriculumModules.size()}">0</span>) kadar video zaten yüklenmiş.
       Daha fazla video eklemek için modül sayısını artırın.
     </div>
 
-    <div class="upload-form" th:if="${course.module == null or videos.size() < course.module}">
+    <div class="upload-form" th:if="${course.curriculumModules == null or course.curriculumModules.isEmpty() or videos.size() < course.curriculumModules.size()}">
       <div class="upload-form-title"><i class="bi bi-cloud-upload"></i> Video Yükle</div>
       <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1rem;">
         <i class="bi bi-info-circle"></i>
-        Bu kursa <strong th:text="${course.module != null ? (course.module - videos.size()) : '?'}">0</strong> video daha eklenebilir
-        (Modül sayısı: <span th:text="${course.module}">?</span>).
+        Bu kursa <strong th:with="modCount=${course.curriculumModules != null ? course.curriculumModules.size() : 0}"
+                         th:text="${modCount > 0 ? (modCount - videos.size()) : '?'}">0</strong> video daha eklenebilir
+        (Modül sayısı: <span th:with="modCount=${course.curriculumModules != null ? course.curriculumModules.size() : 0}"
+                              th:text="${modCount > 0 ? modCount : '?'}">?</span>).
       </div>
       <form th:action="@{/admin/kurslar/{id}/videolar(id=${course.id})}"
             method="post" enctype="multipart/form-data" id="uploadForm"
             th:data-current-count="${videos.size()}"
-            th:data-module-count="${course.module}">
+            th:data-module-count="${course.curriculumModules != null ? course.curriculumModules.size() : 0}">
 
         <!-- Dosya seçim alanı -->
         <div class="form-group">

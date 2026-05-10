@@ -31,7 +31,7 @@ public class SecurityConfig {
     private final PasswordResetFilter passwordResetFilter;
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, LoginRateLimitFilter loginRateLimitFilter) throws Exception {
         http
                 .csrf(csrf -> csrf.ignoringRequestMatchers("/webhook/zoom"))
                 .authorizeHttpRequests(auth -> auth
@@ -142,8 +142,11 @@ public class SecurityConfig {
                                         "media-src 'self'; " +
                                         "connect-src 'self' cdn.plyr.io; " +
                                         "frame-src https://www.google.com/maps/; " +
-                                        "frame-ancestors 'none'"))
+                                        "frame-ancestors 'none'; " +
+                                        "base-uri 'self'; " +
+                                        "form-action 'self'"))
                 )
+                .addFilterAfter(loginRateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterAfter(passwordResetFilter, UsernamePasswordAuthenticationFilter.class)
                 .authenticationProvider(authenticationProvider());
 
@@ -165,6 +168,11 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder(12);
+    }
+
+    @Bean
+    public LoginRateLimitFilter loginRateLimitFilter() {
+        return new LoginRateLimitFilter();
     }
 
     private static boolean isSafeRedirect(String url) {

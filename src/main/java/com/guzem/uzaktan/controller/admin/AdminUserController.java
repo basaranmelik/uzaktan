@@ -1,16 +1,18 @@
 package com.guzem.uzaktan.controller.admin;
 
+import com.guzem.uzaktan.dto.response.ActionResult;
 import com.guzem.uzaktan.model.common.Role;
 import com.guzem.uzaktan.service.user.UserService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+@Slf4j
 @Controller
 @RequestMapping("/admin/kullanicilar")
 @RequiredArgsConstructor
@@ -27,45 +29,51 @@ public class AdminUserController {
     }
 
     @PostMapping("/{id}/kilitle")
-    public String toggleLock(@PathVariable Long id,
-                             @AuthenticationPrincipal UserDetails principal,
-                             RedirectAttributes redirectAttributes) {
+    public ActionResult toggleLock(@PathVariable Long id,
+                                   @AuthenticationPrincipal UserDetails principal) {
         Long currentUserId = userService.findUserIdByEmail(principal.getUsername());
         if (currentUserId.equals(id)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Kendi hesabınızı kilitleyemezsiniz.");
-            return "redirect:/admin/kullanicilar";
+            return ActionResult.error("Kendi hesabınızı kilitleyemezsiniz.");
         }
-        userService.toggleUserLock(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Kullanıcı durumu güncellendi.");
-        return "redirect:/admin/kullanicilar";
+        try {
+            userService.toggleUserLock(id);
+            return ActionResult.success("Kullanıcı durumu güncellendi.", "/admin/kullanicilar");
+        } catch (Exception e) {
+            log.error("Kullanıcı kilitleme hatası: {}", e.getMessage(), e);
+            return ActionResult.error(e.getMessage());
+        }
     }
 
     @PostMapping("/{id}/rol")
-    public String changeRole(@PathVariable("id") Long id,
-                             @RequestParam("role") Role role,
-                             @AuthenticationPrincipal UserDetails principal,
-                             RedirectAttributes redirectAttributes) {
+    public ActionResult changeRole(@PathVariable Long id,
+                                   @RequestParam Role role,
+                                   @AuthenticationPrincipal UserDetails principal) {
         Long currentUserId = userService.findUserIdByEmail(principal.getUsername());
         if (currentUserId.equals(id)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Kendi rolünüzü değiştiremezsiniz.");
-            return "redirect:/admin/kullanicilar";
+            return ActionResult.error("Kendi rolünüzü değiştiremezsiniz.");
         }
-        userService.changeRole(id, role);
-        redirectAttributes.addFlashAttribute("successMessage", "Kullanıcı rolü güncellendi.");
-        return "redirect:/admin/kullanicilar";
+        try {
+            userService.changeRole(id, role);
+            return ActionResult.success("Rol güncellendi.", "/admin/kullanicilar");
+        } catch (Exception e) {
+            log.error("Rol değiştirme hatası: {}", e.getMessage(), e);
+            return ActionResult.error(e.getMessage());
+        }
     }
 
     @PostMapping("/{id}/sil")
-    public String deleteUser(@PathVariable Long id,
-                             @AuthenticationPrincipal UserDetails principal,
-                             RedirectAttributes redirectAttributes) {
+    public ActionResult deleteUser(@PathVariable Long id,
+                                   @AuthenticationPrincipal UserDetails principal) {
         Long currentUserId = userService.findUserIdByEmail(principal.getUsername());
         if (currentUserId.equals(id)) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Kendi hesabınızı silemezsiniz.");
-            return "redirect:/admin/kullanicilar";
+            return ActionResult.error("Kendi hesabınızı silemezsiniz.");
         }
-        userService.deleteUser(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Kullanıcı silindi.");
-        return "redirect:/admin/kullanicilar";
+        try {
+            userService.deleteUser(id);
+            return ActionResult.success("Kullanıcı silindi.", "/admin/kullanicilar");
+        } catch (Exception e) {
+            log.error("Kullanıcı silme hatası: {}", e.getMessage(), e);
+            return ActionResult.error(e.getMessage());
+        }
     }
 }

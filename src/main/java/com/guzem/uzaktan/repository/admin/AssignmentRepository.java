@@ -2,6 +2,7 @@ package com.guzem.uzaktan.repository.admin;
 
 import com.guzem.uzaktan.model.admin.Assignment;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -30,4 +31,8 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
     long count();
 
     long countByCourseIdIn(List<Long> courseIds);
+
+    @Modifying
+    @Query("DELETE FROM Assignment a WHERE a.course.id = :courseId")
+    void deleteAllByCourseId(@Param("courseId") Long courseId);
 }

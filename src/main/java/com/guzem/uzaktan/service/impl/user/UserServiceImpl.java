@@ -1,9 +1,7 @@
 package com.guzem.uzaktan.service.impl.user;
 
-import com.guzem.uzaktan.config.security.SecurityProperties;
 import com.guzem.uzaktan.dto.request.ProfileUpdateRequest;
 import com.guzem.uzaktan.dto.request.RegisterRequest;
-import com.guzem.uzaktan.dto.request.TeacherCreateRequest;
 import com.guzem.uzaktan.dto.response.UserResponse;
 import com.guzem.uzaktan.exception.ResourceNotFoundException;
 import com.guzem.uzaktan.mapper.user.UserMapper;
@@ -13,16 +11,17 @@ import com.guzem.uzaktan.model.common.User;
 import com.guzem.uzaktan.model.course.Course;
 import com.guzem.uzaktan.repository.course.CourseRepository;
 import com.guzem.uzaktan.repository.user.UserRepository;
-import com.guzem.uzaktan.service.common.EmailService;
 import com.guzem.uzaktan.service.user.UserService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,59 +30,11 @@ import java.util.List;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    private static final String PASSWORD_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%&*";
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-
     private final UserRepository userRepository;
     private final CourseRepository courseRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
-    private final SecurityProperties securityProperties;
-    private final EmailService emailService;
     private final ObjectMapper objectMapper;
-
-    @Override
-    public String createTeacher(TeacherCreateRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Bu e-posta adresi zaten kayıtlı.");
-        }
-
-        String generatedPassword = generateRandomPassword(16);
-
-        String skillsJson = null;
-        if (request.getExpertise() != null && !request.getExpertise().isBlank()) {
-            try {
-                skillsJson = objectMapper.writeValueAsString(List.of(request.getExpertise()));
-            } catch (Exception e) {
-                throw new IllegalArgumentException("Uzmanlık alanı işlenemedi.");
-            }
-        }
-
-        User user = User.builder()
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(generatedPassword))
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .role(Role.TEACHER)
-                .bio(request.getBio())
-                .skills(skillsJson)
-                .zoomEmail(request.getZoomEmail() != null && !request.getZoomEmail().isBlank() ? request.getZoomEmail().trim() : null)
-                .isPasswordResetRequired(true)
-                .build();
-
-        userRepository.save(user);
-        emailService.sendTeacherWelcomeEmail(request.getEmail(),
-                request.getFirstName() + " " + request.getLastName(), generatedPassword);
-        return generatedPassword;
-    }
-
-    private String generateRandomPassword(int length) {
-        StringBuilder sb = new StringBuilder(length);
-        for (int i = 0; i < length; i++) {
-            sb.append(PASSWORD_CHARS.charAt(SECURE_RANDOM.nextInt(PASSWORD_CHARS.length())));
-        }
-        return sb.toString();
-    }
 
     @Override
     public UserResponse register(RegisterRequest request) {
@@ -166,6 +117,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "instructorList", allEntries = true)
     public void updateTeacherFields(Long userId, String bio, String expertise) {
         User user = loadUser(userId);
         if (bio != null) user.setBio(bio);
@@ -225,6 +177,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "instructorList", allEntries = true)
     public void deleteUser(Long userId) {
         User user = loadUser(userId);
 
@@ -244,6 +197,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @CacheEvict(value = "instructorList", allEntries = true)
     public void changeRole(Long userId, Role role) {
         User user = loadUser(userId);
         user.setRole(role);
@@ -260,34 +214,19 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "instructorList", key = "#pageable.pageNumber + '-' + #pageable.pageSize",
+               condition = "#role.name() == 'TEACHER'")
+    public Page<UserResponse> findUsersByRole(Role role, Pageable pageable) {
+        return userRepository.findByRole(role, pageable)
+                .map(userMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Long findUserIdByEmail(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Kullanıcı", "email", email));
         return user.getId();
-    }
-
-    @Override
-    public void recordLoginFailure(String email) {
-        userRepository.findByEmail(email).ifPresent(user -> {
-            int attempts = user.getFailedLoginAttempts() + 1;
-            user.setFailedLoginAttempts(attempts);
-            if (attempts >= securityProperties.getMaxLoginAttempts()) {
-                user.setLockUntil(LocalDateTime.now().plusMinutes(securityProperties.getLockoutMinutes()));
-                user.setFailedLoginAttempts(0);
-            }
-            userRepository.save(user);
-        });
-    }
-
-    @Override
-    public void recordLoginSuccess(String email) {
-        userRepository.findByEmail(email).ifPresent(user -> {
-            if (user.getFailedLoginAttempts() > 0 || user.getLockUntil() != null) {
-                user.setFailedLoginAttempts(0);
-                user.setLockUntil(null);
-                userRepository.save(user);
-            }
-        });
     }
 
     private User loadUser(Long id) {

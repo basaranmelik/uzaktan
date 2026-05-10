@@ -6,7 +6,7 @@ services:
     container_name: guzem-db
     environment:
       ACCEPT_EULA: "Y"
-      SA_PASSWORD: "GaziUzaktan2024!"
+      SA_PASSWORD: "${DB_PASSWORD}"
       MSSQL_PID: "Express"
     ports:
       - "1433:1433"
@@ -21,7 +21,7 @@ services:
         - -U
         - sa
         - -P
-        - "GaziUzaktan2024!"
+        - "${DB_PASSWORD}"
         - -Q
         - "SELECT 1"
         - -C
@@ -44,7 +44,8 @@ services:
       # Veritabanı — DB servis adı "db" olduğu için host değişiyor
       SPRING_DATASOURCE_URL: "jdbc:sqlserver://db:1433;databaseName=master;encrypt=true;trustServerCertificate=true;"
       SPRING_DATASOURCE_USERNAME: sa
-      DB_PASSWORD: "GaziUzaktan2024!"
+      DB_PASSWORD: "${DB_PASSWORD}"
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
 
       # Uygulama
       APP_BASE_URL: "http://localhost:8080"
@@ -52,15 +53,16 @@ services:
       # Dosya yükleme dizini — container içinde /app/uploads
       JAVA_TOOL_OPTIONS: "-Dapp.upload.dir=/app/uploads"
 
-      # Mail (devre dışı — kullanmak istersen MAIL_ENABLED=true yap)
-      MAIL_USERNAME: "noreply@gazi.edu.tr"
-      MAIL_PASSWORD: ""
-      MAIL_ENABLED: "false"
+      # Mail
+      MAIL_USERNAME: "${MAIL_USERNAME}"
+      MAIL_PASSWORD: "${MAIL_PASSWORD}"
+      MAIL_ENABLED: "${MAIL_ENABLED}"
 
-      # Zoom (kullanmak istersen buraya API bilgilerini gir)
-      ZOOM_ACCOUNT_ID: ""
-      ZOOM_CLIENT_ID: ""
-      ZOOM_CLIENT_SECRET: ""
+      # Zoom
+      ZOOM_ACCOUNT_ID: "${ZOOM_ACCOUNT_ID}"
+      ZOOM_CLIENT_ID: "${ZOOM_CLIENT_ID}"
+      ZOOM_CLIENT_SECRET: "${ZOOM_CLIENT_SECRET}"
+      ZOOM_WEBHOOK_SECRET: "${ZOOM_WEBHOOK_SECRET}"
     ports:
       - "8080:8080"
     volumes:

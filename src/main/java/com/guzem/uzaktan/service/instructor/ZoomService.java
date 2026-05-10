@@ -1,48 +1,8 @@
 package com.guzem.uzaktan.service.instructor;
 
-import com.guzem.uzaktan.dto.request.ZoomMeetingCreateRequest;
-import com.guzem.uzaktan.dto.request.ZoomMeetingUpdateRequest;
-import com.guzem.uzaktan.dto.response.ZoomMeetingResponse;
-
-import java.util.List;
-
-public interface ZoomService {
-
-    ZoomMeetingResponse createMeeting(Long courseId, ZoomMeetingCreateRequest request, Long teacherUserId);
-
-    ZoomMeetingResponse updateMeeting(Long meetingId, ZoomMeetingUpdateRequest request, Long teacherUserId);
-
-    void cancelMeeting(Long meetingId, Long teacherUserId);
-
-    void startMeeting(Long meetingId, Long teacherUserId);
-
-    void addRecordingUrl(Long meetingId, String recordingUrl, Long teacherUserId);
-
-    List<ZoomMeetingResponse> findByCourse(Long courseId, Long teacherUserId);
-
-    ZoomMeetingResponse getForStudent(Long meetingId, Long studentUserId);
-
-    List<ZoomMeetingResponse> getUpcomingForStudent(Long studentUserId);
-
-    List<ZoomMeetingResponse> getAllForStudent(Long studentUserId);
-
-    ZoomMeetingResponse findByIdForTeacher(Long meetingId, Long teacherUserId);
+public interface ZoomService extends ZoomMeetingManagementService, ZoomStudentService, ZoomAdminService {
 
     void processRecordingCompleted(String zoomMeetingId);
 
     void markMeetingAsStarted(String zoomMeetingId);
-
-    void generateScheduledMeetings(Long courseId);
-
-    long countAllMeetings();
-
-    long countMissedMeetings();
-
-    long countRecordedMeetings();
-
-    long countStartedMeetings();
-
-    List<ZoomMeetingResponse> findAllForAdmin();
-
-    List<ZoomMeetingResponse> findAllForAdminByCourse(Long courseId);
 }

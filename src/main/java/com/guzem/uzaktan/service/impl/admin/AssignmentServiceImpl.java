@@ -26,7 +26,7 @@ import com.guzem.uzaktan.repository.course.CourseRepository;
 import com.guzem.uzaktan.repository.course.EnrollmentRepository;
 import com.guzem.uzaktan.repository.user.UserRepository;
 import com.guzem.uzaktan.service.admin.AssignmentService;
-import com.guzem.uzaktan.service.common.EmailService;
+import com.guzem.uzaktan.service.common.AssignmentEmailService;
 import com.guzem.uzaktan.service.common.FileStorageService;
 import com.guzem.uzaktan.service.user.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -34,10 +34,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
@@ -45,8 +42,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -62,7 +57,7 @@ public class AssignmentServiceImpl implements AssignmentService {
     private final UserMapper userMapper;
     private final FileStorageService fileStorageService;
     private final NotificationService notificationService;
-    private final EmailService emailService;
+    private final AssignmentEmailService emailService;
 
     // ----------------------------------------------------------------
     // Öğretmen / Admin işlemleri
@@ -288,29 +283,6 @@ public class AssignmentServiceImpl implements AssignmentService {
 
     @Override
     @Transactional(readOnly = true)
-    public byte[] downloadSubmissionsZip(Long assignmentId, Long requestingUserId) throws IOException {
-        Assignment assignment = loadAssignment(assignmentId);
-        checkTeacherOrAdmin(assignment.getCourse(), requestingUserId);
-
-        List<AssignmentSubmission> submissions = submissionRepository.findByAssignmentIdWithUser(assignmentId);
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        try (ZipOutputStream zip = new ZipOutputStream(baos)) {
-            for (AssignmentSubmission s : submissions) {
-                if (s.getFilePath() == null) continue;
-                Path file = fileStorageService.resolve(s.getFilePath());
-                if (!Files.exists(file)) continue;
-                String entryName = file.getFileName().toString();
-                zip.putNextEntry(new ZipEntry(entryName));
-                Files.copy(file, zip);
-                zip.closeEntry();
-            }
-        }
-        return baos.toByteArray();
-    }
-
-    @Override
-    @Transactional(readOnly = true)
     public long countAllAssignments() {
         return assignmentRepository.count();
     }
@@ -327,11 +299,21 @@ public class AssignmentServiceImpl implements AssignmentService {
         List<Assignment> assignments = assignmentRepository.findAll();
         List<Long> assignmentIds = assignments.stream().map(Assignment::getId).toList();
         Map<Long, Long> submissionCounts = buildSubmissionCountMap(assignmentIds);
-        
+
+        List<Long> courseIds = assignments.stream().map(a -> a.getCourse().getId()).distinct().toList();
+        Map<Long, Long> pendingCounts = submissionRepository.countPendingByCourseIds(courseIds, SubmissionStatus.SUBMITTED).stream()
+                .collect(Collectors.toMap(rows -> (Long) rows[0], rows -> (Long) rows[1]));
+
         return assignments.stream().map(a -> {
-            long pendingCount = submissionRepository.countByCourseIdAndStatus(a.getCourse().getId(), SubmissionStatus.SUBMITTED);
+            long pendingCount = pendingCounts.getOrDefault(a.getCourse().getId(), 0L);
             return assignmentMapper.toResponse(a, submissionCounts.getOrDefault(a.getId(), 0L), pendingCount);
         }).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public long countByCourseIdIn(List<Long> courseIds) {
+        return assignmentRepository.countByCourseIdIn(courseIds);
     }
 
     // ----------------------------------------------------------------
@@ -402,7 +384,7 @@ public class AssignmentServiceImpl implements AssignmentService {
         try {
             return fileStorageService.storeWithName(file, assignmentId, courseTitle, baseName);
         } catch (IOException e) {
-            throw new RuntimeException("Dosya kaydedilemedi: " + e.getMessage(), e);
+            throw new IllegalStateException("Dosya kaydedilemedi: " + e.getMessage(), e);
         }
     }
 

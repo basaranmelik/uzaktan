@@ -60,10 +60,10 @@
             <td>
               <span class="status-badge"
                     th:text="${course.status.displayName}"
-                    th:classappend="${course.status.name() == 'PUBLISHED'}    ? ' sb-green'  :
-                                   (${course.status.name() == 'IN_PROGRESS'}  ? ' sb-teal'   :
-                                   (${course.status.name() == 'COMPLETED'}    ? ' sb-blue'   :
-                                   (${course.status.name() == 'DRAFT'}        ? ' sb-orange' : ' sb-gray')))">
+                    th:classappend="${course.status.name() == 'PUBLISHED' ? ' sb-green' :
+                                   (course.status.name() == 'IN_PROGRESS' ? ' sb-teal' :
+                                   (course.status.name() == 'COMPLETED' ? ' sb-blue' :
+                                   (course.status.name() == 'DRAFT' ? ' sb-orange' : ' sb-gray')))}">
               </span>
             </td>
             <td style="white-space:nowrap;">

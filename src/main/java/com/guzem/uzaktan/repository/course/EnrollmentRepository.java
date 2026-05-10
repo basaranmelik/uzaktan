@@ -6,6 +6,7 @@ import com.guzem.uzaktan.model.course.EnrollmentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -64,4 +65,8 @@ public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
     @Query("SELECT e FROM Enrollment e JOIN FETCH e.user JOIN FETCH e.course WHERE e.course.id = :courseId ORDER BY e.enrollmentDate DESC")
     List<Enrollment> findByCourseIdWithDetails(@Param("courseId") Long courseId);
+
+    @Modifying
+    @Query("DELETE FROM Enrollment e WHERE e.course.id = :courseId")
+    void deleteAllByCourseId(@Param("courseId") Long courseId);
 }

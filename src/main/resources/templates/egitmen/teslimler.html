@@ -70,7 +70,7 @@
         </div>
         <div class="progress-thin">
           <div class="progress-thin-fill"
-               th:style="'width:' + (${enrolledCount > 0} ? ${#numbers.formatDecimal(assignment.submissionCount * 100.0 / enrolledCount, 1, 0)} : 0) + '%'"></div>
+               th:style="${'width:' + (enrolledCount > 0 ? #numbers.formatDecimal(assignment.submissionCount * 100.0 / enrolledCount, 1, 0) : 0) + '%'}"></div>
         </div>
       </div>
 

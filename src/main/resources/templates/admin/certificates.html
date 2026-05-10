@@ -78,7 +78,8 @@
                   <i class="bi bi-eye"></i>
                 </a>
                 <!-- İptal Et -->
-                <form th:action="@{/admin/sertifikalar/{id}/iptal(id=${cert.id})}" method="post">
+                <form th:action="@{/admin/sertifikalar/{id}/iptal(id=${cert.id})}" method="post" class="ajax-action">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                   <button type="submit" class="action-btn ab-del confirm-delete-btn">
                     <i class="bi bi-x-circle"></i> İptal
                   </button>

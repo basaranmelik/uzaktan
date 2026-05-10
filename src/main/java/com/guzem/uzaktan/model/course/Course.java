@@ -61,7 +61,7 @@ public class Course {
     private Integer hours;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @JoinColumn(name = "category_id")
     private CourseCategory category;
 
     @Enumerated(EnumType.STRING)
@@ -162,6 +162,10 @@ public class Course {
     @Nationalized
     @Column(name = "assessment_items", columnDefinition = "NVARCHAR(MAX)")
     private String assessmentItems;
+
+    @Builder.Default
+    @Column(name = "featured", nullable = false)
+    private boolean featured = false;
 
     @Enumerated(EnumType.STRING)
     @Builder.Default

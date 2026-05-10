@@ -4,10 +4,11 @@ import com.guzem.uzaktan.dto.request.AnnouncementRequest;
 import com.guzem.uzaktan.dto.response.CourseResponse;
 import com.guzem.uzaktan.model.user.NotificationType;
 import com.guzem.uzaktan.model.common.User;
-import com.guzem.uzaktan.repository.admin.AssignmentRepository;
-import com.guzem.uzaktan.repository.course.EnrollmentRepository;
+import com.guzem.uzaktan.model.course.Enrollment;
+import com.guzem.uzaktan.service.admin.AssignmentService;
 import com.guzem.uzaktan.service.course.CourseService;
-import com.guzem.uzaktan.service.common.EmailService;
+import com.guzem.uzaktan.service.course.EnrollmentService;
+import com.guzem.uzaktan.service.common.GeneralEmailService;
 import com.guzem.uzaktan.service.user.NotificationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,9 +33,9 @@ public class TeacherPanelController {
 
     private final CourseService courseService;
     private final NotificationService notificationService;
-    private final EmailService emailService;
-    private final EnrollmentRepository enrollmentRepository;
-    private final AssignmentRepository assignmentRepository;
+    private final GeneralEmailService emailService;
+    private final EnrollmentService enrollmentService;
+    private final AssignmentService assignmentService;
 
     // ---- Panel ----
 
@@ -46,7 +47,7 @@ public class TeacherPanelController {
         model.addAttribute("courseCount", courses.size());
         model.addAttribute("totalStudents", courseService.countTotalStudentsForInstructor(currentUserId));
         model.addAttribute("activeCourses", courseService.countActiveCoursesForInstructor(currentUserId));
-        model.addAttribute("totalAssignments", courseIds.isEmpty() ? 0 : assignmentRepository.countByCourseIdIn(courseIds));
+        model.addAttribute("totalAssignments", courseIds.isEmpty() ? 0 : assignmentService.countByCourseIdIn(courseIds));
         return "egitmen/panel";
     }
 
@@ -85,7 +86,7 @@ public class TeacherPanelController {
         Long selectedCourseId = request.getCourseId();
 
         if (selectedCourseId != null && instructorCourseIds.contains(selectedCourseId)) {
-            var enrollments = enrollmentRepository.findActiveEnrollmentsForCourse(selectedCourseId);
+            var enrollments = enrollmentService.findEnrollmentEntitiesByCourse(selectedCourseId);
             var courseInfo = courses.stream().filter(c -> c.getId().equals(selectedCourseId)).findFirst().orElse(null);
             String courseTitle = courseInfo != null ? courseInfo.getTitle() : "Kurs";
 

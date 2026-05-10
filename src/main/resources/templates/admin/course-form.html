@@ -107,7 +107,7 @@
               <label class="type-option">
                 <input type="radio" name="courseType" th:value="${t.name()}"
                        th:checked="${courseCreateRequest.courseType == t or (courseCreateRequest.courseType == null and t.name() == 'ONLINE')}">
-                <i th:class="${t.name() == 'ONLINE'} ? 'bi bi-play-circle' : (${t.name() == 'FACE_TO_FACE'} ? 'bi bi-people-fill' : 'bi bi-camera-video-fill')"></i>
+                <i th:class="${t.name() == 'ONLINE' ? 'bi bi-play-circle' : (t.name() == 'FACE_TO_FACE' ? 'bi bi-people-fill' : 'bi bi-camera-video-fill')}"></i>
                 <span th:text="${t.displayName}"></span>
               </label>
             </th:block>

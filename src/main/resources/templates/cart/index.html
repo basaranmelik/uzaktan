@@ -49,9 +49,10 @@
               <a th:href="@{/egitimler/{id}(id=${item.courseId})}" class="cart-item-title" th:text="${item.courseTitle}">Kurs Başlığı</a>
             </div>
             
-            <div class="cart-item-price" 
-                 th:text="${item.price != null and item.price.signum() > 0} ? '₺' + ${#numbers.formatDecimal(item.price, 1, 'POINT', 0, 'COMMA')} : 'Ücretsiz'">
-               ₺0
+            <div class="cart-item-price">
+               <div th:text="${item.price != null and item.price.signum() > 0} ? |₺${#numbers.formatDecimal(item.price, 1, 'POINT', 0, 'COMMA')}| : 'Ücretsiz'">₺0</div>
+               <small th:if="${item.price != null and item.price.signum() > 0}"
+                      style="font-size:0.65rem;color:var(--text-muted);">(KDV dahil)</small>
             </div>
             
             <form th:action="@{/sepet/kaldir}" method="post" style="margin:0;">
@@ -74,7 +75,12 @@
           </div>
           <div class="summary-row total">
             <span>Toplam</span>
-            <span th:text="'₺' + ${#numbers.formatDecimal(cartTotal, 1, 'POINT', 0, 'COMMA')}">₺0</span>
+            <span>
+              <span th:text="|₺${#numbers.formatDecimal(cartTotal, 1, 'POINT', 0, 'COMMA')}|">₺0</span>
+              <br th:if="${cartTotal != null and cartTotal.signum() > 0}">
+              <small th:if="${cartTotal != null and cartTotal.signum() > 0}"
+                     style="font-size:0.65rem;color:var(--text-muted);">(KDV dahil)</small>
+            </span>
           </div>
           
           <a th:href="@{/kayitlarim}" class="btn-checkout">

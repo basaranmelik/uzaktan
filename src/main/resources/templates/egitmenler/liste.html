@@ -36,19 +36,31 @@
 
     <!-- Eğitmen var -->
     <div class="instructors-grid" th:if="${not #lists.isEmpty(instructors)}">
-      <div th:each="instructor : ${instructors}"
-           class="instructor-card fade-in">
+      <a th:each="instructor : ${instructors}" th:href="@{/egitmenler/{id}(id=${instructor.id})}" class="instructor-card fade-in" style="text-decoration:none;color:inherit;">
+
+        <!-- Fotoğraf -->
         <div class="instructor-avatar">
-          <div th:if="${instructor.profilePictureUrl != null}" class="instructor-image" th:style="'background-image: url(' + @{${instructor.profilePictureUrl}} + ');'"></div>
-          <i th:unless="${instructor.profilePictureUrl != null}" class="bi bi-person-circle"></i>
+          <img th:if="${instructor.profilePictureUrl != null}"
+               th:src="@{${instructor.profilePictureUrl}}" alt=""
+               style="width:100%;height:100%;object-fit:cover;">
+          <i th:if="${instructor.profilePictureUrl == null}" class="bi bi-person-circle"></i>
         </div>
+
+        <!-- Bilgi -->
         <div class="instructor-info">
           <h3 class="instructor-name" th:text="${instructor.fullName}">Eğitmen Adı</h3>
-          <div class="instructor-expertise" th:if="${instructor.skillsList != null and !instructor.skillsList.isEmpty()}">
-            <span th:text="${#strings.listJoin(instructor.skillsList, ', ')}">Uzmanlık Alanı</span>
+          <div class="instructor-skills"
+               th:if="${instructor.skillsList != null and !instructor.skillsList.isEmpty()}">
+            <span th:each="skill : ${instructor.skillsList}">
+              <span class="skill-tag" th:text="${skill}"></span>
+            </span>
           </div>
+          <p style="font-size:0.8rem;color:var(--primary-500);font-weight:600;margin-top:auto;padding-top:0.75rem;">
+            Profili İncele <i class="bi bi-arrow-right"></i>
+          </p>
         </div>
-      </div>
+
+      </a>
     </div>
 
     <!-- Eğitmen yok -->

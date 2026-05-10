@@ -1,8 +1,8 @@
 package com.guzem.uzaktan.service.course;
 
+import com.guzem.uzaktan.dto.response.QuizAttemptResponse;
 import com.guzem.uzaktan.dto.response.QuizQuestionResponse;
 import com.guzem.uzaktan.dto.response.QuizResultResponse;
-import com.guzem.uzaktan.model.course.QuizAttempt;
 
 import java.util.List;
 import java.util.Map;
@@ -19,5 +19,5 @@ public interface QuizService {
 
     boolean hasPassedQuiz(Long userId, Long courseId);
 
-    List<QuizAttempt> getAttemptHistory(Long userId, Long courseId);
+    List<QuizAttemptResponse> getAttemptHistory(Long userId, Long courseId);
 }

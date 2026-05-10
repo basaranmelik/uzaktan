@@ -1,6 +1,7 @@
 package com.guzem.uzaktan.service.course;
 
 import com.guzem.uzaktan.dto.response.EnrollmentResponse;
+import com.guzem.uzaktan.model.course.Enrollment;
 import com.guzem.uzaktan.model.course.EnrollmentStatus;
 import org.springframework.data.domain.Page;
 
@@ -32,4 +33,6 @@ public interface EnrollmentService {
     long countTotal();
 
     long countByStatus(EnrollmentStatus status);
+
+    List<Enrollment> findEnrollmentEntitiesByCourse(Long courseId);
 }

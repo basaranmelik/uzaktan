@@ -138,8 +138,8 @@
               <span th:if="${m.status.name() == 'CANCELLED'}"
                     class="status-badge sb-gray">İptal</span>
               <span th:if="${m.status.name() == 'SCHEDULED'}"
-                    class="status-badge" th:classappend="${m.live} ? 'sb-green' : (${m.past} ? 'sb-orange' : 'sb-blue')"
-                    th:text="${m.live} ? 'Canlı' : (${m.past} ? 'Geçti' : 'Planlandı')">Planlandı</span>
+                    class="status-badge" th:classappend="${m.live ? 'sb-green' : (m.past ? 'sb-orange' : 'sb-blue')}"
+                    th:text="${m.live ? 'Canlı' : (m.past ? 'Geçti' : 'Planlandı')}">Planlandı</span>
             </td>
           </tr>
         </tbody>

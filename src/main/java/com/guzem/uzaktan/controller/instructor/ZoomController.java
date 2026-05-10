@@ -18,7 +18,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
+@RequestMapping("/egitmen/zoom")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
 public class ZoomController {
 
     private final ZoomService zoomService;
@@ -26,9 +28,7 @@ public class ZoomController {
     private final UserService userService;
 
     // ---- Öğretmen: toplantı listesi ----
-
-    @GetMapping("/egitmen/zoom/kurslarim/{courseId}")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @GetMapping("/kurslarim/{courseId}")
     public String meetingList(@PathVariable Long courseId,
                               @ModelAttribute("currentUserId") Long currentUserId,
                               Model model) {
@@ -39,9 +39,7 @@ public class ZoomController {
     }
 
     // ---- Öğretmen: yeni toplantı ----
-
-    @GetMapping("/egitmen/zoom/kurslarim/{courseId}/yeni")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @GetMapping("/kurslarim/{courseId}/yeni")
     public String newMeetingForm(@PathVariable Long courseId, Model model) {
         model.addAttribute("course", courseService.findById(courseId));
         model.addAttribute("instructorZoomEmail", getInstructorZoomEmail(courseId));
@@ -49,8 +47,7 @@ public class ZoomController {
         return "egitmen/zoom-toplanti-olustur";
     }
 
-    @PostMapping("/egitmen/zoom/kurslarim/{courseId}")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PostMapping("/kurslarim/{courseId}")
     public String createMeeting(@PathVariable Long courseId,
                                 @Valid @ModelAttribute("zoomMeetingCreateRequest") ZoomMeetingCreateRequest request,
                                 BindingResult bindingResult,
@@ -63,14 +60,12 @@ public class ZoomController {
             return "egitmen/zoom-toplanti-olustur";
         }
         zoomService.createMeeting(courseId, request, currentUserId);
-        redirectAttributes.addFlashAttribute("successMessage", "Zoom toplantısı başarıyla oluşturuldu. Kayıtlı öğrencilere bildirim gönderildi.");
+        redirectAttributes.addFlashAttribute("successMessage", "Zoom toplantısı başarıyla oluşturuldu.");
         return "redirect:/egitmen/zoom/kurslarim/" + courseId;
     }
 
     // ---- Öğretmen: toplantı düzenle ----
-
-    @GetMapping("/egitmen/zoom/toplanti/{id}/duzenle")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @GetMapping("/toplanti/{id}/duzenle")
     public String editMeetingForm(@PathVariable Long id,
                                   @ModelAttribute("currentUserId") Long currentUserId,
                                   Model model) {
@@ -85,8 +80,7 @@ public class ZoomController {
         return "egitmen/zoom-toplanti-duzenle";
     }
 
-    @PostMapping("/egitmen/zoom/toplanti/{id}/duzenle")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PostMapping("/toplanti/{id}")
     public String updateMeeting(@PathVariable Long id,
                                 @Valid @ModelAttribute("zoomMeetingUpdateRequest") ZoomMeetingUpdateRequest request,
                                 BindingResult bindingResult,
@@ -100,14 +94,12 @@ public class ZoomController {
             return "egitmen/zoom-toplanti-duzenle";
         }
         ZoomMeetingResponse updated = zoomService.updateMeeting(id, request, currentUserId);
-        redirectAttributes.addFlashAttribute("successMessage", "Toplantı güncellendi. Kayıtlı öğrencilere bildirim gönderildi.");
+        redirectAttributes.addFlashAttribute("successMessage", "Toplantı güncellendi.");
         return "redirect:/egitmen/zoom/kurslarim/" + updated.getCourseId();
     }
 
     // ---- Öğretmen: kayıt linki ekle ----
-
-    @PostMapping("/egitmen/zoom/toplanti/{id}/kayit")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PostMapping("/toplanti/{id}/kayit")
     public String addRecordingUrl(@PathVariable Long id,
                                   @RequestParam(required = false) String recordingUrl,
                                   @ModelAttribute("currentUserId") Long currentUserId,
@@ -119,22 +111,18 @@ public class ZoomController {
     }
 
     // ---- Öğretmen: toplantı iptal ----
-
-    @PostMapping("/egitmen/zoom/toplanti/{id}/iptal")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PostMapping("/toplanti/{id}/iptal")
     public String cancelMeeting(@PathVariable Long id,
                                 @ModelAttribute("currentUserId") Long currentUserId,
                                 RedirectAttributes redirectAttributes) {
         ZoomMeetingResponse meeting = zoomService.findByIdForTeacher(id, currentUserId);
         zoomService.cancelMeeting(id, currentUserId);
-        redirectAttributes.addFlashAttribute("successMessage", "Toplantı iptal edildi. Kayıtlı öğrencilere bildirim gönderildi.");
+        redirectAttributes.addFlashAttribute("successMessage", "Toplantı iptal edildi.");
         return "redirect:/egitmen/zoom/kurslarim/" + meeting.getCourseId();
     }
 
-    // ---- Öğretmen: toplantıyı başlat (bildirim gönder + yönlendir) ----
-
-    @PostMapping("/egitmen/zoom/toplanti/{id}/baslat")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    // ---- Öğretmen: toplantıyı başlat ----
+    @PostMapping("/toplanti/{id}/baslat")
     public String startMeeting(@PathVariable Long id,
                                @ModelAttribute("currentUserId") Long currentUserId) {
         ZoomMeetingResponse meeting = zoomService.findByIdForTeacher(id, currentUserId);
@@ -143,12 +131,10 @@ public class ZoomController {
     }
 
     // ---- Öğretmen/Admin: toplu toplantı oluştur ----
-
-    @PostMapping("/egitmen/zoom/kurslarim/{courseId}/toplu-olustur")
-    @PreAuthorize("hasAnyRole('TEACHER', 'ADMIN')")
+    @PostMapping("/kurslarim/{courseId}/toplu-olustur")
     public String generateScheduledMeetings(@PathVariable Long courseId,
-                                             @ModelAttribute("currentUserId") Long currentUserId,
-                                             RedirectAttributes redirectAttributes) {
+                                            @ModelAttribute("currentUserId") Long currentUserId,
+                                            RedirectAttributes redirectAttributes) {
         courseService.findById(courseId);
         zoomService.generateScheduledMeetings(courseId);
         redirectAttributes.addFlashAttribute("successMessage",
@@ -156,8 +142,7 @@ public class ZoomController {
         return "redirect:/egitmen/zoom/kurslarim/" + courseId;
     }
 
-    // ---- Öğrenci: katıl ----
-
+    // ---- Öğrenci: katıl (ayrı auth, ayrı prefix) ----
     @GetMapping("/zoom/toplanti/{id}/katil")
     @PreAuthorize("hasRole('USER')")
     public String joinMeeting(@PathVariable Long id,
@@ -171,8 +156,7 @@ public class ZoomController {
         return "zoom/katil";
     }
 
-    // ---- Öğrenci: tüm derslerim ----
-
+    // ---- Öğrenci: tüm derslerim (ayrı auth, ayrı prefix) ----
     @GetMapping("/zoom/derslerim")
     @PreAuthorize("hasRole('USER')")
     public String studentMeetings(@ModelAttribute("currentUserId") Long currentUserId, Model model) {

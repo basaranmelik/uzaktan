@@ -142,10 +142,10 @@
         </div>
         
         <div th:each="entry : ${typeCounts}" class="admin-stat fade-in">
-<div class="admin-stat-icon" th:classappend="${entry.key.name() == 'ONLINE'} ? ' asi-blue' :
-                             (${entry.key.name() == 'HYBRID'} ? ' asi-green' : ' asi-purple')">
-             <i class="bi" th:classappend="${entry.key.name() == 'ONLINE'} ? ' bi-laptop' :
-                                       (${entry.key.name() == 'HYBRID'} ? ' bi-camera-video-fill' : ' bi-people-fill')"></i>
+<div class="admin-stat-icon" th:classappend="${entry.key.name() == 'ONLINE' ? ' asi-blue' :
+                             (entry.key.name() == 'HYBRID' ? ' asi-green' : ' asi-purple')}">
+             <i class="bi" th:classappend="${entry.key.name() == 'ONLINE' ? ' bi-laptop' :
+                                       (entry.key.name() == 'HYBRID' ? ' bi-camera-video-fill' : ' bi-people-fill')}"></i>
           </div>
           <div class="admin-stat-body">
             <div class="admin-stat-num" th:text="${entry.value}">0</div>
@@ -159,10 +159,10 @@
       <div class="admin-stat-grid">
 
         <div th:each="entry : ${courseCounts}" class="admin-stat fade-in">
-          <div class="admin-stat-icon" th:classappend="${entry.key.name() == 'PUBLISHED'}    ? ' asi-green'  :
-                             (${entry.key.name() == 'DRAFT'}       ? ' asi-orange' :
-                             (${entry.key.name() == 'IN_PROGRESS'} ? ' asi-teal'   :
-                             (${entry.key.name() == 'COMPLETED'}   ? ' asi-blue'   : ' asi-gray')))">
+          <div class="admin-stat-icon" th:classappend="${entry.key.name() == 'PUBLISHED' ? ' asi-green' :
+                             (entry.key.name() == 'DRAFT' ? ' asi-orange' :
+                             (entry.key.name() == 'IN_PROGRESS' ? ' asi-teal' :
+                             (entry.key.name() == 'COMPLETED' ? ' asi-blue' : ' asi-gray')))}">
             <i class="bi bi-collection-fill"></i>
           </div>
           <div class="admin-stat-body">

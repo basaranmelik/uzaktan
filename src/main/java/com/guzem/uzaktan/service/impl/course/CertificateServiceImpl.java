@@ -96,9 +96,12 @@ public class CertificateServiceImpl implements CertificateService {
         Certificate certificate = certificateRepository.findById(certificateId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sertifika", "id", certificateId));
         Long userId = certificate.getUser().getId();
+        String code = certificate.getCertificateCode();
         certificateRepository.delete(certificate);
-        var cache = cacheManager.getCache("userCertificates");
-        if (cache != null) cache.evict(userId);
+        var userCertsCache = cacheManager.getCache("userCertificates");
+        if (userCertsCache != null) userCertsCache.evict(userId);
+        var certCache = cacheManager.getCache("certificate");
+        if (certCache != null) certCache.evict(code);
     }
 
     @Override

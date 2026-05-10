@@ -41,10 +41,10 @@
         <i class="bi bi-tag"></i>
         <span class="status-badge"
               th:text="${course.status.displayName}"
-              th:classappend="${course.status.name() == 'PUBLISHED'}    ? ' sb-green'  :
-                             (${course.status.name() == 'DRAFT'}        ? ' sb-orange' :
-                             (${course.status.name() == 'IN_PROGRESS'}  ? ' sb-teal'   :
-                             (${course.status.name() == 'COMPLETED'}    ? ' sb-blue'   : ' sb-gray')))">Durum</span>
+              th:classappend="${course.status.name() == 'PUBLISHED' ? ' sb-green' :
+                             (course.status.name() == 'DRAFT' ? ' sb-orange' :
+                             (course.status.name() == 'IN_PROGRESS' ? ' sb-teal' :
+                             (course.status.name() == 'COMPLETED' ? ' sb-blue' : ' sb-gray')))}">Durum</span>
       </div>
       <div class="cmb-item" th:if="${course.courseType != null}">
         <i class="bi bi-collection"></i><span th:text="${course.courseTypeDisplayName}">Tür</span>
@@ -108,7 +108,7 @@
               <option th:each="cat : ${categories}"
                       th:value="${cat.displayName}"
                       th:text="${cat.displayName}"
-                      th:selected="${cat.displayName == course.category?.displayName}"></option>
+                      th:selected="${cat.displayName == course.categoryDisplayName}"></option>
             </select>
           </div>
           <div class="form-group">
@@ -163,7 +163,7 @@
               <label class="type-option">
                 <input type="radio" name="courseType" th:value="${t.name()}"
                        th:checked="${courseUpdateRequest.courseType == t}">
-                <i th:class="${t.name() == 'ONLINE'} ? 'bi bi-play-circle' : (${t.name() == 'FACE_TO_FACE'} ? 'bi bi-people-fill' : 'bi bi-camera-video-fill')"></i>
+                <i th:class="${t.name() == 'ONLINE' ? 'bi bi-play-circle' : (t.name() == 'FACE_TO_FACE' ? 'bi bi-people-fill' : 'bi bi-camera-video-fill')}"></i>
                 <span th:text="${t.displayName}"></span>
               </label>
             </th:block>
@@ -177,7 +177,9 @@
                    inputmode="decimal" th:placeholder="${course.price}" pattern="[0-9.,]*">
             <div class="current-val">
               <i class="bi bi-info-circle"></i> Mevcut:
-              <strong th:text="${course.price == null} ? '—' : (${course.price.signum() == 0} ? 'Ücretsiz' : '₺' + ${course.price})">—</strong>
+              <strong th:if="${course.price == null}">—</strong>
+              <strong th:if="${course.price != null and course.price.signum() == 0}">Ücretsiz</strong>
+              <strong th:if="${course.price != null and course.price.signum() != 0}" th:text="|₺${course.price}|">—</strong>
             </div>
           </div>
           <div class="form-group" data-show-for="HYBRID,FACE_TO_FACE" style="display:none;">

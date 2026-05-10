@@ -38,7 +38,7 @@ public class ProfileController {
         return "profile/view";
     }
 
-    @PostMapping("/guncelle")
+    @PostMapping
     public String updateProfile(@Valid @ModelAttribute("profileUpdateRequest") ProfileUpdateRequest request,
                                 BindingResult bindingResult,
                                 @AuthenticationPrincipal UserDetails principal,

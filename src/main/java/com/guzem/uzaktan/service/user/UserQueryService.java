@@ -2,12 +2,11 @@ package com.guzem.uzaktan.service.user;
 
 import com.guzem.uzaktan.dto.response.UserResponse;
 import com.guzem.uzaktan.model.common.Role;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
-/**
- * Read-only user operations — injected by components that only query user data.
- */
 public interface UserQueryService {
 
     UserResponse findById(Long id);
@@ -19,6 +18,8 @@ public interface UserQueryService {
     boolean existsByPhoneNumber(String phoneNumber);
 
     List<UserResponse> findUsersByRole(Role role);
+
+    Page<UserResponse> findUsersByRole(Role role, Pageable pageable);
 
     Long findUserIdByEmail(String email);
 }

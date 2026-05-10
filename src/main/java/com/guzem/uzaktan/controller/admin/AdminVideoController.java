@@ -1,8 +1,11 @@
 package com.guzem.uzaktan.controller.admin;
 
+import com.guzem.uzaktan.dto.response.ActionResult;
+import com.guzem.uzaktan.model.common.Role;
 import com.guzem.uzaktan.service.course.CourseService;
 import com.guzem.uzaktan.service.course.CourseVideoService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -12,11 +15,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
+@Slf4j
 @Controller
+@RequestMapping("/admin")
 @RequiredArgsConstructor
 @PreAuthorize("hasAnyRole('ADMIN','TEACHER','FIRM')")
 public class AdminVideoController {
@@ -24,7 +28,7 @@ public class AdminVideoController {
     private final CourseService courseService;
     private final CourseVideoService courseVideoService;
 
-    @GetMapping("/admin/kurslar/{courseId}/videolar")
+    @GetMapping("/kurslar/{courseId}/videolar")
     public String courseVideos(@PathVariable Long courseId,
                                @ModelAttribute("currentUserId") Long currentUserId,
                                @AuthenticationPrincipal UserDetails principal,
@@ -35,46 +39,47 @@ public class AdminVideoController {
         return "admin/course-videos";
     }
 
-    @PostMapping("/admin/kurslar/{courseId}/videolar")
-    public String uploadVideos(@PathVariable Long courseId,
-                               @ModelAttribute("currentUserId") Long currentUserId,
-                               @AuthenticationPrincipal UserDetails principal,
-                               @RequestParam("files") MultipartFile[] files,
-                               @RequestParam(value = "titles", required = false) String[] titles,
-                               @RequestParam(value = "orderIndices", required = false) Integer[] orderIndices,
-                               RedirectAttributes redirectAttributes) {
+    @PostMapping("/kurslar/{courseId}/videolar")
+    public ActionResult uploadVideos(@PathVariable Long courseId,
+                                     @ModelAttribute("currentUserId") Long currentUserId,
+                                     @AuthenticationPrincipal UserDetails principal,
+                                     @RequestParam("files") MultipartFile[] files,
+                                     @RequestParam(value = "titles", required = false) String[] titles,
+                                     @RequestParam(value = "orderIndices", required = false) Integer[] orderIndices) {
         ensureCanManageCourse(courseId, currentUserId, principal);
         try {
             long nonEmpty = java.util.Arrays.stream(files).filter(f -> !f.isEmpty()).count();
             if (nonEmpty == 0) {
-                redirectAttributes.addFlashAttribute("errorMessage", "Lütfen en az bir video dosyası seçin.");
-                return "redirect:/admin/kurslar/" + courseId + "/videolar";
+                return ActionResult.error("Lütfen en az bir video dosyası seçin.");
             }
             courseVideoService.uploadMultiple(courseId, files, titles, orderIndices);
-            redirectAttributes.addFlashAttribute("successMessage",
-                    nonEmpty + " video başarıyla yüklendi.");
+            return ActionResult.success(nonEmpty + " video başarıyla yüklendi.",
+                    "/admin/kurslar/" + courseId + "/videolar");
         } catch (IllegalArgumentException e) {
-            redirectAttributes.addFlashAttribute("errorMessage", e.getMessage());
+            return ActionResult.error(e.getMessage());
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Video yüklenirken beklenmeyen hata: " + e.getMessage());
+            log.error("Video yükleme hatası: {}", e.getMessage(), e);
+            return ActionResult.error("Video yüklenirken beklenmeyen hata: " + e.getMessage());
         }
-        return "redirect:/admin/kurslar/" + courseId + "/videolar";
     }
 
-    @PostMapping("/admin/videolar/{id}/sil")
-    public String deleteVideo(@PathVariable Long id,
-                              @ModelAttribute("currentUserId") Long currentUserId,
-                              @AuthenticationPrincipal UserDetails principal,
-                              RedirectAttributes redirectAttributes) {
-        var video = courseVideoService.findById(id);
-        Long courseId = video.getCourseId();
-        ensureCanManageCourse(courseId, currentUserId, principal);
-        courseVideoService.delete(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Video silindi.");
-        return "redirect:/admin/kurslar/" + courseId + "/videolar";
+    @PostMapping("/videolar/{id}/sil")
+    public ActionResult deleteVideo(@PathVariable Long id,
+                                    @ModelAttribute("currentUserId") Long currentUserId,
+                                    @AuthenticationPrincipal UserDetails principal) {
+        try {
+            var video = courseVideoService.findById(id);
+            Long courseId = video.getCourseId();
+            ensureCanManageCourse(courseId, currentUserId, principal);
+            courseVideoService.delete(id);
+            return ActionResult.success("Video silindi.", "/admin/kurslar/" + courseId + "/videolar");
+        } catch (Exception e) {
+            log.error("Video silinirken hata: {}", e.getMessage(), e);
+            return ActionResult.error(e.getMessage());
+        }
     }
 
-    @PostMapping(value = "/admin/kurslar/{courseId}/videolar/sira", consumes = "application/json")
+    @PostMapping(value = "/kurslar/{courseId}/videolar/sira", consumes = "application/json")
     @ResponseBody
     public ResponseEntity<Void> reorderVideos(@PathVariable Long courseId,
                                               @ModelAttribute("currentUserId") Long currentUserId,
@@ -85,28 +90,27 @@ public class AdminVideoController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/admin/videolar/{id}/duzenle")
-    public String updateVideo(@PathVariable Long id,
-                              @ModelAttribute("currentUserId") Long currentUserId,
-                              @AuthenticationPrincipal UserDetails principal,
-                              @RequestParam String title,
-                              @RequestParam(required = false) String description,
-                              RedirectAttributes redirectAttributes) {
+    @PostMapping("/videolar/{id}/duzenle")
+    public ActionResult updateVideo(@PathVariable Long id,
+                                    @ModelAttribute("currentUserId") Long currentUserId,
+                                    @AuthenticationPrincipal UserDetails principal,
+                                    @RequestParam String title,
+                                    @RequestParam(required = false) String description) {
         Long courseId = courseVideoService.findById(id).getCourseId();
         ensureCanManageCourse(courseId, currentUserId, principal);
         try {
             courseVideoService.update(id, title, description);
-            redirectAttributes.addFlashAttribute("successMessage", "Video güncellendi.");
+            return ActionResult.success("Video güncellendi.", "/admin/kurslar/" + courseId + "/videolar");
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "Güncelleme hatası: " + e.getMessage());
+            log.error("Video güncelleme hatası: {}", e.getMessage(), e);
+            return ActionResult.error("Güncelleme hatası: " + e.getMessage());
         }
-        return "redirect:/admin/kurslar/" + courseId + "/videolar";
     }
 
     private void ensureCanManageCourse(Long courseId, Long currentUserId, UserDetails principal) {
         var course = courseService.findById(courseId);
         boolean isAdminOrFirm = principal.getAuthorities().stream()
-                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()) || "ROLE_FIRM".equals(a.getAuthority()));
+                .anyMatch(a -> Role.ADMIN.getAuthority().equals(a.getAuthority()) || Role.FIRM.getAuthority().equals(a.getAuthority()));
         if (isAdminOrFirm) {
             return;
         }

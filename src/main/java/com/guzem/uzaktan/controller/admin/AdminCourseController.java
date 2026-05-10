@@ -1,5 +1,6 @@
 package com.guzem.uzaktan.controller.admin;
 
+import com.guzem.uzaktan.dto.response.ActionResult;
 import com.guzem.uzaktan.dto.request.CourseCreateRequest;
 import com.guzem.uzaktan.dto.request.CourseUpdateRequest;
 import com.guzem.uzaktan.dto.response.CourseResponse;
@@ -8,6 +9,8 @@ import com.guzem.uzaktan.model.course.CourseStatus;
 import com.guzem.uzaktan.service.course.CourseService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequestMapping("/admin/kurslar")
 @RequiredArgsConstructor
+@Slf4j
 @PreAuthorize("hasAnyRole('ADMIN', 'FIRM')")
 public class AdminCourseController {
 
@@ -71,7 +75,6 @@ public class AdminCourseController {
         dto.setStartDate(course.getStartDate());
         dto.setEndDate(course.getEndDate());
         dto.setHours(course.getHours());
-        dto.setCategory(course.getCategory());
         dto.setStatus(course.getStatus());
         dto.setLevel(course.getLevel());
         dto.setInstructorName(course.getInstructorName());
@@ -115,18 +118,37 @@ public class AdminCourseController {
     }
 
     @PostMapping("/{id}/durum")
-    public String changeCourseStatus(@PathVariable("id") Long id,
-                                     @RequestParam("status") CourseStatus status,
-                                     RedirectAttributes redirectAttributes) {
-        courseService.changeStatus(id, status);
-        redirectAttributes.addFlashAttribute("successMessage", "Kurs durumu güncellendi.");
-        return "redirect:/admin/kurslar";
+    public ActionResult changeCourseStatus(@PathVariable Long id,
+                                           @RequestParam CourseStatus status) {
+        try {
+            courseService.changeStatus(id, status);
+            return ActionResult.success("Kurs durumu güncellendi.", "/admin/kurslar");
+        } catch (Exception e) {
+            log.error("Kurs durumu değiştirilirken hata (id={}): {}", id, e.getMessage(), e);
+            return ActionResult.error(e.getMessage());
+        }
     }
 
     @PostMapping("/{id}/sil")
-    public String deleteCourse(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        courseService.delete(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Kurs iptal edildi.");
-        return "redirect:/admin/kurslar";
+    public ActionResult deleteCourse(@PathVariable Long id) {
+        try {
+            courseService.delete(id);
+            return ActionResult.success("Kurs iptal edildi.", "/admin/kurslar");
+        } catch (Exception e) {
+            log.error("Kurs silinirken hata: {}", e.getMessage(), e);
+            return ActionResult.error(e.getMessage());
+        }
+    }
+
+    @PostMapping(value = "/{id}/onecikar", produces = "application/json")
+    @ResponseBody
+    public ActionResult toggleFeatured(@PathVariable Long id) {
+        try {
+            boolean newState = courseService.toggleFeatured(id);
+            return ActionResult.success(newState ? "Kurs ana sayfada gösterilecek." : "Kurs ana sayfadan kaldırıldı.");
+        } catch (Exception e) {
+            log.error("Kurs öne çıkarma hatası: {}", e.getMessage(), e);
+            return ActionResult.error(e.getMessage());
+        }
     }
 }
