@@ -222,20 +222,22 @@
               <!-- Kayıtsız -->
               <div th:if="${isEnrolled == null or !isEnrolled}">
                 <div sec:authorize="hasRole('USER')">
-                  <div th:if="${!isInCart}">
+                  <div class="cart-action-wrap" th:data-course-id="${course.id}">
                     <div th:if="${course.courseType != null and course.courseType.name() != 'ONLINE' and course.quota != null and course.quota <= course.enrolledCount}"
                          class="cd-status-badge danger"><i class="bi bi-x-circle-fill"></i> Kontenjan Dolu</div>
                     <form th:if="${course.courseType == null or course.courseType.name() == 'ONLINE' or course.quota == null or course.quota > course.enrolledCount}"
-                          th:action="@{/sepet/ekle}" method="post" class="add-to-cart-form">
+                          th:action="@{/sepet/ekle}" method="post" class="add-to-cart-form"
+                          th:style="${isInCart} ? 'display:none' : ''">
                       <input type="hidden" name="courseId" th:value="${course.id}"/>
                       <button type="submit" class="cd-cta-btn-v2 primary">
                         <i class="bi bi-cart-plus"></i> Sepete Ekle
                       </button>
                     </form>
+                    <a th:href="@{/sepet}" class="cd-cta-btn-v2 secondary cart-in-cart-link"
+                       th:style="${!isInCart} ? 'display:none' : ''">
+                      <i class="bi bi-cart-check-fill"></i> Sepete Git
+                    </a>
                   </div>
-                  <a th:if="${isInCart}" th:href="@{/sepet}" class="cd-cta-btn-v2 secondary">
-                    <i class="bi bi-cart-check-fill"></i> Sepete Git
-                  </a>
                 </div>
                 <div sec:authorize="isAnonymous()">
                   <a th:href="@{/giris(sonra=|/egitimler/| + ${course.id})}" class="cd-cta-btn-v2 primary">
@@ -585,46 +587,5 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/js/main.js}"></script>
-<script>
-  (function () {
-    var nav = document.getElementById('cd-onepage-nav');
-    if (!nav) return;
-    var links = nav.querySelectorAll('a[href^="#"]');
-    var sections = Array.from(links).map(function (a) {
-      return document.querySelector(a.getAttribute('href'));
-    }).filter(Boolean);
-
-    function onScroll() {
-      var offset = nav.getBoundingClientRect().bottom + 16;
-      var active = sections[0];
-      sections.forEach(function (s) {
-        if (s.getBoundingClientRect().top <= offset) active = s;
-      });
-      links.forEach(function (a) {
-        a.classList.toggle('active', active && a.getAttribute('href') === '#' + active.id);
-      });
-    }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    onScroll();
-
-    document.querySelectorAll('.cd-curriculum-head').forEach(function (head) {
-      head.addEventListener('click', function () {
-        head.closest('.cd-curriculum-card').classList.toggle('open');
-      });
-    });
-
-
-
-    links.forEach(function (link) {
-      link.addEventListener('click', function (e) {
-        var target = document.querySelector(link.getAttribute('href'));
-        if (target) {
-          e.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
-  })();
-</script>
 </body>
 </html>

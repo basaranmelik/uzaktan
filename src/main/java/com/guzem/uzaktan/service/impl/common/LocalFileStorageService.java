@@ -23,7 +23,8 @@ public class LocalFileStorageService implements FileStorageService {
             Set.of(".mp4", ".webm", ".avi", ".mkv", ".mov");
 
     private static final Set<String> ALLOWED_DOCUMENT_EXTENSIONS =
-            Set.of(".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt", ".zip");
+            Set.of(".pdf", ".doc", ".docx", ".ppt", ".pptx", ".xls", ".xlsx", ".txt", ".zip",
+                    ".jpg", ".jpeg", ".png", ".gif", ".webp");
 
     private static final Set<String> ALLOWED_IMAGE_EXTENSIONS =
             Set.of(".jpg", ".jpeg", ".png", ".gif", ".webp");
@@ -38,7 +39,8 @@ public class LocalFileStorageService implements FileStorageService {
                     "application/vnd.openxmlformats-officedocument.presentationml.presentation",
                     "application/vnd.ms-excel",
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    "text/plain", "application/zip", "application/x-zip-compressed");
+                    "text/plain", "application/zip", "application/x-zip-compressed",
+                    "image/jpeg", "image/png", "image/gif", "image/webp");
 
     private static final Set<String> ALLOWED_IMAGE_MIME_TYPES =
             Set.of("image/jpeg", "image/png", "image/gif", "image/webp");

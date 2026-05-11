@@ -63,7 +63,7 @@
             <td class="row-email" th:text="${u.email}" style="font-size:0.82rem;color:var(--text-muted);">email</td>
 
             <td>
-              <form th:action="@{/admin/kullanicilar/{id}/rol(id=${u.id})}" method="post" class="ajax-action" style="display:inline;">
+              <form th:action="@{/admin/kullanicilar/{id}/rol(id=${u.id})}" method="post" style="display:inline;">
                 <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">
                 <select name="role" class="role-select-auto-submit"
                         style="font-size:0.78rem;padding:0.25rem 0.4rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);cursor:pointer;">

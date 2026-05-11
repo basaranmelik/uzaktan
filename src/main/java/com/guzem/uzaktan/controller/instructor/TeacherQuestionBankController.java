@@ -13,6 +13,7 @@ import com.guzem.uzaktan.service.course.QuestionExcelService;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.util.HtmlUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -277,7 +278,7 @@ public class TeacherQuestionBankController {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < modules.size(); i++) {
             sb.append("<option value=\"").append(i).append("\">")
-              .append(modules.get(i).getTitle())
+              .append(HtmlUtils.htmlEscape(modules.get(i).getTitle()))
               .append("</option>");
         }
         return sb.toString();

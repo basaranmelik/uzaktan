@@ -158,11 +158,23 @@
             <div>Kod: <strong th:text="${cert.certificateCode}">KOD</strong></div>
             <div>Tarih: <strong th:text="${#temporals.format(cert.issueDate, 'dd.MM.yyyy')}">Tarih</strong></div>
           </div>
-          <a th:href="@{/sertifika/dogrula/{code}(code=${cert.certificateCode})}"
-             class="btn btn-secondary"
-             style="margin-top:1rem;font-size:0.85rem;">
-            Sertifikayı Doğrula →
-          </a>
+          <div style="display:flex;gap:0.5rem;margin-top:1rem;flex-wrap:wrap;">
+            <a th:href="@{/sertifika/dogrula/{code}(code=${cert.certificateCode})}"
+               class="btn btn-secondary"
+               style="font-size:0.85rem;">
+              Sertifikayı Doğrula →
+            </a>
+            <a th:if="${cert.fileUrl != null}"
+               th:href="@{/sertifika/indir/{code}(code=${cert.certificateCode})}"
+               class="btn btn-primary"
+               style="font-size:0.85rem;">
+              <i class="bi bi-download"></i> PDF İndir
+            </a>
+            <span th:if="${cert.fileUrl == null}"
+                  style="font-size:0.78rem;color:var(--text-muted);align-self:center;">
+              <i class="bi bi-hourglass-split"></i> PDF hazırlanıyor...
+            </span>
+          </div>
         </div>
       </div>
     </div>

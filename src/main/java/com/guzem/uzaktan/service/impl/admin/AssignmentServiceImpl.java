@@ -112,9 +112,9 @@ public class AssignmentServiceImpl implements AssignmentService {
         List<Assignment> assignments = assignmentRepository.findByCourseIdOrderByDueDateAsc(courseId);
         List<Long> assignmentIds = assignments.stream().map(Assignment::getId).toList();
         Map<Long, Long> submissionCounts = buildSubmissionCountMap(assignmentIds);
-        long pendingCount = submissionRepository.countByCourseIdAndStatus(courseId, SubmissionStatus.SUBMITTED);
+        Map<Long, Long> pendingCounts = buildPendingCountMap(assignmentIds);
         return assignments.stream()
-                .map(a -> assignmentMapper.toResponse(a, submissionCounts.getOrDefault(a.getId(), 0L), pendingCount))
+                .map(a -> assignmentMapper.toResponse(a, submissionCounts.getOrDefault(a.getId(), 0L), pendingCounts.getOrDefault(a.getId(), 0L)))
                 .collect(Collectors.toList());
     }
 
@@ -124,9 +124,8 @@ public class AssignmentServiceImpl implements AssignmentService {
         Assignment a = loadAssignment(assignmentId);
         checkAccess(a, requestingUserId);
         long subCount = submissionRepository.countByAssignmentId(assignmentId);
-        long pending = submissionRepository.countByCourseIdAndStatus(
-                a.getCourse().getId(), SubmissionStatus.SUBMITTED);
-        return assignmentMapper.toResponse(a, subCount, pending);
+        Map<Long, Long> pendingMap = buildPendingCountMap(List.of(assignmentId));
+        return assignmentMapper.toResponse(a, subCount, pendingMap.getOrDefault(assignmentId, 0L));
     }
 
     @Override
@@ -403,6 +402,15 @@ public class AssignmentServiceImpl implements AssignmentService {
         if (assignmentIds.isEmpty()) return Map.of();
         Map<Long, Long> map = new HashMap<>();
         for (Object[] row : submissionRepository.countByAssignmentIds(assignmentIds)) {
+            map.put((Long) row[0], (Long) row[1]);
+        }
+        return map;
+    }
+
+    private Map<Long, Long> buildPendingCountMap(List<Long> assignmentIds) {
+        if (assignmentIds.isEmpty()) return Map.of();
+        Map<Long, Long> map = new HashMap<>();
+        for (Object[] row : submissionRepository.countPendingByAssignmentIds(assignmentIds, SubmissionStatus.SUBMITTED)) {
             map.put((Long) row[0], (Long) row[1]);
         }
         return map;

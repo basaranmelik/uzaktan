@@ -53,10 +53,10 @@ public class EmailServiceImpl implements EmailService {
                 "Yeni Ödev Teslimi",
                 "📋",
                 tpl.getColorAssignment(),
-                "Merhaba " + teacher.getFirstName() + " " + teacher.getLastName() + ",",
-                "<b>" + submission.getUser().getFirstName() + " " + submission.getUser().getLastName()
+                "Merhaba " + tpl.escapeHtmlBasic(teacher.getFirstName()) + " " + tpl.escapeHtmlBasic(teacher.getLastName()) + ",",
+                "<b>" + tpl.escapeHtmlBasic(submission.getUser().getFirstName()) + " " + tpl.escapeHtmlBasic(submission.getUser().getLastName())
                         + "</b> adlı öğrenciniz <b>\""
-                        + submission.getAssignment().getTitle() + "\"</b> ödevini teslim etti.",
+                        + tpl.escapeHtmlBasic(submission.getAssignment().getTitle()) + "\"</b> ödevini teslim etti.",
                 details,
                 null,
                 null);
@@ -86,7 +86,7 @@ public class EmailServiceImpl implements EmailService {
                 "Ödeviniz Notlandırıldı",
                 "✅",
                 "#0d7a5f",
-                "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
+                "Merhaba " + tpl.escapeHtmlBasic(student.getFirstName()) + " " + tpl.escapeHtmlBasic(student.getLastName()) + ",",
                 "Ödeviniz notlandırıldı. Aşağıda detayları görebilirsiniz.",
                 details,
                 extra,
@@ -102,7 +102,7 @@ public class EmailServiceImpl implements EmailService {
 
         String details = tpl.rowFirst("Ödev", assignmentTitle) +
                 tpl.row("Kurs", courseTitle) +
-                tpl.row("Son Tarih", "<b style=\"color:#c92a2a;\">" + dueDate.format(TR_FORMAT) + "</b>");
+                tpl.rowHtml("Son Tarih", "<b style=\"color:#c92a2a;\">" + dueDate.format(TR_FORMAT) + "</b>");
 
         String extra = tpl.alertBox("Henüz ödevinizi teslim etmediniz. Lütfen son tarihe dikkat edin.");
 
@@ -110,8 +110,8 @@ public class EmailServiceImpl implements EmailService {
                 "Ödev Son Teslim Günü Yarın!",
                 "⏰",
                 tpl.getColorWarning(),
-                "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
-                "<b>\"" + assignmentTitle + "\"</b> ödevinin son teslim tarihi <b>yarın</b>.",
+                "Merhaba " + tpl.escapeHtmlBasic(student.getFirstName()) + " " + tpl.escapeHtmlBasic(student.getLastName()) + ",",
+                "<b>\"" + tpl.escapeHtmlBasic(assignmentTitle) + "\"</b> ödevinin son teslim tarihi <b>yarın</b>.",
                 details,
                 extra,
                 null);
@@ -129,16 +129,16 @@ public class EmailServiceImpl implements EmailService {
                 tpl.row("Tarih &amp; Saat", meeting.getScheduledAt().format(TR_FORMAT)) +
                 tpl.row("Süre", meeting.getDurationMinutes() + " dakika") +
                 (meeting.getPassword() != null && !meeting.getPassword().isBlank()
-                        ? tpl.row("Toplantı Şifresi", "<code style=\"background:#f1f3f5;padding:2px 6px;border-radius:4px;font-family:monospace;\">"
-                                + meeting.getPassword() + "</code>")
+                        ? tpl.rowHtml("Toplantı Şifresi", "<code style=\"background:#f1f3f5;padding:2px 6px;border-radius:4px;font-family:monospace;\">"
+                                + tpl.escapeHtmlBasic(meeting.getPassword()) + "</code>")
                         : "");
 
         String body = tpl.buildEmail(
                 "Yeni Canlı Ders Planlandı",
                 "🎥",
                 tpl.getColorZoom(),
-                "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
-                "<b>\"" + meeting.getCourse().getTitle() + "\"</b> kursunuza yeni bir canlı ders planlandı.",
+                "Merhaba " + tpl.escapeHtmlBasic(student.getFirstName()) + " " + tpl.escapeHtmlBasic(student.getLastName()) + ",",
+                "<b>\"" + tpl.escapeHtmlBasic(meeting.getCourse().getTitle()) + "\"</b> kursunuza yeni bir canlı ders planlandı.",
                 details,
                 null,
                 meeting.getJoinUrl());
@@ -159,8 +159,8 @@ public class EmailServiceImpl implements EmailService {
                 "Canlı Ders İptal Edildi",
                 "❌",
                 tpl.getColorWarning(),
-                "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
-                "<b>\"" + meeting.getCourse().getTitle() + "\"</b> kursundaki canlı ders iptal edildi.",
+                "Merhaba " + tpl.escapeHtmlBasic(student.getFirstName()) + " " + tpl.escapeHtmlBasic(student.getLastName()) + ",",
+                "<b>\"" + tpl.escapeHtmlBasic(meeting.getCourse().getTitle()) + "\"</b> kursundaki canlı ders iptal edildi.",
                 details,
                 "<p style=\"margin:16px 0 0;font-size:0.9rem;color:#868e96;\">"
                         + "Yeni bir ders planlandığında tekrar bilgilendirileceksiniz.</p>",
@@ -176,18 +176,18 @@ public class EmailServiceImpl implements EmailService {
 
         String details = tpl.rowFirst("Konu", meeting.getTopic()) +
                 tpl.row("Kurs", meeting.getCourse().getTitle()) +
-                tpl.row("Başlangıç Saati", "<b>" + meeting.getScheduledAt().format(TR_FORMAT) + "</b>") +
+                tpl.rowHtml("Başlangıç Saati", "<b>" + meeting.getScheduledAt().format(TR_FORMAT) + "</b>") +
                 (meeting.getPassword() != null && !meeting.getPassword().isBlank()
-                        ? tpl.row("Toplantı Şifresi", "<code style=\"background:#f1f3f5;padding:2px 6px;border-radius:4px;font-family:monospace;\">"
-                                + meeting.getPassword() + "</code>")
+                        ? tpl.rowHtml("Toplantı Şifresi", "<code style=\"background:#f1f3f5;padding:2px 6px;border-radius:4px;font-family:monospace;\">"
+                                + tpl.escapeHtmlBasic(meeting.getPassword()) + "</code>")
                         : "");
 
         String body = tpl.buildEmail(
                 "Ders 30 Dakika Sonra Başlıyor",
                 "🔔",
                 tpl.getColorZoom(),
-                "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
-                "<b>\"" + meeting.getTopic() + "\"</b> dersiniz <b>30 dakika içinde</b> başlıyor!",
+                "Merhaba " + tpl.escapeHtmlBasic(student.getFirstName()) + " " + tpl.escapeHtmlBasic(student.getLastName()) + ",",
+                "<b>\"" + tpl.escapeHtmlBasic(meeting.getTopic()) + "\"</b> dersiniz <b>30 dakika içinde</b> başlıyor!",
                 details,
                 null,
                 meeting.getJoinUrl());
@@ -230,8 +230,8 @@ public class EmailServiceImpl implements EmailService {
                 "Eğitmen Duyurusu",
                 "📢",
                 "#113a71",
-                "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
-                "<b>" + courseTitle + "</b> kursu için eğitmeniniz tarafından yeni bir duyuru yayınlandı:",
+                "Merhaba " + tpl.escapeHtmlBasic(student.getFirstName()) + " " + tpl.escapeHtmlBasic(student.getLastName()) + ",",
+                "<b>" + tpl.escapeHtmlBasic(courseTitle) + "</b> kursu için eğitmeniniz tarafından yeni bir duyuru yayınlandı:",
                 details,
                 tpl.messageBox("Duyuru: " + tpl.escapeHtml(subject), tpl.escapeHtml(messageText).replace("\n", "<br>")),
                 null);
@@ -253,8 +253,8 @@ public class EmailServiceImpl implements EmailService {
                 "Yeni Ödev Yayınlandı",
                 "📝",
                 tpl.getColorAssignment(),
-                "Merhaba " + student.getFirstName() + " " + student.getLastName() + ",",
-                "<b>\"" + assignment.getCourse().getTitle() + "\"</b> kursunuzda yeni bir ödev yayınlandı.",
+                "Merhaba " + tpl.escapeHtmlBasic(student.getFirstName()) + " " + tpl.escapeHtmlBasic(student.getLastName()) + ",",
+                "<b>\"" + tpl.escapeHtmlBasic(assignment.getCourse().getTitle()) + "\"</b> kursunuzda yeni bir ödev yayınlandı.",
                 details,
                 null,
                 baseUrl + "/panom");
@@ -269,7 +269,7 @@ public class EmailServiceImpl implements EmailService {
 
         String details = tpl.rowFirst("Ad Soyad", fullName) +
                 tpl.row("E-posta", toEmail) +
-                tpl.row("Geçici Şifre",
+                tpl.rowHtml("Geçici Şifre",
                         "<code style=\"background:#f1f3f5;padding:2px 8px;border-radius:4px;" +
                         "font-family:monospace;font-size:14px;letter-spacing:0.05em;\">"
                         + tpl.escapeHtmlBasic(tempPassword) + "</code>");

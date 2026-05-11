@@ -13,6 +13,8 @@ public interface CertificateRepository extends JpaRepository<Certificate, Long> 
 
     List<Certificate> findByUserId(Long userId);
 
+    List<Certificate> findByCourseId(Long courseId);
+
     Optional<Certificate> findByUserIdAndCourseId(Long userId, Long courseId);
 
     Optional<Certificate> findByCertificateCode(String certificateCode);

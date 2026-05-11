@@ -127,7 +127,11 @@ public class ZoomController {
                                @ModelAttribute("currentUserId") Long currentUserId) {
         ZoomMeetingResponse meeting = zoomService.findByIdForTeacher(id, currentUserId);
         zoomService.startMeeting(id, currentUserId);
-        return "redirect:" + meeting.getStartUrl();
+        String startUrl = meeting.getStartUrl();
+        if (startUrl != null && (startUrl.startsWith("https://zoom.us/") || startUrl.startsWith("https://www.zoom.us/"))) {
+            return "redirect:" + startUrl;
+        }
+        return "redirect:/egitmen/zoom/kurslarim/" + meeting.getCourseId();
     }
 
     // ---- Öğretmen/Admin: toplu toplantı oluştur ----

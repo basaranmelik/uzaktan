@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -79,5 +80,12 @@ public class CartController {
         cartService.checkout(currentUserId);
         ra.addFlashAttribute("successMessage", "Sepetteki eğitimlere kayıt talebi oluşturuldu. Yönetici onayı bekleniyor.");
         return "redirect:/panom";
+    }
+
+    @GetMapping("/panel-fragment")
+    public String cartPanelFragment(@ModelAttribute("currentUserId") Long currentUserId, Model model) {
+        model.addAttribute("cartCount", cartService.getCartCount(currentUserId));
+        model.addAttribute("cartTotal", cartService.getCartTotalByUser(currentUserId));
+        return "fragments/cart-panel-content :: cartPanelInner";
     }
 }

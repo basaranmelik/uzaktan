@@ -28,6 +28,9 @@ public interface AssignmentSubmissionRepository extends JpaRepository<Assignment
     @Query("SELECT a.course.id, COUNT(s) FROM AssignmentSubmission s JOIN s.assignment a WHERE a.course.id IN :courseIds AND s.status = :status GROUP BY a.course.id")
     List<Object[]> countPendingByCourseIds(@Param("courseIds") List<Long> courseIds, @Param("status") SubmissionStatus status);
 
+    @Query("SELECT s.assignment.id, COUNT(s) FROM AssignmentSubmission s WHERE s.assignment.id IN :assignmentIds AND s.status = :status GROUP BY s.assignment.id")
+    List<Object[]> countPendingByAssignmentIds(@Param("assignmentIds") List<Long> assignmentIds, @Param("status") SubmissionStatus status);
+
     @Query("SELECT COUNT(s) FROM AssignmentSubmission s WHERE s.status = :status")
     long countByStatus(@Param("status") SubmissionStatus status);
 

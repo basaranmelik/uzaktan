@@ -18,6 +18,11 @@ FROM eclipse-temurin:21-jre-noble
 
 WORKDIR /app
 
+# Sertifika PDF üretimi için Unicode font desteği (Turkish chars: ş, ğ, ı, ç, ö, ü)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    fontconfig fonts-dejavu-core \
+    && rm -rf /var/lib/apt/lists/*
+
 # Builder'dan jar dosyasını kopyala
 COPY --from=builder /app/target/*.jar app.jar
 

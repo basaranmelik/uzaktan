@@ -134,6 +134,11 @@ public class ZoomMeetingManagementServiceImpl implements ZoomMeetingManagementSe
     public void addRecordingUrl(Long meetingId, String recordingUrl, Long teacherUserId) {
         ZoomMeeting meeting = findMeetingById(meetingId);
         verifyTeacherOwnership(meeting, teacherUserId);
+        if (recordingUrl != null && !recordingUrl.isBlank()) {
+            if (!recordingUrl.startsWith("https://")) {
+                throw new IllegalArgumentException("Kayıt URL'si https:// ile başlamalıdır.");
+            }
+        }
         meeting.setRecordingUrl(recordingUrl != null && recordingUrl.isBlank() ? null : recordingUrl);
         zoomMeetingRepository.save(meeting);
     }

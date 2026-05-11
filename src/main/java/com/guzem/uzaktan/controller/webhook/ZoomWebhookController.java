@@ -40,25 +40,6 @@ public class ZoomWebhookController {
         String signature = zoomSignature != null ? zoomSignature : zmSignature;
         String timestamp = zoomTimestamp != null ? zoomTimestamp : zmTimestamp;
 
-        // URL doğrulama isteğini imzasız da kabul et (proxy/ngrok header kesebilir)
-        try {
-            JsonNode root = objectMapper.readTree(rawBody);
-            String event = root.path("event").asText("");
-            log.info("Zoom webhook pre-check: event={}", event);
-            if ("endpoint.url_validation".equals(event)) {
-                String plainToken = root.path("payload").path("plainToken").asText("");
-                if (!plainToken.isBlank()) {
-                    String encryptedToken = hmacSha256(zoomConfig.getWebhookSecret(), plainToken);
-                    log.info("Zoom URL validation OK — returning encrypted token");
-                    return ResponseEntity.ok(Map.of(
-                            "plainToken", plainToken,
-                            "encryptedToken", encryptedToken));
-                }
-            }
-        } catch (Exception e) {
-            log.warn("Zoom webhook pre-check parse error: {}", e.getMessage());
-        }
-
         if (!isSignatureValid(timestamp, rawBody, signature)) {
             log.warn("Zoom webhook: geçersiz imza reddedildi — ts={}, sigLen={}, bodyLen={}",
                     timestamp, signature != null ? signature.length() : 0,
@@ -70,6 +51,17 @@ public class ZoomWebhookController {
             JsonNode root = objectMapper.readTree(rawBody);
             String event = root.path("event").asText("");
             log.info("Zoom webhook received: event={}", event);
+
+            if ("endpoint.url_validation".equals(event)) {
+                String plainToken = root.path("payload").path("plainToken").asText("");
+                if (!plainToken.isBlank()) {
+                    String encryptedToken = hmacSha256(zoomConfig.getWebhookSecret(), plainToken);
+                    log.info("Zoom URL validation OK — returning encrypted token");
+                    return ResponseEntity.ok(Map.of(
+                            "plainToken", plainToken,
+                            "encryptedToken", encryptedToken));
+                }
+            }
 
             if ("recording.completed".equals(event)) {
                 String zoomMeetingId = root.path("payload").path("object").path("id").asText("");

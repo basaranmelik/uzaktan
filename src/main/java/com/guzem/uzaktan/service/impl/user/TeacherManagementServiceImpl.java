@@ -30,6 +30,7 @@ public class TeacherManagementServiceImpl implements TeacherManagementService {
     private final ObjectMapper objectMapper;
 
     @Override
+    @CacheEvict(value = "instructorList", allEntries = true)
     public void createTeacher(TeacherCreateRequest request) {
         createTeacherWithPassword(request);
     }

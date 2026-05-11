@@ -40,6 +40,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - .env
     environment:
       # Veritabanı — DB servis adı "db" olduğu için host değişiyor
       SPRING_DATASOURCE_URL: "jdbc:sqlserver://db:1433;databaseName=master;encrypt=true;trustServerCertificate=true;"

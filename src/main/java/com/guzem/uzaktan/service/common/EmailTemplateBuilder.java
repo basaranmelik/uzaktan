@@ -40,7 +40,7 @@ public class EmailTemplateBuilder {
         "  <meta charset=\"UTF-8\">" +
         "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
         "  <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">" +
-        "  <title>" + title + "</title>" +
+        "  <title>" + escapeHtmlBasic(title) + "</title>" +
         "  <!--[if mso]><noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript><![endif]-->" +
         "</head>" +
         "<body style=\"margin:0;padding:0;background-color:#eef2f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;\">" +
@@ -92,7 +92,7 @@ public class EmailTemplateBuilder {
         "  </td></tr></table>" +
         "</td>" +
         "<td style=\"vertical-align:middle;padding-left:14px;\">" +
-        "  <div style=\"font-size:20px;font-weight:700;color:#0b2a5b;line-height:1.3;margin:0;\">" + title + "</div>" +
+        "  <div style=\"font-size:20px;font-weight:700;color:#0b2a5b;line-height:1.3;margin:0;\">" + escapeHtmlBasic(title) + "</div>" +
         "  <div style=\"width:40px;height:3px;background:" + accentColor + ";border-radius:2px;margin-top:6px;font-size:0;line-height:0;\">&nbsp;</div>" +
         "</td>" +
         "</tr>" +
@@ -180,6 +180,17 @@ public class EmailTemplateBuilder {
                "</tr>";
     }
 
+    public String rowHtml(String label, String htmlValue) {
+        return "<tr>" +
+               "<td style=\"padding:10px 16px;font-size:13px;font-weight:600;color:#5c7089;" +
+               "  white-space:nowrap;border-top:1px solid #e8edf3;width:35%;" +
+               "  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;\">" + escapeHtmlBasic(label) + "</td>" +
+               "<td style=\"padding:10px 16px;font-size:13px;color:#212529;" +
+               "  border-top:1px solid #e8edf3;" +
+               "  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;\">" + htmlValue + "</td>" +
+               "</tr>";
+    }
+
     public String rowFirst(String label, String value) {
         return "<tr>" +
                "<td style=\"padding:10px 16px;font-size:13px;font-weight:600;color:#5c7089;" +
@@ -196,9 +207,9 @@ public class EmailTemplateBuilder {
                "<tr><td style=\"padding:14px 18px;border-radius:0 6px 6px 0;\">" +
                "<p style=\"margin:0 0 6px;font-size:12px;font-weight:700;color:#113a71;" +
                "  text-transform:uppercase;letter-spacing:0.06em;" +
-               "  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;\">" + title + "</p>" +
-               "<p style=\"margin:0;font-size:13px;color:#212529;line-height:1.6;\">" + text + "</p>" +
-               "</td></tr></table>";
+"  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;\">" + escapeHtmlBasic(title) + "</p>" +
+                "<p style=\"margin:0;font-size:13px;color:#212529;line-height:1.6;\">" + text + "</p>" +
+                "</td></tr></table>";
     }
 
     public String feedbackBox(String title, String text) {
@@ -207,7 +218,7 @@ public class EmailTemplateBuilder {
                "<tr><td style=\"padding:14px 18px;\">" +
                "<p style=\"margin:0 0 6px;font-size:12px;font-weight:700;color:#0d7a5f;" +
                "  text-transform:uppercase;letter-spacing:0.06em;" +
-               "  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;\">" + title + "</p>" +
+               "  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;\">" + escapeHtmlBasic(title) + "</p>" +
                "<p style=\"margin:0;font-size:13px;color:#212529;line-height:1.6;\">" + text + "</p>" +
                "</td></tr></table>";
     }

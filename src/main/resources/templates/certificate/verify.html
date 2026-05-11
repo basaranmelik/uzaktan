@@ -60,6 +60,14 @@
       <p style="font-size:0.85rem;color:var(--text-muted);">
         Bu sertifika Gazi Üniversitesi Uzaktan Eğitim Merkezi (GUZEM) tarafından düzenlenmiştir.
       </p>
+
+      <!-- PDF indirme — yalnızca giriş yapılmışsa ve PDF hazırsa göster -->
+      <div th:if="${certificate.fileUrl != null and currentUserId != null}" style="margin-top:1rem;">
+        <a th:href="@{/sertifika/indir/{code}(code=${certificate.certificateCode})}"
+           class="btn btn-primary" style="font-size:0.9rem;">
+          <i class="bi bi-download"></i> Sertifikayı İndir (PDF)
+        </a>
+      </div>
     </div>
 
     <!-- Bulunamadı durumu -->

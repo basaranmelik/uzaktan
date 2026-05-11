@@ -35,7 +35,7 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         if (request.getMethod().equalsIgnoreCase("POST") && request.getRequestURI().equals("/giris")) {
-            String ip = request.getRemoteAddr();
+            String ip = resolveClientIp(request);
             Bucket bucket = resolveBucket(ip);
             if (!bucket.tryConsume(1)) {
                 response.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
@@ -51,5 +51,16 @@ public class LoginRateLimitFilter extends OncePerRequestFilter {
             }
         }
         filterChain.doFilter(request, response);
+    }
+
+    private String resolveClientIp(HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) {
+            String clientIp = xff.split(",")[0].trim();
+            if (!clientIp.isBlank()) return clientIp;
+        }
+        String realIp = request.getHeader("X-Real-IP");
+        if (realIp != null && !realIp.isBlank()) return realIp.trim();
+        return request.getRemoteAddr();
     }
 }

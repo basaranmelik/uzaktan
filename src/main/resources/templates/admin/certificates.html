@@ -77,6 +77,18 @@
                    class="action-btn ab-view">
                   <i class="bi bi-eye"></i>
                 </a>
+                <!-- İndir (PDF hazırsa) -->
+                <a th:if="${cert.fileUrl != null}"
+                   th:href="@{/sertifika/indir/{code}(code=${cert.certificateCode})}"
+                   class="action-btn ab-view" title="PDF İndir">
+                  <i class="bi bi-download"></i>
+                </a>
+                <!-- PDF üretiliyor -->
+                <span th:if="${cert.fileUrl == null}"
+                      style="font-size:0.72rem;color:var(--text-muted);align-self:center;"
+                      title="PDF arka planda üretiliyor">
+                  <i class="bi bi-hourglass-split"></i>
+                </span>
                 <!-- İptal Et -->
                 <form th:action="@{/admin/sertifikalar/{id}/iptal(id=${cert.id})}" method="post" class="ajax-action">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}">

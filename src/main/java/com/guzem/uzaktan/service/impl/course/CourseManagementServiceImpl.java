@@ -133,19 +133,22 @@ public class CourseManagementServiceImpl implements CourseManagementService {
         cartItemRepository.deleteAllByCourseId(id);
         quizAttemptRepository.deleteAllByCourseId(id);
         courseReviewRepository.deleteAllByCourseId(id);
+        certificateRepository.findByCourseId(id).stream()
+                .filter(c -> c.getFileUrl() != null)
+                .forEach(c -> {
+                    try { fileStorageService.delete(c.getFileUrl()); } catch (Exception e) { log.warn("Sertifika PDF silinemedi: {}", c.getFileUrl()); }
+                });
         certificateRepository.deleteAllByCourseId(id);
         questionRepository.deleteAllByCourseId(id);
         courseDocumentRepository.deleteAllByCourseId(id);
 
-        List<Long> videoIds = courseVideoRepository.findByCourseIdOrderByOrderIndex(id).stream()
-                .map(v -> v.getId()).toList();
+        List<Long> videoIds = courseVideoRepository.findIdsByCourseId(id);
         if (!videoIds.isEmpty()) {
             videoWatchRepository.deleteByVideoIdIn(videoIds);
         }
         courseVideoRepository.deleteAllByCourseId(id);
 
-        List<Long> assignmentIds = assignmentRepository.findByCourseIdOrderByDueDateAsc(id).stream()
-                .map(a -> a.getId()).toList();
+        List<Long> assignmentIds = assignmentRepository.findIdsByCourseId(id);
         if (!assignmentIds.isEmpty()) {
             assignmentSubmissionRepository.deleteByAssignmentIdIn(assignmentIds);
         }

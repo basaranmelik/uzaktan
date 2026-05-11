@@ -35,8 +35,6 @@ public class CourseQueryServiceImpl implements CourseQueryService {
     private final CourseMapper courseMapper;
 
     @Override
-    @Cacheable(value = "publishedCourses", key = "{#sort}-{#page}-{#size}",
-               condition = "#sort == 'default' && #page == 0")
     public Page<CourseSummaryResponse> findPublishedCourses(String sort, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, resolveSort(sort));
         Page<Course> coursePage = courseRepository.findByStatus(CourseStatus.PUBLISHED, pageable);
@@ -45,8 +43,6 @@ public class CourseQueryServiceImpl implements CourseQueryService {
     }
 
     @Override
-    @Cacheable(value = "coursesByCategory", key = "{#category.displayName}-{#sort}-{#page}-{#size}",
-               condition = "#sort == 'default' && #page == 0")
     public Page<CourseSummaryResponse> findByCategory(CourseCategory category, String sort, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size, resolveSort(sort));
         Page<Course> coursePage = courseRepository.findByStatusAndCategory(CourseStatus.PUBLISHED, category, pageable);

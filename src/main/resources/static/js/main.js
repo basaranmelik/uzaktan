@@ -61,25 +61,26 @@ function renderStars(rating) {
 }
 
 function renderCourseCard(course) {
+    const e = (s) => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     return `
-    <a href="egitim-detay.html?id=${course.id}" class="card course-card fade-in">
+    <a href="egitim-detay.html?id=${encodeURIComponent(course.id)}" class="card course-card fade-in">
       <div class="card-image">
-        <img src="${course.image}" alt="${course.title}" loading="lazy">
-        <span class="card-badge">${course.level}</span>
+        <img src="${e(course.image)}" alt="${e(course.title)}" loading="lazy">
+        <span class="card-badge">${e(course.level)}</span>
       </div>
       <div class="card-body">
-        <span class="card-category">${course.category}</span>
-        <h4 class="card-title">${course.title}</h4>
-        <p class="card-desc">${course.description}</p>
+        <span class="card-category">${e(course.category)}</span>
+        <h4 class="card-title">${e(course.title)}</h4>
+        <p class="card-desc">${e(course.description)}</p>
         <div class="card-meta">
           <div class="meta-item">
             <span class="stars">${renderStars(course.rating)}</span>
-            <span>${course.rating}</span>
+            <span>${e(course.rating)}</span>
           </div>
           <div class="meta-item">
-            📚 ${course.lessons} Ders
+            📚 ${e(course.lessons)} Ders
           </div>
-          <span class="card-price">${course.price}</span>
+          <span class="card-price">${e(course.price)}</span>
         </div>
       </div>
     </a>
@@ -155,12 +156,23 @@ function initAdminAjaxActions() {
                     headers: headers,
                     body: new URLSearchParams(formData)
                 });
+                if (!res.ok) {
+                    const text = await res.text();
+                    let msg = 'Sunucu hatası (' + res.status + ')';
+                    try { const j = JSON.parse(text); msg = j.message || msg; } catch (_) {}
+                    showToast(msg, 'error');
+                    return;
+                }
                 const data = await res.json();
                 if (data.success) {
-                    if (row) {
-                        row.style.transition = 'opacity 0.3s';
-                        row.style.opacity = '0';
-                        setTimeout(() => row.remove(), 300);
+                    if (url.endsWith('/sil')) {
+                        if (row) {
+                            row.style.transition = 'opacity 0.3s';
+                            row.style.opacity = '0';
+                            setTimeout(() => row.remove(), 300);
+                        }
+                    } else if (url.endsWith('/kilitle') && row) {
+                        toggleLockRowUI(row);
                     }
                     showToast(data.message, 'success');
                 } else {
@@ -207,6 +219,29 @@ function initFeaturedToggles() {
 }
 
 // ============================================
+// Yardımcı: lock butonuna tıklanınca row UI'ını inline güncelle
+// ============================================
+function toggleLockRowUI(row) {
+    var badge = row.querySelector('.status-badge');
+    if (badge) {
+        var isLocked = badge.textContent.indexOf('Kilitli') !== -1;
+        badge.className = 'status-badge ' + (isLocked ? 'sb-green' : 'sb-orange');
+        badge.innerHTML = isLocked
+            ? '<i class="bi bi-check-circle-fill"></i> Aktif'
+            : '<i class="bi bi-lock-fill"></i> Kilitli';
+    }
+    var lockBtn = row.querySelector('form[action$="/kilitle"] button');
+    if (lockBtn) {
+        var isLocked = lockBtn.classList.contains('ab-success');
+        lockBtn.className = 'action-btn ' + (isLocked ? 'ab-warn' : 'ab-success');
+        lockBtn.title = isLocked ? 'Kilitle' : 'Kilidi Aç';
+        lockBtn.innerHTML = isLocked
+            ? '<i class="bi bi-lock-fill"></i>'
+            : '<i class="bi bi-unlock-fill"></i>';
+    }
+}
+
+// ============================================
 // Cart AJAX — add to cart + remove from cart
 // ============================================
 function initCartAjax() {
@@ -217,22 +252,93 @@ function initCartAjax() {
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             const courseId = this.querySelector('input[name="courseId"]')?.value;
+            // Form'un hidden CSRF'inden token al (meta tag olmasa da çalışır)
+            const token = this.querySelector('input[name="_csrf"]')?.value || csrfToken;
+            const headers = { 'X-Requested-With': 'XMLHttpRequest' };
+            if (token) headers[csrfHeader] = token;
             try {
                 const res = await fetch('/sepet/ekle-ajax?courseId=' + courseId, {
                     method: 'POST',
-                    headers: { [csrfHeader]: csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+                    headers: headers
                 });
                 const data = await res.json();
                 if (data.success) {
                     showToast(data.message, 'success');
                     if (data.data && data.data.count != null) {
-                        const badge = document.getElementById('cartBadge');
-                        if (badge) { badge.textContent = data.data.count; badge.style.display = data.data.count > 0 ? '' : 'none'; }
+                        updateCartBadge(data.data.count);
                     }
+                    toggleCartButton(courseId, true);
+                    refreshCartPanel();
                 } else {
                     showToast(data.message, 'error');
                 }
             } catch (err) { showToast('Bağlantı hatası!', 'error'); }
+        });
+    });
+}
+
+function updateCartBadge(count) {
+    const badge = document.getElementById('cartBadge');
+    if (badge) {
+        badge.textContent = count;
+        badge.style.display = count > 0 ? '' : 'none';
+    }
+}
+
+function toggleCartButton(courseId, inCart) {
+    const wrap = document.querySelector('.cart-action-wrap[data-course-id="' + courseId + '"]');
+    if (!wrap) return;
+    const form = wrap.querySelector('.add-to-cart-form');
+    const link = wrap.querySelector('.cart-in-cart-link');
+    if (!form || !link) return;
+    if (inCart) {
+        form.style.display = 'none';
+        link.style.display = '';
+    } else {
+        form.style.display = '';
+        link.style.display = 'none';
+    }
+}
+
+function refreshCartPanel() {
+    const panel = document.getElementById('cartPanel');
+    if (!panel) return;
+    fetch('/sepet/panel-fragment')
+        .then(function(res) { return res.text(); })
+        .then(function(html) {
+            panel.innerHTML = html;
+            initCartRemoveButtons();
+        })
+        .catch(function() {});
+}
+
+function initCartRemoveButtons() {
+    var panel = document.getElementById('cartPanel');
+    if (!panel) return;
+    panel.querySelectorAll('.nav-cart-remove').forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var courseId = btn.dataset.id;
+            if (!courseId) return;
+
+            var csrf = panel.dataset.csrfToken;
+            var header = panel.dataset.csrfHeader;
+
+            fetch('/sepet/kaldir-ajax?courseId=' + courseId, {
+                method: 'POST',
+                headers: { [header]: csrf }
+            }).then(function(res) {
+                if (!res.ok) throw new Error('Sunucu hatası: ' + res.status);
+                return res.json();
+            }).then(function(data) {
+                updateCartBadge(data.count);
+                showToast('Eğitim sepetten kaldırıldı.', 'success');
+                toggleCartButton(courseId, false);
+                refreshCartPanel();
+            }).catch(function() {
+                showToast('Sepetten kaldırılırken bir hata oluştu.', 'error');
+            });
         });
     });
 }
@@ -422,9 +528,10 @@ function showToast(message, type = 'info', duration = 4000) {
 
     toast.innerHTML = `
         <i class="bi ${icon}"></i>
-        <span style="flex: 1;">${message}</span>
+        <span style="flex: 1;"></span>
         <button class="toast-close" style="background: none; border: none; color: inherit; cursor: pointer; padding: 0; font-size: 1.2rem; opacity: 0.5;">&times;</button>
     `;
+    toast.querySelector('span').textContent = message;
 
     const closeBtn = toast.querySelector('.toast-close');
     let timeoutId = null;
@@ -775,6 +882,8 @@ function initCourseFilterAjax() {
         if (!link) return;
         const href = link.getAttribute('href');
         if (!href || !href.startsWith('/egitimler')) return;
+        // Kurs detay linklerini (/egitimler/123) geç — normal navigation
+        if (href.match(/^\/egitimler\/\d+$/)) return;
         e.preventDefault();
         loadFragment(href);
     });
@@ -783,8 +892,10 @@ function initCourseFilterAjax() {
     document.querySelector('.courses-main')?.addEventListener('click', function(e) {
         const link = e.target.closest('a[href*="/egitimler"]');
         if (!link || link.closest('.sidebar-wrapper')) return;
+        const href = link.getAttribute('href');
+        if (href.match(/^\/egitimler\/\d+$/)) return;
         e.preventDefault();
-        loadFragment(link.getAttribute('href'));
+        loadFragment(href);
     });
 }
 
@@ -830,14 +941,16 @@ function initVideoUpload() {
             list.innerHTML = files.map((f, i) => {
                 const nameNoExt = f.name.includes('.') ? f.name.substring(0, f.name.lastIndexOf('.')) : f.name;
                 const sizeMb = (f.size / (1024 * 1024)).toFixed(1);
+                const escName = f.name.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+                const escNameNoExt = nameNoExt.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
                 return `
                     <div style="padding:0.75rem 1rem;${i < files.length - 1 ? 'border-bottom:1px solid var(--gray-100);' : ''}">
                         <div style="display:flex;align-items:center;gap:0.75rem;font-size:0.875rem;margin-bottom:0.5rem;">
-                            <span style="color:var(--text-muted);font-size:0.78rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${f.name.replace(/</g, '&lt;')}</span>
+                            <span style="color:var(--text-muted);font-size:0.78rem;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escName}</span>
                             <span style="color:var(--text-muted);font-size:0.78rem;flex-shrink:0;">${sizeMb} MB</span>
                         </div>
                         <div style="display:flex;gap:0.6rem;align-items:center;">
-                            <input type="text" name="titles" value="${nameNoExt.replace(/"/g, '&quot;')}" class="form-control"
+                            <input type="text" name="titles" value="${escNameNoExt}" class="form-control"
                                    placeholder="Video başlığı girin" maxlength="200" required
                                    style="font-size:0.85rem;padding:0.4rem 0.65rem;flex:1;">
                         </div>
@@ -914,55 +1027,7 @@ function initNavbar() {
     }
 
     // Cart item removal
-    document.querySelectorAll('.nav-cart-remove').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            const courseId = btn.dataset.id;
-            const panel = document.getElementById('cartPanel');
-            if (!panel || !courseId) return;
-
-            const csrf = panel.dataset.csrfToken;
-            const header = panel.dataset.csrfHeader;
-
-            fetch('/sepet/kaldir-ajax?courseId=' + courseId, {
-                method: 'POST',
-                headers: { [header]: csrf }
-            }).then(res => res.json())
-              .then(data => {
-                const row = btn.closest('.nav-cart-item');
-                if (row) row.remove();
-
-                const badge = document.getElementById('cartBadge');
-                if (badge) {
-                    badge.textContent = data.count;
-                    badge.style.display = data.count > 0 ? '' : 'none';
-                }
-                showToast('Eğitim sepetten kaldırıldı.', 'success');
-
-                const countEl = panel.querySelector('.nav-panel-count');
-                if (countEl) countEl.textContent = data.count + ' kurs';
-
-                if (data.total !== undefined) {
-                    const totalStr = '₺' + data.total.toLocaleString('tr-TR', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-                    const totalEl = panel.querySelector('.nav-panel-footer strong');
-                    if (totalEl) totalEl.textContent = totalStr;
-                }
-
-                if (data.count === 0) {
-                    const body = panel.querySelector('.nav-panel-body');
-                    const footer = panel.querySelector('.nav-panel-footer');
-                    if (body && footer) {
-                        body.closest('div').innerHTML =
-                            '<div style="padding:2rem;text-align:center;color:var(--text-muted);">' +
-                            '<i class="bi bi-cart3" style="font-size:2rem;display:block;margin-bottom:0.5rem;color:var(--gray-300);"></i>' +
-                            '<div style="font-size:0.85rem;">Sepetiniz boş</div></div>';
-                        footer.style.display = 'none';
-                    }
-                }
-              });
-        });
-    });
+    initCartRemoveButtons();
 
     // Notification removal
     document.querySelectorAll('.nav-notif-remove').forEach(btn => {
@@ -1666,12 +1731,6 @@ function initCourseModuleToggle() {
             if (chevron) chevron.innerHTML = body.style.display !== 'none' ? '<i class="bi bi-chevron-up"></i>' : '<i class="bi bi-chevron-down"></i>';
         });
     });
-    document.querySelectorAll('.cd-curriculum-head').forEach(head => {
-        head.addEventListener('click', function() {
-            const card = this.closest('.cd-curriculum-card');
-            if (card) card.classList.toggle('open');
-        });
-    });
 }
 
 // ============================================
@@ -2066,8 +2125,16 @@ function initInstructorMultiSelect() {
             const name = item.dataset.name;
             const tag = document.createElement('span');
             tag.className = 'ims-tag';
-            tag.innerHTML = name + '<button type="button" class="ims-tag-remove" aria-label="Kaldır"><i class="bi bi-x"></i></button>';
-            tag.querySelector('.ims-tag-remove').addEventListener('click', e => {
+            const tagText = document.createElement('span');
+            tagText.textContent = name;
+            const tagBtn = document.createElement('button');
+            tagBtn.type = 'button';
+            tagBtn.className = 'ims-tag-remove';
+            tagBtn.setAttribute('aria-label', 'Kaldır');
+            tagBtn.innerHTML = '<i class="bi bi-x"></i>';
+            tag.appendChild(tagText);
+            tag.appendChild(tagBtn);
+            tagBtn.addEventListener('click', e => {
                 e.stopPropagation();
                 const cb = list.querySelector('input[value="' + id + '"]');
                 if (cb) { cb.checked = false; cb.closest('.ims-item').classList.remove('ims-selected'); }
@@ -2303,6 +2370,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initCartAjax();
     initCourseFilterAjax();
     initReviewForm();
+    initCourseOnePageNav();
+    initInstructorForm();
 });
 
 // ============================================
@@ -2357,6 +2426,118 @@ function initPasswordChangeForm() {
             e.preventDefault();
             err.textContent = 'Şifreler eşleşmiyor.';
             err.style.display = 'block';
+        }
+    });
+}
+
+// ============================================
+// Course Detail — One-page nav + Curriculum accordion
+// ============================================
+function initCourseOnePageNav() {
+    var nav = document.getElementById('cd-onepage-nav');
+    if (!nav) return;
+
+    var links = nav.querySelectorAll('a[href^="#"]');
+    var sections = Array.from(links).map(function (a) {
+        return document.querySelector(a.getAttribute('href'));
+    }).filter(Boolean);
+
+    function onScroll() {
+        var offset = nav.getBoundingClientRect().bottom + 16;
+        var active = sections[0];
+        sections.forEach(function (s) {
+            if (s.getBoundingClientRect().top <= offset) active = s;
+        });
+        links.forEach(function (a) {
+            a.classList.toggle('active', active && a.getAttribute('href') === '#' + active.id);
+        });
+    }
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    document.querySelectorAll('.cd-curriculum-head').forEach(function (head) {
+        head.addEventListener('click', function () {
+            head.closest('.cd-curriculum-card').classList.toggle('open');
+        });
+    });
+
+    links.forEach(function (link) {
+        link.addEventListener('click', function (e) {
+            var target = document.querySelector(link.getAttribute('href'));
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+}
+
+// ============================================
+// Instructor Form — AJAX submit + password modal
+// ============================================
+function initInstructorForm() {
+    var form = document.getElementById('instructorForm');
+    if (!form) return;
+
+    var submitBtn = form.querySelector('button[type="submit"]');
+    var modal = document.getElementById('password-modal-backdrop');
+    var modalEmail = document.getElementById('modal-email');
+    var modalPassword = document.getElementById('modal-password');
+    var closeBtn = document.getElementById('closePasswordModalBtn');
+    var copyBtn = document.getElementById('copyPasswordBtn');
+    var csrfToken = document.querySelector('meta[name="_csrf"]')?.content;
+    var csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.content || 'X-CSRF-TOKEN';
+
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function () {
+            window.location.href = '/admin/egitmenler';
+        });
+    }
+
+    if (modal) {
+        modal.addEventListener('click', function (e) {
+            if (e.target === modal) window.location.href = '/admin/egitmenler';
+        });
+    }
+
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function () {
+            if (modalPassword) {
+                navigator.clipboard.writeText(modalPassword.textContent).then(function () {
+                    showToast('Şifre kopyalandı!', 'success');
+                });
+            }
+        });
+    }
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        if (submitBtn) submitBtn.disabled = true;
+
+        var formData = new FormData(form);
+
+        try {
+            var res = await fetch('/admin/egitmenler/olustur-ajax', {
+                method: 'POST',
+                headers: {
+                    [csrfHeader]: csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: formData
+            });
+            var data = await res.json();
+            if (data.success) {
+                if (modalEmail) modalEmail.textContent = data.email;
+                if (modalPassword) modalPassword.textContent = data.password;
+                if (modal) modal.style.display = 'flex';
+            } else {
+                showToast(data.message || 'Bir hata oluştu.', 'error');
+                if (submitBtn) submitBtn.disabled = false;
+            }
+        } catch (err) {
+            showToast('Bağlantı hatası!', 'error');
+            if (submitBtn) submitBtn.disabled = false;
         }
     });
 }

@@ -32,6 +32,9 @@ public interface AssignmentRepository extends JpaRepository<Assignment, Long> {
 
     long countByCourseIdIn(List<Long> courseIds);
 
+    @Query("SELECT a.id FROM Assignment a WHERE a.course.id = :courseId")
+    List<Long> findIdsByCourseId(@Param("courseId") Long courseId);
+
     @Modifying
     @Query("DELETE FROM Assignment a WHERE a.course.id = :courseId")
     void deleteAllByCourseId(@Param("courseId") Long courseId);

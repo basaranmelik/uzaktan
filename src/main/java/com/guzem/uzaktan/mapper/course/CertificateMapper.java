@@ -13,6 +13,7 @@ public class CertificateMapper {
 
         return CertificateResponse.builder()
                 .id(certificate.getId())
+                .userId(certificate.getUser().getId())
                 .courseId(certificate.getCourse().getId())
                 .certificateCode(certificate.getCertificateCode())
                 .fileUrl(certificate.getFileUrl())

@@ -13,6 +13,9 @@ public interface CourseVideoRepository extends JpaRepository<CourseVideo, Long> 
     @Query("SELECT v FROM CourseVideo v WHERE v.course.id = :courseId ORDER BY v.orderIndex ASC")
     List<CourseVideo> findByCourseIdOrderByOrderIndex(@Param("courseId") Long courseId);
 
+    @Query("SELECT v.id FROM CourseVideo v WHERE v.course.id = :courseId")
+    List<Long> findIdsByCourseId(@Param("courseId") Long courseId);
+
     long countByCourseId(Long courseId);
 
     @Modifying

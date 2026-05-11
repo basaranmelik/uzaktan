@@ -10,6 +10,8 @@ import com.guzem.uzaktan.model.user.NotificationType;
 import com.guzem.uzaktan.repository.course.CertificateRepository;
 import com.guzem.uzaktan.repository.course.CourseRepository;
 import com.guzem.uzaktan.repository.user.UserRepository;
+import com.guzem.uzaktan.service.common.FileStorageService;
+import com.guzem.uzaktan.service.course.CertificatePdfRenderer;
 import com.guzem.uzaktan.service.course.CertificateService;
 import com.guzem.uzaktan.service.user.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,8 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.util.List;
 import java.util.UUID;
@@ -36,6 +40,8 @@ public class CertificateServiceImpl implements CertificateService {
     private final CertificateMapper certificateMapper;
     private final NotificationService notificationService;
     private final CacheManager cacheManager;
+    private final CertificatePdfRenderer pdfRenderer;
+    private final FileStorageService fileStorageService;
 
     @Override
     @CacheEvict(value = "userCertificates", key = "#userId")
@@ -58,20 +64,40 @@ public class CertificateServiceImpl implements CertificateService {
                             .build();
 
                     try {
-                        CertificateResponse saved = certificateMapper.toResponse(certificateRepository.save(certificate));
+                        Certificate saved = certificateRepository.save(certificate);
+                        triggerPdfAfterCommit(saved.getId());
                         notificationService.create(user, com.guzem.uzaktan.model.user.NotificationType.CERTIFICATE_ISSUED,
                                 "Sertifikanız Hazır",
                                 "\"" + course.getTitle() + "\" kursuna ait sertifikanız oluşturuldu.",
                                 "/sertifikalarim");
-                        return saved;
+                        return certificateMapper.toResponse(saved);
                     } catch (DataIntegrityViolationException e) {
                         // Concurrent issuance: another thread beat us — return the existing record
                         log.debug("Concurrent certificate issuance for user={} course={}, returning existing", userId, courseId);
                         return certificateRepository.findByUserIdAndCourseId(userId, courseId)
-                                .map(certificateMapper::toResponse)
+                                .map(existing -> {
+                                    if (existing.getFileUrl() == null) {
+                                        triggerPdfAfterCommit(existing.getId());
+                                    }
+                                    return certificateMapper.toResponse(existing);
+                                })
                                 .orElseThrow(() -> e);
                     }
                 });
+    }
+
+    /** PDF üretimini commit sonrasında tetikler — @Async + @Transactional race condition'ını önler. */
+    private void triggerPdfAfterCommit(Long certId) {
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    pdfRenderer.generateAndSave(certId);
+                }
+            });
+        } else {
+            pdfRenderer.generateAndSave(certId);
+        }
     }
 
     @Override
@@ -97,6 +123,9 @@ public class CertificateServiceImpl implements CertificateService {
                 .orElseThrow(() -> new ResourceNotFoundException("Sertifika", "id", certificateId));
         Long userId = certificate.getUser().getId();
         String code = certificate.getCertificateCode();
+        if (certificate.getFileUrl() != null) {
+            fileStorageService.delete(certificate.getFileUrl());
+        }
         certificateRepository.delete(certificate);
         var userCertsCache = cacheManager.getCache("userCertificates");
         if (userCertsCache != null) userCertsCache.evict(userId);
